@@ -7,7 +7,7 @@
 
   [![Python](https://img.shields.io/badge/python-3.10+-blue)](https://python.org)
   [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-  [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/yourusername/arbiter)
+  [![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/evanvolgas/arbiter)
 </div>
 
 ## What is Arbiter?
@@ -20,7 +20,7 @@ Arbiter provides composable evaluation primitives for assessing LLM outputs thro
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/arbiter
+git clone https://github.com/evanvolgas/arbiter.git
 cd arbiter
 
 # Install with uv (recommended)
@@ -108,7 +108,7 @@ Built on proven patterns from Sifaka with focus on evaluation:
 ## Development
 
 ```bash
-git clone https://github.com/yourusername/arbiter
+git clone https://github.com/evanvolgas/arbiter.git
 cd arbiter
 pip install -e ".[dev]"
 pytest
