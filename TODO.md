@@ -2,7 +2,7 @@
 
 This file tracks the development progress of Arbiter. Updated: 2025-01-12
 
-## Phase 1: Foundation (Week 1-2) ✅ IN PROGRESS
+## Phase 1: Foundation (Week 1-2) ✅ COMPLETED
 
 ### Project Setup ✅ COMPLETED
 - [x] Create project structure
@@ -12,26 +12,24 @@ This file tracks the development progress of Arbiter. Updated: 2025-01-12
 - [x] Add supporting files (README, LICENSE, .gitignore, etc.)
 - [x] Initial commit
 
-### Core Infrastructure (Week 1-2) 🔄 NEXT
-- [ ] Copy middleware system from Sifaka
-  - [ ] `core/middleware.py` - LoggingMiddleware, MetricsMiddleware, CachingMiddleware
-  - [ ] `core/monitoring.py` - PerformanceMetrics, PerformanceMonitor
-  - [ ] Adapt for evaluation context
-- [ ] Copy LLM client infrastructure from Sifaka
-  - [ ] `core/llm_client.py` - Base LLM client with PydanticAI
-  - [ ] `core/llm_client_pool.py` - Connection pooling
-  - [ ] Adapt for evaluation-specific needs
-- [ ] Copy plugin system from Sifaka
-  - [ ] `core/plugins.py` - Plugin registration
-  - [ ] `core/plugin_interfaces.py` - Plugin interfaces
-  - [ ] `core/plugin_loader.py` - Entry point discovery
-- [ ] Copy retry logic from Sifaka
-  - [ ] `core/retry.py` - RetryConfig and retry mechanisms
-- [ ] Create core models
-  - [ ] `core/models.py` - EvaluationResult, Score, Metric models
-  - [ ] `core/config.py` - Configuration classes
-  - [ ] `core/exceptions.py` - Custom exceptions
-  - [ ] `core/types.py` - Type definitions and enums
+### Core Infrastructure (Week 1-2) ✅ COMPLETED
+- [x] Copy middleware system from Sifaka
+  - [x] `core/middleware.py` - LoggingMiddleware, MetricsMiddleware, CachingMiddleware, RateLimitingMiddleware
+  - [x] `core/monitoring.py` - PerformanceMetrics, PerformanceMonitor
+  - [x] Adapted for evaluation context
+- [x] Copy LLM client infrastructure from Sifaka
+  - [x] `core/llm_client.py` - Base LLM client with PydanticAI
+  - [x] `core/llm_client_pool.py` - Connection pooling with health checks
+  - [x] Adapted for evaluation-specific needs
+- [x] Copy retry logic from Sifaka
+  - [x] `core/retry.py` - RetryConfig and retry mechanisms with presets
+- [x] Create core models
+  - [x] `core/models.py` - EvaluationResult, Score, Metric models
+  - [x] `core/exceptions.py` - Custom exception hierarchy
+  - [x] `core/types.py` - Type definitions and enums
+  - [x] `core/interfaces.py` - BaseEvaluator and StorageBackend protocols
+  - [x] `core/type_defs.py` - TypedDict definitions
+- [x] Update __init__.py files with proper exports
 
 ## Phase 2: Core Evaluation Engine (Week 2-3) ⏳ PENDING
 
