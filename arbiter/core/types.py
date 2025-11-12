@@ -14,19 +14,24 @@ class Provider(str, Enum):
     """Enumeration of supported LLM providers.
 
     Each provider represents a different LLM API service. The enum
-    values are used for configuration and automatic detection.
+    values match PydanticAI's provider naming convention for the
+    <provider>:<model> format (e.g., "openai:gpt-4o").
 
     Attributes:
         OPENAI: OpenAI's GPT models (GPT-3.5, GPT-4, etc.)
         ANTHROPIC: Anthropic's Claude models (Claude 3 family)
-        GEMINI: Google's Gemini models (Gemini Pro, etc.)
+        GOOGLE: Google's Gemini models (Gemini Pro, etc.)
         GROQ: Groq's fast inference service for open models
+        MISTRAL: Mistral AI models
+        COHERE: Cohere models
     """
 
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
-    GEMINI = "gemini"
+    GOOGLE = "google"  # For Gemini models
     GROQ = "groq"
+    MISTRAL = "mistral"
+    COHERE = "cohere"
 
 
 class MetricType(str, Enum):

@@ -39,8 +39,10 @@ internally. It integrates with PydanticAI for structured outputs.
 Set API keys for each provider:
 - OPENAI_API_KEY
 - ANTHROPIC_API_KEY
-- GEMINI_API_KEY
+- GOOGLE_API_KEY (for Gemini models)
 - GROQ_API_KEY
+- MISTRAL_API_KEY
+- COHERE_API_KEY
 
 The client will automatically use the appropriate key based on the model.
 """
@@ -174,7 +176,8 @@ class LLMClient:
             # For other providers, fallback to OpenAI
             self.client = openai.AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    def _get_api_key(self, provider: Provider) -> Optional[str]:
+    @staticmethod
+    def _get_api_key(provider: Provider) -> Optional[str]:
         """Retrieve API key for the specified provider from environment.
 
         Looks for provider-specific environment variables containing
@@ -190,14 +193,18 @@ class LLMClient:
         Environment Variables:
             - OPENAI_API_KEY for OpenAI
             - ANTHROPIC_API_KEY for Anthropic
-            - GEMINI_API_KEY for Google Gemini
+            - GOOGLE_API_KEY for Google Gemini
             - GROQ_API_KEY for Groq
+            - MISTRAL_API_KEY for Mistral
+            - COHERE_API_KEY for Cohere
         """
         env_keys = {
             Provider.OPENAI: "OPENAI_API_KEY",
             Provider.ANTHROPIC: "ANTHROPIC_API_KEY",
-            Provider.GEMINI: "GEMINI_API_KEY",
+            Provider.GOOGLE: "GOOGLE_API_KEY",
             Provider.GROQ: "GROQ_API_KEY",
+            Provider.MISTRAL: "MISTRAL_API_KEY",
+            Provider.COHERE: "COHERE_API_KEY",
         }
         env_var = env_keys.get(provider)
         return os.getenv(env_var) if env_var else None
@@ -243,15 +250,9 @@ class LLMClient:
         # Map provider and model to PydanticAI format
         provider_model = self._get_provider_model()
 
-        # Create model string for PydanticAI
-        if self.provider == Provider.OPENAI:
-            model_str = f"openai:{provider_model}"
-        elif self.provider == Provider.ANTHROPIC:
-            model_str = f"anthropic:{provider_model}"
-        elif self.provider == Provider.GEMINI:
-            model_str = f"gemini:{provider_model}"
-        else:  # Provider.GROQ
-            model_str = f"groq:{provider_model}"
+        # Create model string for PydanticAI using provider enum value
+        # This creates strings like "openai:gpt-4o", "google:gemini-pro", etc.
+        model_str = f"{self.provider.value}:{provider_model}"
 
         # Create agent with structured output
         return Agent(
@@ -381,11 +382,16 @@ class LLMManager:
                 provider = Provider.ANTHROPIC
             elif os.getenv("GROQ_API_KEY"):
                 provider = Provider.GROQ
-            elif os.getenv("GEMINI_API_KEY"):
-                provider = Provider.GEMINI
+            elif os.getenv("GOOGLE_API_KEY"):
+                provider = Provider.GOOGLE
+            elif os.getenv("MISTRAL_API_KEY"):
+                provider = Provider.MISTRAL
+            elif os.getenv("COHERE_API_KEY"):
+                provider = Provider.COHERE
             else:
                 raise ValueError(
-                    "No API key found. Set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, GEMINI_API_KEY"
+                    "No API key found. Set one of: OPENAI_API_KEY, ANTHROPIC_API_KEY, "
+                    "GROQ_API_KEY, GOOGLE_API_KEY, MISTRAL_API_KEY, COHERE_API_KEY"
                 )
 
         # Convert string to Provider enum

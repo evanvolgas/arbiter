@@ -231,7 +231,7 @@ class BasePydanticEvaluator(BaseEvaluator):
             latency = time.time() - start_time
             interaction = LLMInteraction(
                 prompt=user_prompt,
-                response=result.data.model_dump_json() if result.data else "{}",
+                response=result.output.model_dump_json() if hasattr(result.output, 'model_dump_json') else str(result.output),
                 model=self.llm_client.model,
                 tokens_used=0,  # PydanticAI doesn't expose token counts directly
                 latency=latency,
@@ -246,7 +246,7 @@ class BasePydanticEvaluator(BaseEvaluator):
             self.interactions.append(interaction)
 
             # Compute score from structured response
-            score = await self._compute_score(result.data)
+            score = await self._compute_score(result.output)
             return score
 
         except Exception as e:

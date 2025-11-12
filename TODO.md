@@ -31,28 +31,37 @@ This file tracks the development progress of Arbiter. Updated: 2025-01-12
   - [x] `core/type_defs.py` - TypedDict definitions
 - [x] Update __init__.py files with proper exports
 
-## Phase 2: Core Evaluation Engine (Week 2-3) ⏳ PENDING
+## Phase 2: Core Evaluation Engine (Week 2-3) ✅ COMPLETED
 
-### Evaluation Engine
-- [ ] Design evaluation flow (output + reference → score)
-- [ ] Implement base evaluator interface
-  - [ ] `core/interfaces.py` - BaseEvaluator protocol
-  - [ ] `core/engine.py` - EvaluationEngine orchestrator
-- [ ] Create PydanticAI evaluator
-  - [ ] `evaluators/base.py` - BasePydanticEvaluator
-  - [ ] Structured response models for scoring
-  - [ ] Prompt templates for evaluation criteria
-- [ ] Implement scoring logic
-  - [ ] Score aggregation
-  - [ ] Confidence calculation
-  - [ ] Metadata collection
+### Evaluation Engine ✅
+- [x] Design evaluation flow (output + reference → score)
+- [x] Implement base evaluator interface
+  - [x] `core/interfaces.py` - BaseEvaluator protocol
+- [x] Create PydanticAI evaluator
+  - [x] `evaluators/base.py` - BasePydanticEvaluator with automatic LLM tracking
+  - [x] Structured response models for scoring (EvaluatorResponse)
+  - [x] Prompt templates via template methods (_get_system_prompt, _get_user_prompt)
+- [x] Implement first evaluator
+  - [x] `evaluators/semantic.py` - SemanticEvaluator for semantic similarity
+  - [x] SemanticResponse model with score, confidence, explanation, key differences/similarities
+- [x] Implement scoring logic
+  - [x] Score aggregation (average for multiple evaluators)
+  - [x] Confidence calculation (per-evaluator)
+  - [x] Metadata collection (interactions, processing time, tokens)
+- [x] **LLM Interaction Tracking** - All LLM calls automatically tracked with prompt, response, latency, purpose
 
-### API Design
-- [ ] Create main API functions
-  - [ ] `api.py` - evaluate(), batch_evaluate(), compare()
-  - [ ] Async and sync wrappers
-  - [ ] Input validation
-  - [ ] Error handling
+### API Design ✅
+- [x] Create main API functions
+  - [x] `api.py` - evaluate() with automatic client management
+  - [x] Async interface
+  - [x] Input validation
+  - [x] Error handling with EvaluatorError
+- [x] Example demonstrating usage and tracking
+  - [x] `examples/basic_evaluation.py` - Comprehensive example with interaction tracking
+- [ ] Future enhancements
+  - [ ] batch_evaluate() for parallel evaluation
+  - [ ] compare() for A/B comparison
+  - [ ] Sync wrappers
 
 ## Phase 3: Semantic Comparison (Week 3-4) ⏳ PENDING
 
