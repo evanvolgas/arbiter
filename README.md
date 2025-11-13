@@ -1,13 +1,15 @@
 <div align="center">
   <h1>Arbiter</h1>
 
-  <p><strong>Production-grade LLM evaluation framework with complete observability</strong></p>
+  <p><strong>LLM evaluation framework with automatic observability</strong></p>
 
   <p>
     <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
-    <a href="https://github.com/evanvolgas/arbiter"><img src="https://img.shields.io/badge/version-0.1.0-blue" alt="Version"></a>
+    <a href="https://github.com/evanvolgas/arbiter"><img src="https://img.shields.io/badge/version-0.1.0--alpha-blue" alt="Version"></a>
   </p>
+
+  <p><em>⚠️ Alpha Software: Early development stage. Use for evaluation and experimentation.</em></p>
 </div>
 
 ---
@@ -16,10 +18,10 @@
 
 **The Problem:** When AI generates text, how do you know if it's good? Teams building with ChatGPT, Claude, or other AI models face a critical challenge: evaluating quality at scale. Manual review doesn't scale beyond a few examples, and writing custom evaluation code for every use case is time-consuming and error-prone.
 
-**What Arbiter Solves:**
-- **For Product Teams**: Know which AI responses are working and which aren't—automatically
+**What Arbiter Aims to Provide:**
+- **For Product Teams**: Track which AI responses are working and which aren't—automatically
 - **For Engineers**: Evaluate 1,000 AI outputs in the time it takes to review 10 manually
-- **For Businesses**: See exactly what your AI costs and where it's being used, with complete audit trails
+- **For Businesses**: Visibility into AI costs and usage, with detailed audit trails
 
 **Real-World Example:**
 Imagine you're building a customer support chatbot. Without Arbiter, you'd need to:
@@ -40,11 +42,13 @@ With Arbiter, you can:
 
 ## What is Arbiter?
 
-Arbiter is a production-grade LLM evaluation framework that provides simple APIs, complete observability, and provider-agnostic infrastructure for AI teams at scale.
+Arbiter is an LLM evaluation framework that provides simple APIs, automatic observability, and provider-agnostic infrastructure.
 
-Evaluate LLM outputs with 3 lines of code while maintaining full visibility into cost, quality, and decision-making processes.
+Evaluate LLM outputs with 3 lines of code while maintaining visibility into cost, quality, and decision-making processes.
 
-**Core Value**: The pragmatic choice for teams that need reliable evaluation without complexity, vendor lock-in, or hidden costs.
+**Core Value**: A pragmatic approach to LLM evaluation without complexity, vendor lock-in, or hidden costs.
+
+**Status**: Alpha software (v0.1.0-alpha). Functional but early-stage. Best suited for evaluation, experimentation, and development. Not recommended for mission-critical use yet.
 
 ## Installation
 
@@ -123,15 +127,15 @@ print(f"Confidence: {score.confidence:.2f}")
 ## Key Features
 
 - **✅ Simple API**: Evaluate LLM outputs with 3 lines of code
-- **✅ Complete Observability**: Automatic LLM interaction tracking (unique differentiator)
+- **✅ Automatic Observability**: Automatic LLM interaction tracking (unique differentiator)
 - **✅ Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
-- **✅ Production-Ready**: Middleware for logging, metrics, caching, rate limiting
+- **✅ Middleware Pipeline**: Logging, metrics, caching, rate limiting
 - **✅ Semantic Evaluation**: Similarity scoring with confidence levels
 - **✅ Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
 - **✅ Comparison Mode**: A/B testing with `compare()` API for pairwise evaluation
 - **✅ Multiple Evaluators**: Combine semantic, custom_criteria, and pairwise evaluators
 - **✅ Registry System**: Register custom evaluators for extensibility
-- **📋 Additional Evaluators**: Factuality, consistency, relevance (Phase 5+)
+- **📋 Additional Evaluators**: Factuality, consistency, relevance (planned Phase 5+)
 
 ## Core Concepts
 
@@ -243,7 +247,7 @@ See [examples/rag_evaluation.py](examples/rag_evaluation.py) for complete RAG ev
 
 ## Architecture
 
-Built on proven patterns with production-grade foundations:
+Built on proven patterns with type-safe foundations:
 
 - **PydanticAI 1.14+**: Structured LLM interactions with type safety
 - **Template Method Pattern**: Consistent evaluator implementation
@@ -335,4 +339,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-Built with inspiration from [Sifaka](https://sifaka.ai) and leveraging patterns for production-grade AI systems.
+Built with inspiration from [Sifaka](https://sifaka.ai) and leveraging proven patterns for AI systems.
