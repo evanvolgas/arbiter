@@ -30,7 +30,7 @@ and consistent error handling.
 
 import time
 from abc import abstractmethod
-from typing import Optional, Type
+from typing import TYPE_CHECKING, Optional, Type
 
 from pydantic import BaseModel, Field
 
@@ -38,6 +38,9 @@ from ..core.exceptions import EvaluatorError
 from ..core.interfaces import BaseEvaluator
 from ..core.llm_client import LLMClient
 from ..core.models import LLMInteraction, Score
+
+if TYPE_CHECKING:
+    from ..core.types import Provider
 
 __all__ = ["BasePydanticEvaluator", "EvaluatorResponse"]
 
@@ -98,14 +101,76 @@ class BasePydanticEvaluator(BaseEvaluator):
         ...         )
     """
 
-    def __init__(self, llm_client: LLMClient):
-        """Initialize evaluator with LLM client.
+    def __init__(
+        self,
+        llm_client: Optional[LLMClient] = None,
+        model: Optional[str] = None,
+        provider: Optional["Provider"] = None,
+        temperature: float = 0.0,
+    ):
+        """Initialize evaluator with LLM client or model parameters.
+
+        You can either provide a pre-configured LLMClient, or provide model
+        parameters to create one automatically.
 
         Args:
-            llm_client: LLM client for making API calls
+            llm_client: Pre-configured LLM client (if provided, model/provider/temperature are ignored)
+            model: Model name (e.g., "gpt-4o-mini") - creates client automatically if llm_client not provided
+            provider: Provider enum (auto-detected from API keys if not provided)
+            temperature: Temperature for generation (default: 0.0 for deterministic evaluation)
+
+        Example:
+            >>> # Option 1: Provide client directly
+            >>> client = await LLMManager.get_client(model="gpt-4o")
+            >>> evaluator = SemanticEvaluator(llm_client=client)
+            >>>
+            >>> # Option 2: Provide model, client created automatically
+            >>> evaluator = SemanticEvaluator(model="gpt-4o-mini")
+            >>> # This will work in sync context and create client on first use
+
+        Raises:
+            ValueError: If neither llm_client nor model is provided
         """
-        self.llm_client = llm_client
+        if llm_client is None and model is None:
+            raise ValueError(
+                "Must provide either llm_client or model parameter. "
+                "Example: SemanticEvaluator(model='gpt-4o-mini')"
+            )
+
+        self._llm_client = llm_client
+        self._model = model
+        self._provider = provider
+        self._temperature = temperature
         self.interactions: list[LLMInteraction] = []
+
+    @property
+    def llm_client(self) -> LLMClient:
+        """Get or create LLM client.
+
+        Returns:
+            LLMClient instance
+
+        Raises:
+            RuntimeError: If client needs to be created but we're not in async context
+        """
+        if self._llm_client is None:
+            # Need to create client - this requires async context
+            raise RuntimeError(
+                "LLM client not initialized. Call evaluator.evaluate() which will "
+                "create the client automatically, or provide llm_client in __init__."
+            )
+        return self._llm_client
+
+    async def _ensure_client(self) -> None:
+        """Ensure LLM client is initialized, creating if needed."""
+        if self._llm_client is None:
+            from ..core.llm_client import LLMManager
+
+            self._llm_client = await LLMManager.get_client(
+                model=self._model,
+                provider=self._provider,
+                temperature=self._temperature,
+            )
 
     @abstractmethod
     def _get_system_prompt(self) -> str:
@@ -189,10 +254,11 @@ class BasePydanticEvaluator(BaseEvaluator):
         """Evaluate an output and return a score.
 
         This is the main entry point for evaluation. It:
-        1. Creates a PydanticAI agent with structured output
-        2. Runs evaluation with automatic tracking
-        3. Records the LLM interaction
-        4. Computes and returns the score
+        1. Ensures LLM client is initialized (creates if needed)
+        2. Creates a PydanticAI agent with structured output
+        3. Runs evaluation with automatic tracking
+        4. Records the LLM interaction
+        5. Computes and returns the score
 
         Args:
             output: The text to evaluate
@@ -206,16 +272,24 @@ class BasePydanticEvaluator(BaseEvaluator):
             EvaluatorError: If evaluation fails
 
         Example:
-            >>> evaluator = SemanticEvaluator(llm_client)
+            >>> # Option 1: With model parameter (client created automatically)
+            >>> evaluator = SemanticEvaluator(model="gpt-4o-mini")
             >>> score = await evaluator.evaluate(
             ...     output="Paris is the capital of France",
             ...     reference="The capital of France is Paris"
             ... )
             >>> print(f"Score: {score.value}")
+            >>>
+            >>> # Option 2: With pre-configured client
+            >>> client = await LLMManager.get_client(model="gpt-4o")
+            >>> evaluator = SemanticEvaluator(llm_client=client)
+            >>> score = await evaluator.evaluate(output, reference)
         """
         start_time = time.time()
 
         try:
+            # Ensure client is initialized
+            await self._ensure_client()
             # Get prompts
             system_prompt = self._get_system_prompt()
             user_prompt = self._get_user_prompt(output, reference, criteria)
