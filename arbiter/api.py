@@ -30,11 +30,12 @@ This module provides the primary entry points for evaluating LLM outputs.
     ... )
 """
 
+import logging
 import time
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from .core import LLMClient, LLMManager, Provider
-from .core.exceptions import ValidationError
+from .core.exceptions import ArbiterError, EvaluatorError, ValidationError
 from .core.middleware import MiddlewarePipeline
 from .core.models import ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
 from .evaluators import (
@@ -42,6 +43,8 @@ from .evaluators import (
     PairwiseComparisonEvaluator,
     SemanticEvaluator,
 )
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["evaluate", "compare"]
 
@@ -75,12 +78,21 @@ async def evaluate(
         middleware: Optional middleware pipeline for cross-cutting concerns
 
     Returns:
-        EvaluationResult with scores, metrics, and complete LLM interaction tracking
+        EvaluationResult with scores, metrics, and complete LLM interaction tracking.
+        If some evaluators fail, result.partial will be True and result.errors will
+        contain error messages keyed by evaluator name.
+
+        Overall Score Behavior:
+        - The overall_score is calculated as the average of all successful evaluator scores
+        - Failed evaluators are excluded from the average calculation
+        - If all evaluators fail, an EvaluatorError is raised instead
+        - Example: If evaluators=["semantic", "custom_criteria"] and custom_criteria fails,
+          overall_score = semantic_score (not average of semantic and 0)
 
     Raises:
         ValidationError: If input validation fails
         ValueError: If evaluator name is not recognized
-        EvaluatorError: If evaluation fails
+        EvaluatorError: If all evaluators fail (partial results return successfully)
 
     Example:
         >>> # Basic semantic evaluation
@@ -188,40 +200,78 @@ async def _evaluate_impl(
     metrics: List[Metric] = []
     all_interactions: List[LLMInteraction] = []
     evaluator_names: List[str] = []
+    errors: Dict[str, str] = {}
 
     for evaluator in evaluator_instances:
         # Clear previous interactions
         evaluator.clear_interactions()
 
-        # Run evaluation
-        eval_start = time.time()
-        score = await evaluator.evaluate(output, reference, criteria)
-        eval_time = time.time() - eval_start
+        try:
+            # Run evaluation
+            eval_start = time.time()
+            score = await evaluator.evaluate(output, reference, criteria)
+            eval_time = time.time() - eval_start
 
-        # Collect results
-        scores.append(score)
-        evaluator_names.append(evaluator.name)
+            # Collect results
+            scores.append(score)
+            evaluator_names.append(evaluator.name)
 
-        # Collect interactions from this evaluator
-        interactions = evaluator.get_interactions()
-        all_interactions.extend(interactions)
+            # Collect interactions from this evaluator
+            interactions = evaluator.get_interactions()
+            all_interactions.extend(interactions)
 
-        # Create metric metadata
-        metric = Metric(
-            name=evaluator.name,
-            evaluator=evaluator.name,
-            model=llm_client.model,
-            processing_time=eval_time,
-            tokens_used=sum(i.tokens_used for i in interactions),
-            metadata={
-                "interaction_count": len(interactions),
-                "has_reference": reference is not None,
-                "has_criteria": criteria is not None,
-            },
+            # Create metric metadata
+            metric = Metric(
+                name=evaluator.name,
+                evaluator=evaluator.name,
+                model=llm_client.model,
+                processing_time=eval_time,
+                tokens_used=sum(i.tokens_used for i in interactions),
+                metadata={
+                    "interaction_count": len(interactions),
+                    "has_reference": reference is not None,
+                    "has_criteria": criteria is not None,
+                },
+            )
+            metrics.append(metric)
+
+        except ArbiterError as e:
+            # Track evaluator-specific errors
+            error_msg = str(e)
+            if hasattr(e, "details") and isinstance(e.details, dict):
+                # Extract more detailed error message if available
+                error_msg = e.details.get("error", error_msg)
+            errors[evaluator.name] = error_msg
+            logger.warning(
+                f"Evaluator '{evaluator.name}' failed: {error_msg}",
+                extra={"evaluator": evaluator.name, "error_type": type(e).__name__},
+            )
+            # Continue with other evaluators
+
+        except Exception as e:
+            # Catch any unexpected errors
+            error_msg = f"Unexpected error: {str(e)}"
+            errors[evaluator.name] = error_msg
+            logger.error(
+                f"Unexpected error in evaluator '{evaluator.name}': {type(e).__name__}: {str(e)}",
+                exc_info=True,
+                extra={"evaluator": evaluator.name, "error_type": type(e).__name__},
+            )
+            # Continue with other evaluators
+
+    # Check if we have any successful evaluations
+    if not scores and errors:
+        # All evaluators failed - raise an error
+        error_summary = "; ".join([f"{name}: {msg}" for name, msg in errors.items()])
+        raise EvaluatorError(
+            f"All evaluators failed: {error_summary}",
+            details={"errors": errors, "evaluator_count": len(evaluator_instances)},
         )
-        metrics.append(metric)
 
-    # Calculate overall score (average for now)
+    # Calculate overall score (average of successful evaluators only)
+    # Note: This only includes scores from successful evaluators. If some evaluators
+    # failed, their scores are not included in the average. This ensures the overall
+    # score reflects only the evaluations that completed successfully.
     overall_score = sum(s.value for s in scores) / len(scores) if scores else 0.0
 
     # Determine if passed threshold
@@ -231,6 +281,9 @@ async def _evaluate_impl(
     total_tokens = sum(i.tokens_used for i in all_interactions)
     processing_time = time.time() - start_time
 
+    # Determine if this is a partial result
+    partial = len(errors) > 0
+
     return EvaluationResult(
         output=output,
         reference=reference,
@@ -238,6 +291,8 @@ async def _evaluate_impl(
         scores=scores,
         overall_score=overall_score,
         passed=passed,
+        errors=errors,
+        partial=partial,
         metrics=metrics,
         evaluator_names=evaluator_names,
         total_tokens=total_tokens,
@@ -245,6 +300,8 @@ async def _evaluate_impl(
         interactions=all_interactions,
         metadata={
             "evaluator_count": len(evaluator_instances),
+            "successful_evaluators": len(scores),
+            "failed_evaluators": len(errors),
             "threshold": threshold,
         },
     )

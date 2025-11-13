@@ -120,7 +120,19 @@ class EvaluationResult(BaseModel):
         ...         Score(name="factuality", value=1.0),
         ...     ],
         ...     overall_score=0.975,
-        ...     passed=True
+        ...     passed=True,
+        ...     partial=False,
+        ...     errors={}
+        ... )
+        >>>
+        >>> # Partial result example (some evaluators failed)
+        >>> result = EvaluationResult(
+        ...     output="text",
+        ...     scores=[Score(name="semantic", value=0.8)],
+        ...     overall_score=0.8,
+        ...     passed=True,
+        ...     partial=True,
+        ...     errors={"factuality": "API timeout"}
         ... )
     """
 
@@ -134,11 +146,29 @@ class EvaluationResult(BaseModel):
     )
 
     # Results
-    scores: List[Score] = Field(default_factory=list, description="Individual metric scores")
+    scores: List[Score] = Field(
+        default_factory=list,
+        description="Individual metric scores from successful evaluators only. Failed evaluators are excluded.",
+    )
     overall_score: float = Field(
-        ..., ge=0.0, le=1.0, description="Aggregate score across all metrics"
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Aggregate score calculated as the average of successful evaluator scores only. "
+        "Failed evaluators are excluded from the calculation. If partial=True, this represents "
+        "the average of only the successful evaluations, not all requested evaluators.",
     )
     passed: bool = Field(..., description="Whether evaluation passed quality threshold")
+
+    # Error handling
+    errors: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Errors encountered during evaluation, keyed by evaluator name",
+    )
+    partial: bool = Field(
+        default=False,
+        description="Whether this is a partial result (some evaluators failed)",
+    )
 
     # Metadata
     metrics: List[Metric] = Field(

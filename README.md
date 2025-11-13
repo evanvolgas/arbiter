@@ -77,7 +77,7 @@ print(f"Confidence: {score.confidence:.2f}")
 - **✅ Production-Ready**: Middleware for logging, metrics, caching, rate limiting
 - **✅ Semantic Evaluation**: Similarity scoring with confidence levels
 - **✅ Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
-- **📋 Comparison Mode**: A/B testing for model outputs (Phase 2.5)
+- **✅ Comparison Mode**: A/B testing with `compare()` API for pairwise evaluation
 - **📋 Multiple Evaluators**: Factuality, consistency, relevance (Phase 5+)
 
 ## Core Concepts
@@ -194,7 +194,7 @@ pytest
 
 **Phase 2.5 - Fill Critical Gaps** 🚧 (Current - Nov 22 to Dec 12)
 - [x] CustomCriteriaEvaluator (domain-specific evaluation)
-- [ ] PairwiseComparisonEvaluator (A/B testing)
+- [x] PairwiseComparisonEvaluator (A/B testing)
 - [ ] Multi-evaluator error handling
 - [ ] 10-15 comprehensive examples
 - [ ] Complete API documentation
