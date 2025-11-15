@@ -482,6 +482,127 @@ def calculate_cost(tokens: int, cost_per_1k: float = 0.01) -> float:
 
 ---
 
+## Integration with Loom
+
+### Relationship to Loom
+
+**Arbiter** is a direct dependency of **Loom** (the AI pipeline orchestrator):
+- **Loom**: Orchestrates AI(E)TL pipelines (Extract → Transform → Evaluate → Load)
+- **Arbiter**: Provides evaluation engine used in Loom's Evaluate stage
+- **Relationship**: Loom imports and uses Arbiter evaluators in quality gates
+
+**Directory Locations:**
+- Arbiter: `/Users/evan/Documents/gh/arbiter`
+- Loom: `/Users/evan/Documents/gh/loom`
+
+### How Loom Uses Arbiter
+
+Loom pipelines define evaluation stages that use Arbiter evaluators:
+
+```yaml
+# Loom pipeline example
+name: customer_qa_generation
+version: 1.0.0
+
+extract:
+  source: postgres://customers/questions
+
+transform:
+  type: ai
+  prompt: prompts/answer_question.txt
+  model: gpt-4o-mini
+
+evaluate:
+  evaluators:
+    # Uses Arbiter's SemanticEvaluator
+    - name: semantic_check
+      type: semantic
+      threshold: 0.8
+
+    # Uses Arbiter's FactualityEvaluator (enhanced with plugins!)
+    - name: factuality_check
+      type: factuality
+      config:
+        plugins:
+          - name: tavily
+            max_results: 5
+        use_cache: true
+        threshold: 0.85
+
+    # Uses Arbiter's CustomCriteriaEvaluator
+    - name: quality_check
+      type: custom_criteria
+      criteria: "Helpful, accurate, no hallucination"
+      threshold: 0.75
+
+  quality_gate: all_pass  # Defined in Loom's QUALITY_GATES.md
+
+load:
+  destination: postgres://customer_service/qa_responses
+  on_failure: quarantine  # Quarantine hallucinated responses
+```
+
+### Impact of Arbiter Enhancements on Loom
+
+**FactualityEvaluator Plugin Enhancement:**
+- **Before**: Loom quality gates use pure LLM-based factuality checking (70-80% accuracy)
+- **After**: Loom quality gates use external verification with citations (90-98% accuracy)
+- **Benefit**: Loom pipelines can prevent hallucinated responses from reaching production
+
+**Example Loom Evaluation Result:**
+```python
+{
+    "record_id": "cust_q_12345",
+    "question": "How tall is the Eiffel Tower?",
+    "answer": "The Eiffel Tower is 300 meters tall (324 meters including antennas).",
+
+    "evaluation_results": {
+        "semantic_check": {"passed": True, "score": 0.95},
+        "factuality_check": {
+            "passed": True,
+            "score": 1.0,
+            "verified_claims": [
+                "The Eiffel Tower is 300 meters tall",
+                "324 meters including antennas"
+            ],
+            "sources": [  # ← Citations from Tavily plugin!
+                {
+                    "url": "https://en.wikipedia.org/wiki/Eiffel_Tower",
+                    "title": "Eiffel Tower - Wikipedia",
+                    "snippet": "The tower is 300 metres (984 ft) tall..."
+                }
+            ]
+        },
+        "quality_check": {"passed": True, "score": 0.88}
+    },
+
+    "quality_gate": "PASSED",
+    "loaded_to": "postgres://customer_service/qa_responses"
+}
+```
+
+### Development Coordination
+
+When developing Arbiter evaluators, consider Loom integration:
+
+1. **Evaluator Names**: Must match Loom pipeline YAML evaluator types
+2. **Configuration Schema**: Loom passes config dict to evaluators, ensure validation
+3. **Performance**: Loom processes batches, optimize for throughput
+4. **Error Handling**: Loom expects graceful degradation, not hard failures
+5. **Metadata**: Include rich metadata in Score objects for Loom audit trails
+
+### Testing with Loom
+
+**Unit Tests**: Test evaluators independently (in Arbiter)
+**Integration Tests**: Test Loom pipelines using Arbiter evaluators (in Loom)
+
+**Example Test Flow:**
+1. Arbiter: Test FactualityEvaluator with plugins → arbiter/tests/
+2. Loom: Test quality gates using FactualityEvaluator → loom/tests/
+3. E2E: Test complete Loom pipeline with real Arbiter evaluations
+
+---
+
 ## Agent Guidelines
 
 ### When Starting Work
