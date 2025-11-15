@@ -34,18 +34,26 @@ def mock_llm_client():
     mock_response.key_similarities = ["similarity1"]
     mock_response.criteria_met = ["criteria1"]
     mock_response.criteria_not_met = []
+    # Add model_dump_json method that returns a string
+    mock_response.model_dump_json = MagicMock(return_value='{"score": 0.9, "confidence": 0.85, "explanation": "Test explanation"}')
 
-    # Mock result
+    # Mock usage
+    mock_usage = MagicMock()
+    mock_usage.total_tokens = 100
+
+    # Mock result - use .output not .data
     mock_result = MagicMock()
-    mock_result.data = mock_response
+    mock_result.output = mock_response
+    mock_result.usage = MagicMock(return_value=mock_usage)
 
     # Mock agent
     mock_agent = MagicMock()
     mock_agent.run = AsyncMock(return_value=mock_result)
 
-    # Mock client
+    # Mock client with proper model attribute
     mock_client = MagicMock()
     mock_client.create_agent = MagicMock(return_value=mock_agent)
+    mock_client.model = "gpt-4o-mini"  # Add model attribute as string
 
     return mock_client
 

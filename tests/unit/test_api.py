@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from arbiter.core.exceptions import EvaluatorError, ValidationError
+from arbiter.core.llm_client import LLMClient
 from arbiter.core.models import ComparisonResult, EvaluationResult
 from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
 from arbiter.evaluators.pairwise import PairwiseResponse
@@ -44,7 +45,7 @@ class TestEvaluateFunction:
         assert result.overall_score == 0.9
         assert result.passed is True
         assert len(result.scores) == 1
-        assert result.scores[0].name == "semantic_similarity"
+        assert result.scores[0].name == "semantic"
         assert result.partial is False
         assert len(result.errors) == 0
 
@@ -70,7 +71,7 @@ class TestEvaluateFunction:
         )
 
         assert len(result.scores) == 1
-        assert result.scores[0].name == "semantic_similarity"
+        assert result.scores[0].name == "semantic"
 
     @pytest.mark.asyncio
     async def test_evaluate_custom_criteria(self, mock_llm_client, mock_agent):
@@ -186,7 +187,7 @@ class TestEvaluateFunction:
         """Test that unknown evaluator raises error."""
         from arbiter.api import evaluate
 
-        with pytest.raises(ValueError, match="Unknown evaluator"):
+        with pytest.raises(ValidationError, match="Unknown evaluator"):
             await evaluate(
                 output="Test",
                 evaluators=["unknown_evaluator"],
@@ -273,8 +274,8 @@ class TestEvaluateFunction:
         )
 
         assert len(result.metrics) == 1
-        assert result.metrics[0].name == "semantic_similarity"
-        assert result.metrics[0].evaluator == "semantic_similarity"
+        assert result.metrics[0].name == "semantic"
+        assert result.metrics[0].evaluator == "semantic"
         assert result.metrics[0].model == "gpt-4o-mini"
 
     @pytest.mark.asyncio
@@ -475,19 +476,17 @@ class TestCompareFunction:
             winner="output_a",
             confidence=0.9,
             reasoning="Output A wins overall",
-            aspect_scores=[
+            aspect_comparisons=[
                 AspectComparison(
                     aspect="accuracy",
-                    winner="output_a",
-                    score_a=0.9,
-                    score_b=0.7,
+                    output_a_score=0.9,
+                    output_b_score=0.7,
                     reasoning="A is more accurate",
                 ),
                 AspectComparison(
                     aspect="clarity",
-                    winner="output_b",
-                    score_a=0.7,
-                    score_b=0.9,
+                    output_a_score=0.7,
+                    output_b_score=0.9,
                     reasoning="B is clearer",
                 ),
             ],
@@ -504,8 +503,10 @@ class TestCompareFunction:
         )
 
         assert len(result.aspect_scores) == 2
-        assert result.get_aspect_score("accuracy") == 0.9
-        assert result.get_aspect_score("clarity") == 0.7
+        assert result.get_aspect_score("accuracy", "output_a") == 0.9
+        assert result.get_aspect_score("accuracy", "output_b") == 0.7
+        assert result.get_aspect_score("clarity", "output_a") == 0.7
+        assert result.get_aspect_score("clarity", "output_b") == 0.9
 
     @pytest.mark.asyncio
     async def test_compare_error_handling(self, mock_llm_client, mock_agent):

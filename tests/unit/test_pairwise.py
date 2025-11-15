@@ -45,7 +45,8 @@ class TestPairwiseComparisonEvaluator:
         response_type = evaluator._get_response_type()
         assert response_type == PairwiseResponse
 
-    def test_compute_score_not_used(self, evaluator):
+    @pytest.mark.asyncio
+    async def test_compute_score_not_used(self, evaluator):
         """Test that _compute_score raises NotImplementedError."""
         with pytest.raises(NotImplementedError):
             await evaluator._compute_score(MagicMock())
