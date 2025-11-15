@@ -25,19 +25,21 @@ This document provides the complete multi-milestone roadmap for Arbiter, from fo
 
 ---
 
-## Timeline Summary (Revised)
+## Timeline Summary (Revised - Value-First Roadmap)
 
 | Phase | Duration | Status | Completion |
 |-------|----------|--------|------------|
 | Phase 1: Foundation | 2 weeks | ✅ Done | 100% |
 | Phase 2: Core Engine | 1 week | ✅ Done | 100% |
-| **Phase 2.5: Critical Gaps** | **2-3 weeks** | **🚧 Current** | **60%** |
-| Phase 3: Semantic Comparison | 2 weeks | ⏳ Next | 0% |
+| **Phase 2.5: Critical Gaps** | **2-3 weeks** | **✅ Complete** | **100%** |
+| **Phase 3: Core Evaluators** | **3 weeks** | **⏳ Next** | **0%** |
 | Phase 4: Batch Evaluation | 1 week | ⏳ Planned | 0% |
-| Phase 5: Core Evaluators | 4-5 weeks | ⏳ Planned | 0% |
+| Phase 5: Vector Similarity (Milvus) | 2 weeks | ⏳ Planned | 0% |
 | Phase 6: Polish & Release | 2 weeks | ⏳ Planned | 0% |
 
-**Total:** ~4-5 months to v1.0
+**Total:** ~3-4 months to v1.0 (optimized)
+
+**Roadmap Change (Nov 15, 2025):** Prioritized Core Evaluators (was Phase 5) before Milvus (now Phase 5) to deliver user value faster. Value-first over infrastructure-first.
 
 **Deferred:**
 - ⏸️ Storage Backends (Phase 4 original) - Deferred to Phase 2.0
@@ -361,54 +363,88 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 3: Semantic Comparison ⏳ NEXT
+## Phase 3: Core Evaluators ⏳ NEXT (Moved from Phase 5)
 
-**Duration:** 2 weeks (Dec 13-26, 2025)
-**Status:** ⏳ Planned
-**Goal:** Milvus integration for vector-based semantic comparison
+**Duration:** 3 weeks (Dec 15, 2025 - Jan 5, 2026)
+**Status:** ⏳ Next - Ready to Start
+**Goal:** Build production-ready evaluators for real-world use cases
+**Priority:** 🔴 HIGHEST - Delivers immediate user value
+
+**Strategic Focus:** Focus on TOP 3 high-impact evaluators that make Arbiter production-ready.
+
+### Why This Matters
+
+Value-first roadmap prioritization:
+- **Immediate Value:** Users need evaluators NOW, not infrastructure later
+- **Loom Unblocked:** Enables Loom integration with robust evaluation
+- **Production Ready:** Factuality, Groundedness, Relevance cover 80% of use cases
+- **Faster v1.0:** 3 weeks vs 4-5 weeks (focused scope)
 
 ### Objectives
-1. Set up Milvus vector database
-2. Implement embedding generation
-3. Build vector similarity scoring
-4. Hybrid evaluation (LLM + vector similarity)
+1. Implement **top 3** production evaluators
+2. Ensure high quality and reliability (>80% coverage)
+3. Comprehensive examples and documentation
 
 ### Deliverables
 
-#### Vector Storage
-- [ ] Milvus client (core/milvus_client.py)
-- [ ] Embedding generation (core/embeddings.py)
-  - OpenAI embeddings
-  - Sentence transformers
-  - Custom embedding models
-- [ ] Vector storage schema design
-- [ ] Collection management
+#### Week 1: FactualityEvaluator (HIGHEST PRIORITY)
+- [ ] **FactualityEvaluator** implementation
+  - LLM-based claim extraction and verification
+  - Verification against reference text
+  - Output: score, confidence, factual_claims, non_factual_claims, uncertain_claims
+- [ ] Comprehensive tests (>80% coverage)
+- [ ] Example: examples/factuality_example.py
+- [ ] Documentation in docs/api/evaluators/factuality.md
 
-#### Enhanced SemanticEvaluator
-- [ ] Hybrid mode (LLM + vector similarity)
-- [ ] Vector-only mode (faster, cheaper)
-- [ ] Embedding caching
-- [ ] Similarity threshold configuration
+**Why First:** Hallucination detection is critical for all LLM outputs
 
-#### Infrastructure
-- [ ] Milvus connection pooling
-- [ ] Embedding cache
-- [ ] Vector search optimization
+#### Week 2: GroundednessEvaluator (RAG-SPECIFIC)
+- [ ] **GroundednessEvaluator** implementation
+  - Source attribution checking for RAG systems
+  - Unsupported claims detection
+  - Citation mapping
+  - Output: score, confidence, grounded_statements, ungrounded_statements, citations
+- [ ] Comprehensive tests (>80% coverage)
+- [ ] Example: examples/groundedness_example.py
+- [ ] Documentation in docs/api/evaluators/groundedness.md
+
+**Why Second:** RAG is the most common LLM pattern - needs validation
+
+#### Week 3: RelevanceEvaluator (QUERY ALIGNMENT)
+- [ ] **RelevanceEvaluator** implementation
+  - Query-output alignment assessment
+  - Addressed vs. missed aspects detection
+  - Off-topic content detection
+  - Output: score, confidence, addressed_points, missing_points, irrelevant_content
+- [ ] Comprehensive tests (>80% coverage)
+- [ ] Example: examples/relevance_example.py
+- [ ] Documentation in docs/api/evaluators/relevance.md
+
+**Why Third:** Ensures outputs stay on-topic and answer the actual question
 
 ### Success Criteria
-- ✅ Milvus running locally
-- ✅ Embeddings generated and stored
-- ✅ Vector similarity scoring works
-- ✅ Hybrid evaluation faster than LLM-only
-- ✅ Tests for Milvus integration
+- ✅ 3 evaluators fully implemented
+- ✅ Each evaluator >80% test coverage
+- ✅ Complete API documentation for each
+- ✅ Working examples for each use case
+- ✅ All following template method pattern
+- ✅ Registered in evaluator registry
+- ✅ Updated README with new evaluators
 
-### Risks
-- **Milvus complexity:** May require Docker setup
-- **Performance:** Embedding generation adds latency
-- **Storage:** Vector storage size management
+### Risks & Mitigation
+- **Complexity variation:** Factuality is hardest → Start with it to learn
+- **Prompt engineering:** LLM evaluations need good prompts → Iterate based on testing
+- **Time estimates:** 1 week per evaluator is tight → Focus on MVP, defer nice-to-haves
 
 ### Dependencies
-- Phase 2.5 complete (can start in parallel)
+- Phase 2.5 complete ✅ (CustomCriteria provides template pattern)
+- Template method pattern established ✅
+- Evaluator registry working ✅
+
+### Deferred Evaluators (Phase 2.0 or Community)
+- ⏸️ **ToxicityEvaluator** - Requires Perspective API integration
+- ⏸️ **ConsistencyEvaluator** - Lower priority, can be community-built
+- ⏸️ **ContextRelevanceEvaluator** - Overlaps with RelevanceEvaluator
 
 ---
 
@@ -460,87 +496,69 @@ print(f"Winner: {comparison.winner}")
 
 ---
 
-## Phase 5: Core Evaluators ⏳ PLANNED (Revised Scope)
+## Phase 5: Vector Similarity (Milvus) ⏳ PLANNED (Moved from Phase 3)
 
-**Duration:** 4-5 weeks (reduced from 6 weeks)
-**Status:** ⏳ Planned
-**Goal:** Build 5-7 production evaluators (focused on high-value)
+**Duration:** 2 weeks (Jan 6-19, 2026)
+**Status:** ⏳ Planned - Deferred for value-first approach
+**Goal:** Milvus integration for vector-based semantic comparison
+**Priority:** 🟡 MEDIUM - Nice-to-have optimization
 
-**Strategic Focus:** Quality over quantity. Focus on general-purpose, high-demand evaluators.
+**Strategic Context:** Deferred from Phase 3 because core evaluators provide more immediate user value.
+
+### Why Deferred
+
+Infrastructure-second prioritization:
+- **Core evaluators more critical:** Users need Factuality/Groundedness/Relevance first
+- **Current semantic works:** Existing SemanticEvaluator is functional without vectors
+- **Optimization not blocker:** Vector similarity is performance enhancement, not core capability
+- **Can be optional:** Make Milvus opt-in for users who need it
 
 ### Objectives
-1. Implement core evaluators based on market demand
-2. Achieve competitive evaluator coverage
-3. Ensure high quality and reliability
+1. Set up Milvus vector database (optional dependency)
+2. Implement embedding generation pipeline
+3. Build vector similarity scoring
+4. Hybrid evaluation (LLM + vector similarity)
 
 ### Deliverables
 
-#### Week 1-2: Factuality & Relevance
-- [ ] **FactualityEvaluator** (1 week)
-  - LLM-based fact checking
-  - Claims extraction
-  - Verification against reference
-  - Optional web search integration
-  - Output: score, factual_errors, verified_claims, uncertain_claims
+#### Vector Storage
+- [ ] Milvus client (core/milvus_client.py)
+- [ ] Embedding generation (core/embeddings.py)
+  - OpenAI embeddings
+  - Sentence transformers
+  - Custom embedding models
+- [ ] Vector storage schema design
+- [ ] Collection management
 
-- [ ] **RelevanceEvaluator** (1 week)
-  - Query-output alignment assessment
-  - Addressed vs. missed aspects
-  - Off-topic content detection
-  - Output: score, addressed_points, missing_points, irrelevant_content
+#### Enhanced SemanticEvaluator
+- [ ] Hybrid mode (LLM + vector similarity)
+- [ ] Vector-only mode (faster, cheaper)
+- [ ] Embedding caching
+- [ ] Similarity threshold configuration
+- [ ] Graceful fallback when Milvus unavailable
 
-#### Week 3: Toxicity
-- [ ] **ToxicityEvaluator** (1 week)
-  - Perspective API integration (primary)
-  - LLM-based secondary check
-  - Category detection (hate speech, harassment, etc.)
-  - Severity levels
-  - Output: score, categories, flagged_content, severity
-
-#### Week 4: Groundedness (RAG)
-- [ ] **GroundednessEvaluator** (1 week)
-  - Source attribution checking
-  - Unsupported claims detection
-  - Citation mapping
-  - Output: score, unsupported_claims, citations, attribution_rate
-
-#### Week 5: Consistency
-- [ ] **ConsistencyEvaluator** (1 week)
-  - Internal consistency checking
-  - Contradiction detection
-  - Temporal consistency
-  - Output: score, contradictions, logical_issues
-
-#### ⏸️ DEFERRED: Context Relevance
-- ⏸️ **ContextRelevanceEvaluator** - Deferred (overlaps with RelevanceEvaluator)
-
-**Priority Order (Keep):**
-1. ✅ **FactualityEvaluator** (Week 1) - Highest demand, RAG validation
-2. ✅ **RelevanceEvaluator** (Week 2) - Query-output alignment
-3. ✅ **GroundednessEvaluator** (Week 3) - RAG source attribution
-4. ✅ **ConsistencyEvaluator** (Week 4) - Self-contradiction detection
-5. ⚠️ **ToxicityEvaluator** (Week 5) - If time permits (depends on Perspective API)
-
-**Deferred:**
-- ⏸️ ContextRelevanceEvaluator (overlaps with Relevance)
-- ⏸️ Specialized evaluators (10+) - Community can build via registry
+#### Infrastructure
+- [ ] Milvus connection pooling
+- [ ] Embedding cache
+- [ ] Vector search optimization
+- [ ] Optional dependency (pymilvus not required by default)
 
 ### Success Criteria
-- ✅ 5-7 evaluators fully implemented (focus on quality)
-- ✅ Each evaluator >80% test coverage
-- ✅ Documentation for each evaluator
-- ✅ Examples for each use case
-- ✅ Performance benchmarks
+- ✅ Milvus integration is **optional** (doesn't break without it)
+- ✅ Embeddings generated and stored when available
+- ✅ Vector similarity scoring works
+- ✅ Hybrid evaluation faster than LLM-only
+- ✅ Tests for Milvus integration
+- ✅ Clear docs on when to use Milvus
 
 ### Risks
-- **Quality variation:** Some evaluators harder than others
-- **External APIs:** Toxicity eval depends on Perspective API
-- **Time:** May take longer than estimated
+- **Milvus complexity:** May require Docker setup → Mitigation: Make optional
+- **Performance:** Embedding generation adds latency → Mitigation: Cache aggressively
+- **Storage:** Vector storage size management → Mitigation: Configurable retention
 
 ### Dependencies
-- Phase 2.5 complete (CustomCriteria provides template)
-- Phase 3 optional
-- Phase 4 optional
+- Phase 3 complete (Core Evaluators)
+- Phase 4 optional (Batch evaluation can happen in parallel)
 
 ---
 
@@ -585,10 +603,10 @@ print(f"Winner: {comparison.winner}")
 - [ ] Announcement post
 
 ### Success Criteria
-- ✅ Package on PyPI (pip install arbiter works)
-- ✅ CI/CD pipeline running
-- ✅ Documentation site live
-- ✅ Release checklist complete
+- [ ] Package on PyPI (pip install arbiter works) - NOT YET AVAILABLE
+- [ ] CI/CD pipeline running
+- [ ] Documentation site live
+- [ ] Release checklist complete
 
 ### Dependencies
 - Phase 5 complete (evaluators done)

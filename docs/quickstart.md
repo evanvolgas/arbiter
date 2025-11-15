@@ -4,16 +4,20 @@ Get started with Arbiter in 5 minutes!
 
 ## Installation
 
-```bash
-pip install arbiter
-```
-
-Or install from source:
+**Note:** Arbiter is not yet published to PyPI. Install from source:
 
 ```bash
 git clone https://github.com/evanvolgas/arbiter.git
 cd arbiter
 pip install -e .
+```
+
+With uv (faster):
+
+```bash
+git clone https://github.com/evanvolgas/arbiter.git
+cd arbiter
+uv pip install -e .
 ```
 
 ## Set Up API Keys

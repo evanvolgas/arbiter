@@ -19,7 +19,7 @@
 **The Problem:** When AI generates text, how do you know if it's good? Teams building with ChatGPT, Claude, or other AI models face a critical challenge: evaluating quality at scale. Manual review doesn't scale beyond a few examples, and writing custom evaluation code for every use case is time-consuming and error-prone.
 
 **What Arbiter Aims to Provide:**
-- **For Product Teams**: Track which AI responses are working and which aren't—automatically
+- **For Product Teams**: Track which AI responses are working and which aren't - automatically
 - **For Engineers**: Evaluate 1,000 AI outputs in the time it takes to review 10 manually
 - **For Businesses**: Visibility into AI costs and usage, with detailed audit trails
 
@@ -36,7 +36,7 @@ With Arbiter, you can:
 3. See every AI call with full cost and performance data
 4. Catch problems before customers do
 
-**Bottom Line:** Arbiter makes AI quality measurable, trackable, and improvable—without requiring a PhD in machine learning.
+**Bottom Line:** Arbiter makes AI quality measurable, trackable, and improvable - without requiring a PhD in machine learning.
 
 ---
 
@@ -306,30 +306,30 @@ pytest
 - [x] Main evaluate() API
 - [x] Complete observability (interaction tracking)
 
-**Phase 2.5 - Fill Critical Gaps** 🚧 (Current - 80% Complete)
+**Phase 2.5 - Fill Critical Gaps** ✅ (Completed)
 - [x] CustomCriteriaEvaluator (domain-specific evaluation)
 - [x] PairwiseComparisonEvaluator (A/B testing)
 - [x] Multi-evaluator error handling with partial results
 - [x] 12 comprehensive examples (basic, custom criteria, pairwise, batch, advanced config, RAG evaluation, etc.)
 - [x] Complete API documentation (16 API reference pages + MkDocs setup)
 - [x] Evaluator registry system for extensibility
+- [x] User guides (installation, custom evaluators, troubleshooting)
 
-**Phase 3 - Semantic Comparison** 📋 (Next - 2 weeks)
-- [ ] Milvus integration for vector storage
-- [ ] Embedding generation pipeline
-- [ ] Vector similarity scoring
+**Phase 3 - Core Evaluators** 🚧 (Current - 3 weeks) **← VALUE-FIRST PRIORITY**
+- [ ] FactualityEvaluator (Week 1) - Hallucination detection, claim verification
+- [ ] GroundednessEvaluator (Week 2) - RAG source attribution checking
+- [ ] RelevanceEvaluator (Week 3) - Query-output alignment assessment
 
-**Phase 4 - Batch Evaluation** 📋 (1 week)
+**Phase 4 - Batch Evaluation** 📋 (Planned - 1 week)
 - [ ] Batch evaluation API (`batch_evaluate()` function)
 - [ ] Parallel processing with progress tracking
 - ⏸️ **Storage backends deferred to Phase 2.0** (users can persist results manually)
 
-**Phase 5 - Core Evaluators** 📋 (4-5 weeks, 5-7 evaluators)
-- [ ] Factuality evaluator (HIGHEST PRIORITY)
-- [ ] Relevance evaluator
-- [ ] Groundedness evaluator (RAG validation)
-- [ ] Consistency evaluator
-- [ ] Toxicity evaluator (if time permits)
+**Phase 5 - Vector Similarity (Milvus)** 📋 (Planned - 2 weeks)
+- [ ] Milvus integration for vector storage (optional)
+- [ ] Embedding generation pipeline
+- [ ] Vector similarity scoring
+- [ ] Hybrid LLM + vector evaluation
 
 See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete 9-phase roadmap.
 
