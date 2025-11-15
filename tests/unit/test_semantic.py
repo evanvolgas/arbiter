@@ -20,7 +20,7 @@ class TestSemanticEvaluator:
 
     def test_name_property(self, evaluator):
         """Test that evaluator has correct name."""
-        assert evaluator.name == "semantic_similarity"
+        assert evaluator.name == "semantic"
 
     def test_system_prompt(self, evaluator):
         """Test that system prompt is well-formed."""
@@ -77,7 +77,7 @@ class TestSemanticEvaluator:
 
         score = await evaluator._compute_score(response)
 
-        assert score.name == "semantic_similarity"
+        assert score.name == "semantic"
         assert score.value == 0.85
         assert score.confidence == 0.9
         assert "High similarity" in score.explanation
@@ -97,7 +97,7 @@ class TestSemanticEvaluator:
 
         score = await evaluator._compute_score(response)
 
-        assert score.name == "semantic_similarity"
+        assert score.name == "semantic"
         assert score.value == 0.75
         assert score.confidence == 0.8
         assert "Moderate similarity" in score.explanation
@@ -127,7 +127,7 @@ class TestSemanticEvaluator:
         assert score.value == 0.92
         assert score.confidence == 0.88
         assert len(evaluator.interactions) == 1
-        assert evaluator.interactions[0].purpose == "semantic_similarity_evaluation"
+        assert evaluator.interactions[0].purpose == "semantic_evaluation"
 
     @pytest.mark.asyncio
     async def test_evaluate_without_reference(self, evaluator, mock_agent):
@@ -180,7 +180,7 @@ class TestSemanticEvaluator:
                 reference="Test reference",
             )
 
-        assert "semantic_similarity" in str(exc_info.value)
+        assert "semantic" in str(exc_info.value)
         assert "Evaluation failed" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -204,9 +204,9 @@ class TestSemanticEvaluator:
         assert len(evaluator.interactions) == 1
         interaction = evaluator.interactions[0]
         assert interaction.model == "gpt-4o-mini"
-        assert interaction.purpose == "semantic_similarity_evaluation"
+        assert interaction.purpose == "semantic_evaluation"
         assert interaction.tokens_used == 100
-        assert interaction.metadata["evaluator"] == "semantic_similarity"
+        assert interaction.metadata["evaluator"] == "semantic"
         assert interaction.metadata["has_reference"] is True
         assert interaction.metadata["has_criteria"] is False
 

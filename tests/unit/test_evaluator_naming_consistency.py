@@ -22,37 +22,33 @@ from arbiter.core.registry import AVAILABLE_EVALUATORS, get_evaluator_class
 from arbiter.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
 
 
-@pytest.fixture
-def mock_llm_client():
-    """Create a mock LLM client."""
-    # Mock response
-    mock_response = MagicMock()
-    mock_response.score = 0.9
-    mock_response.confidence = 0.85
-    mock_response.explanation = "Test explanation"
-    mock_response.key_differences = []
-    mock_response.key_similarities = ["similarity1"]
-    mock_response.criteria_met = ["criteria1"]
-    mock_response.criteria_not_met = []
+@pytest.mark.asyncio
+async def test_semantic_evaluator_name_consistency():
+    """Test that SemanticEvaluator score name matches evaluator name."""
+    from arbiter.evaluators.semantic import SemanticResponse
+    from tests.conftest import MockAgentResult
 
-    # Mock result
-    mock_result = MagicMock()
-    mock_result.data = mock_response
+    # Mock response using actual Pydantic model
+    mock_response = SemanticResponse(
+        score=0.9,
+        confidence=0.85,
+        explanation="Test explanation",
+        key_differences=[],
+        key_similarities=["similarity1"]
+    )
+
+    # Mock result using MockAgentResult from conftest
+    mock_result = MockAgentResult(mock_response)
 
     # Mock agent
     mock_agent = MagicMock()
     mock_agent.run = AsyncMock(return_value=mock_result)
 
-    # Mock client
-    mock_client = MagicMock()
-    mock_client.create_agent = MagicMock(return_value=mock_agent)
+    # Mock client with model attribute set to string
+    mock_llm_client = MagicMock()
+    mock_llm_client.model = "gpt-4o-mini"
+    mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
 
-    return mock_client
-
-
-@pytest.mark.asyncio
-async def test_semantic_evaluator_name_consistency(mock_llm_client):
-    """Test that SemanticEvaluator score name matches evaluator name."""
     evaluator = SemanticEvaluator(mock_llm_client)
 
     # Get evaluator name
@@ -71,8 +67,32 @@ async def test_semantic_evaluator_name_consistency(mock_llm_client):
 
 
 @pytest.mark.asyncio
-async def test_custom_criteria_evaluator_name_consistency(mock_llm_client):
+async def test_custom_criteria_evaluator_name_consistency():
     """Test that CustomCriteriaEvaluator score name matches evaluator name."""
+    from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
+    from tests.conftest import MockAgentResult
+
+    # Mock response using actual Pydantic model
+    mock_response = CustomCriteriaResponse(
+        score=0.9,
+        confidence=0.85,
+        explanation="Test explanation",
+        criteria_met=["criteria1"],
+        criteria_not_met=[]
+    )
+
+    # Mock result using MockAgentResult from conftest
+    mock_result = MockAgentResult(mock_response)
+
+    # Mock agent
+    mock_agent = MagicMock()
+    mock_agent.run = AsyncMock(return_value=mock_result)
+
+    # Mock client with model attribute set to string
+    mock_llm_client = MagicMock()
+    mock_llm_client.model = "gpt-4o-mini"
+    mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
+
     evaluator = CustomCriteriaEvaluator(mock_llm_client)
 
     # Get evaluator name
@@ -123,8 +143,32 @@ def test_registry_lookup_returns_correct_class():
 
 
 @pytest.mark.asyncio
-async def test_evaluator_name_immutability(mock_llm_client):
+async def test_evaluator_name_immutability():
     """Test that evaluator name property is consistent across calls."""
+    from arbiter.evaluators.semantic import SemanticResponse
+    from tests.conftest import MockAgentResult
+
+    # Mock response using actual Pydantic model
+    mock_response = SemanticResponse(
+        score=0.9,
+        confidence=0.85,
+        explanation="Test explanation",
+        key_differences=[],
+        key_similarities=["similarity1"]
+    )
+
+    # Mock result using MockAgentResult from conftest
+    mock_result = MockAgentResult(mock_response)
+
+    # Mock agent
+    mock_agent = MagicMock()
+    mock_agent.run = AsyncMock(return_value=mock_result)
+
+    # Mock client with model attribute set to string
+    mock_llm_client = MagicMock()
+    mock_llm_client.model = "gpt-4o-mini"
+    mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
+
     evaluator = SemanticEvaluator(mock_llm_client)
 
     # Get name multiple times
@@ -137,10 +181,47 @@ async def test_evaluator_name_immutability(mock_llm_client):
 
 
 @pytest.mark.asyncio
-async def test_score_name_matches_in_multi_evaluator_run(mock_llm_client):
+async def test_score_name_matches_in_multi_evaluator_run():
     """Test name consistency when running multiple evaluators."""
-    semantic_eval = SemanticEvaluator(mock_llm_client)
-    criteria_eval = CustomCriteriaEvaluator(mock_llm_client)
+    from arbiter.evaluators.semantic import SemanticResponse
+    from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
+    from tests.conftest import MockAgentResult
+
+    # Mock semantic response
+    semantic_response = SemanticResponse(
+        score=0.9,
+        confidence=0.85,
+        explanation="Test explanation",
+        key_differences=[],
+        key_similarities=["similarity1"]
+    )
+    semantic_result = MockAgentResult(semantic_response)
+    semantic_agent = MagicMock()
+    semantic_agent.run = AsyncMock(return_value=semantic_result)
+
+    # Mock custom criteria response
+    criteria_response = CustomCriteriaResponse(
+        score=0.85,
+        confidence=0.8,
+        explanation="Criteria explanation",
+        criteria_met=["quality"],
+        criteria_not_met=[]
+    )
+    criteria_result = MockAgentResult(criteria_response)
+    criteria_agent = MagicMock()
+    criteria_agent.run = AsyncMock(return_value=criteria_result)
+
+    # Create separate mock clients for each evaluator
+    semantic_client = MagicMock()
+    semantic_client.model = "gpt-4o-mini"
+    semantic_client.create_agent = MagicMock(return_value=semantic_agent)
+
+    criteria_client = MagicMock()
+    criteria_client.model = "gpt-4o-mini"
+    criteria_client.create_agent = MagicMock(return_value=criteria_agent)
+
+    semantic_eval = SemanticEvaluator(semantic_client)
+    criteria_eval = CustomCriteriaEvaluator(criteria_client)
 
     # Run evaluations
     semantic_score = await semantic_eval.evaluate(

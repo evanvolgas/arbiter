@@ -19,14 +19,14 @@ class TestScore:
     def test_score_creation(self):
         """Test creating a Score with all fields."""
         score = Score(
-            name="semantic_similarity",
+            name="semantic",
             value=0.85,
             confidence=0.9,
             explanation="High similarity",
             metadata={"key": "value"},
         )
 
-        assert score.name == "semantic_similarity"
+        assert score.name == "semantic"
         assert score.value == 0.85
         assert score.confidence == 0.9
         assert score.explanation == "High similarity"
@@ -161,7 +161,7 @@ class TestMetric:
     def test_metric_creation(self):
         """Test creating a Metric with all fields."""
         metric = Metric(
-            name="semantic_similarity",
+            name="semantic",
             evaluator="SemanticEvaluator",
             model="gpt-4o",
             processing_time=1.5,
@@ -169,7 +169,7 @@ class TestMetric:
             metadata={"key": "value"},
         )
 
-        assert metric.name == "semantic_similarity"
+        assert metric.name == "semantic"
         assert metric.evaluator == "SemanticEvaluator"
         assert metric.model == "gpt-4o"
         assert metric.processing_time == 1.5

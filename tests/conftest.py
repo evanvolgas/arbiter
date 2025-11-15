@@ -24,7 +24,19 @@ class MockAgentResult:
         Args:
             output: The response object to return (e.g., SemanticResponse)
         """
-        self.output = output
+        # Wrap output to add model_dump_json method if it doesn't exist
+        if hasattr(output, "model_dump_json"):
+            self.output = output
+        else:
+            # Create a wrapper that adds model_dump_json
+            wrapper = MagicMock()
+            for attr in dir(output):
+                if not attr.startswith("_"):
+                    setattr(wrapper, attr, getattr(output, attr))
+            wrapper.model_dump_json = MagicMock(
+                return_value='{"score": 0.9, "explanation": "test"}'
+            )
+            self.output = wrapper
 
     def usage(self):
         """Mock usage information for token tracking.
