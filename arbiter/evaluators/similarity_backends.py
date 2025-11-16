@@ -277,9 +277,10 @@ class FAISSSimilarityBackend:
         similarity = dot_product / norm_product
 
         # Ensure score is in valid range [0, 1]
-        # Cosine similarity is in [-1, 1], but semantic similarity is [0, 1]
-        # For text, negative similarity is rare, but we normalize to be safe
-        score = float(max(0.0, min(1.0, (similarity + 1.0) / 2.0)))
+        # Cosine similarity for text embeddings is typically [0, 1] (negative rare)
+        # Use raw cosine as score: 0=different, 1=identical
+        # Clamp to [0,1] to handle any edge cases
+        score = float(max(0.0, min(1.0, similarity)))
 
         return SimilarityResult(
             score=score,
