@@ -1,87 +1,59 @@
 # Arbiter Design Specification
 
 **Version:** 1.0
-**Date:** November 12, 2025
-**Status:** Phase 2.5 In Progress (80% Complete)
+**Status:** Phase 3 In Progress
+**Purpose:** Technical vision and architecture
 
 ---
 
-## Executive Summary
+## Vision
 
-**Arbiter** is a production-grade LLM evaluation framework providing simple APIs, complete observability, and provider-agnostic infrastructure for AI teams at scale.
+**Arbiter is production-grade LLM evaluation infrastructure for AI engineers.**
 
-**Core Value Proposition:** Evaluate LLM outputs with 3 lines of code while maintaining full visibility into cost, quality, and decision-making processes.
+Simple enough for rapid adoption, powerful enough for scale, transparent enough for confidence.
 
-**Target Market:** AI engineers, MLOps teams, and product teams deploying LLMs in production who need reliable evaluation without complexity.
+### Core Values
 
----
-
-## 1. Vision & Mission
-
-### Vision
-Be the pragmatic choice for production LLM evaluation - simple enough for quick adoption, powerful enough for scale, transparent enough for confidence.
-
-### Mission
-Provide production-grade evaluation infrastructure that:
-1. Makes evaluation accessible (simple API)
-2. Provides complete visibility (observability)
-3. Works at any scale (streaming, pooling, middleware)
-4. Supports any LLM provider (provider-agnostic)
-5. Enables extensibility (plugins, middleware, custom evaluators)
-
-### Strategic Position
-
-**"Simple, production-grade LLM evaluation with complete observability"**
-
-Not an experiment tracking tool, not a prompt engineering playground - infrastructure-grade evaluation for production systems.
+1. **Simplicity** - 3-line API for common cases
+2. **Observability** - Automatic interaction tracking
+3. **Production-Ready** - Pooling, retry, middleware built-in
+4. **Provider-Agnostic** - No vendor lock-in
+5. **Extensibility** - Plugin system for customization
 
 ---
 
-## 2. Problem Statement
+## Problem Statement
 
-### The Challenge
+### The Evaluation Challenge
 
-LLM evaluation is critical for production systems, but existing tools fall short:
+LLM evaluation is critical for production AI systems, but existing tools have gaps:
 
-#### Problem 1: Complexity
-- **LangChain evaluators** require deep framework knowledge
-- **Steep learning curves** delay adoption
-- **Complex configuration** makes simple tasks hard
+**Complexity:** LangChain evaluators require deep framework knowledge with steep learning curves.
 
-#### Problem 2: Poor Observability
-- **Black-box evaluation** - unclear why scores are what they are
-- **No cost visibility** - token usage and costs hidden
-- **Missing audit trails** - can't trace decisions
+**Poor Observability:** Black-box evaluations hide cost, token usage, and decision rationale.
 
-#### Problem 3: Vendor Lock-In
-- **OpenAI Evals** only works with OpenAI
-- **Provider-specific tools** create switching costs
-- **Future migration risk** as providers evolve
+**Vendor Lock-In:** OpenAI Evals only works with OpenAI; provider-specific tools create switching costs.
 
-#### Problem 4: Experimental Focus
-- **Lack production features** (retry, pooling, rate limiting)
-- **Missing streaming/batch** for scale
-- **No reliability guarantees** for critical systems
+**Experimental Focus:** Most tools lack production features like retry, pooling, and rate limiting.
 
 ### Market Gap
 
-Teams want:
+Teams need:
 - Simple API (like OpenAI Evals)
 - Production features (like TruLens)
 - Provider-agnostic (unlike OpenAI Evals)
-- Focused on evaluation (unlike LangChain)
+- Evaluation-focused (unlike LangChain)
 - Open source (unlike Braintrust)
 
 **Arbiter fills this gap.**
 
 ---
 
-## 3. Target Users
+## Target Users
 
-### Primary: AI Engineers
+### AI Engineers
 **Need:** Evaluate LLM outputs quickly and reliably
-**Pain:** Complex tools slow down iteration
-**Value:** "Evaluate with 3 lines of code, full cost visibility"
+**Value:** 3-line API with complete cost visibility
 
 **Use Cases:**
 - RAG system quality assessment
@@ -89,33 +61,31 @@ Teams want:
 - Model comparison
 - Output validation
 
-### Secondary: MLOps/Platform Teams
+### MLOps/Platform Teams
 **Need:** Production-ready evaluation infrastructure
-**Pain:** Experimental tools lack scalability
-**Value:** "Production infrastructure with streaming, pooling, middleware"
+**Value:** Built-in pooling, retry, middleware, streaming
 
 **Use Cases:**
-- Build internal AI platforms
-- Integrate evaluation into pipelines
-- Monitor production quality
+- Internal AI platform development
+- Pipeline integration
+- Production quality monitoring
 - Cost optimization
 
-### Tertiary: Technical Leadership
-**Need:** Confident decision-making on LLM quality
-**Pain:** Lack of transparency in evaluation
-**Value:** "Make confident decisions with comprehensive audit trails"
+### Researchers & Practitioners
+**Need:** Flexible evaluation framework for experimentation
+**Value:** Extensible plugin system and custom evaluators
 
 **Use Cases:**
-- Vendor selection
-- Quality benchmarking
-- Compliance requirements
-- Budget planning
+- Novel evaluator development
+- Benchmark creation
+- Academic research
+- Tool comparison studies
 
 ---
 
-## 4. Key Features
+## Key Features
 
-### 4.1 Simple API ⭐⭐⭐⭐⭐
+### 1. Simple API
 
 **Minimal Example:**
 ```python
@@ -132,17 +102,28 @@ print(f"Score: {result.overall_score:.2f}")
 print(f"Passed: {result.passed}")
 ```
 
-**Characteristics:**
-- 3-line usage for common cases
-- Automatic client management
-- Sensible defaults
-- Progressive complexity (simple → advanced)
-
-### 4.2 Complete Observability ⭐⭐⭐⭐⭐
-
-**Every LLM call tracked automatically:**
+**Progressive Complexity:**
 ```python
-# Access all interactions
+# Advanced usage - explicit control
+client = await LLMManager.get_client(
+    provider="anthropic",
+    model="claude-3-5-sonnet"
+)
+
+evaluator = SemanticEvaluator(
+    client,
+    middleware_pipeline=[LoggingMiddleware(), CachingMiddleware()]
+)
+
+score = await evaluator.evaluate(output, reference)
+```
+
+### 2. Complete Observability
+
+**Automatic LLM Interaction Tracking:**
+
+```python
+# Every LLM call tracked automatically
 for interaction in result.interactions:
     print(f"Purpose: {interaction.purpose}")
     print(f"Model: {interaction.model}")
@@ -152,88 +133,96 @@ for interaction in result.interactions:
 ```
 
 **Capabilities:**
-- Automatic LLM interaction tracking
 - Token usage and cost calculation
-- Performance metrics
+- Performance metrics per call
 - Complete audit trails
 - Confidence scoring with explanations
 
 **Differentiator:** No other framework provides automatic interaction tracking at the evaluator level.
 
-### 4.3 Provider-Agnostic Design ⭐⭐⭐⭐⭐
+### 3. Provider-Agnostic Design
 
-**Supports multiple providers:**
+**Supported Providers:**
 - OpenAI (GPT-4o, GPT-4, GPT-3.5-turbo)
-- Anthropic (Claude 3.5 Sonnet, Claude 3 Opus)
+- Anthropic (Claude 3.5 Sonnet, Claude 3)
 - Google (Gemini 1.5 Pro/Flash)
 - Groq (Llama 3.1, Mixtral)
 - Mistral AI
 - Cohere
 
-**Easy switching:**
+**Easy Switching:**
 ```python
-# Use any provider
+# OpenAI
+client = await LLMManager.get_client(
+    provider="openai",
+    model="gpt-4o-mini"
+)
+
+# Anthropic
 client = await LLMManager.get_client(
     provider="anthropic",
     model="claude-3-5-sonnet"
 )
 ```
 
-### 4.4 Production Features ⭐⭐⭐⭐⭐
+### 4. Production Features
 
-**Built-in production optimizations:**
+**Built-in Reliability:**
 
-1. **Connection Pooling**
-   - Reduces latency
-   - Manages resources efficiently
-   - Health checks and auto-cleanup
+**Connection Pooling:**
+- Reduces latency through connection reuse
+- Automatic health checks
+- Resource management
 
-2. **Automatic Retry**
-   - Exponential backoff
-   - Configurable strategies (quick, standard, persistent)
-   - Selective retry (only transient errors)
+**Automatic Retry:**
+- Exponential backoff for transient failures
+- Configurable strategies (quick, standard, persistent)
+- Selective retry (only for retryable errors)
 
-3. **Middleware System**
-   - Logging
-   - Metrics collection
-   - Caching (LRU eviction)
-   - Rate limiting
+**Middleware System:**
+- Logging - Request/response tracking
+- Metrics - Performance monitoring
+- Caching - LRU with configurable TTL
+- Rate Limiting - Token bucket algorithm
 
-4. **Performance Monitoring**
-   - Per-operation metrics
-   - Token tracking
-   - Cost analysis
-   - Error tracking
+**Performance Monitoring:**
+- Per-operation metrics
+- Token tracking
+- Cost analysis
+- Error tracking
 
-### 4.5 Extensible Architecture ⭐⭐⭐⭐
+### 5. Extensible Architecture
 
-**Plugin System:**
-- Custom evaluators (implement 4 methods)
-- Custom middleware (implement 1 method)
-- Custom storage backends (implement protocol)
-- Custom providers (extend enum)
+**Custom Evaluators:**
 
-**Template Method Pattern:**
+Follow the template method pattern by implementing 4 methods:
+
 ```python
 class MyEvaluator(BasePydanticEvaluator):
     def _get_system_prompt(self) -> str:
-        return "Your evaluation instructions..."
+        return "You are an expert evaluator..."
 
     def _get_user_prompt(self, output, reference, criteria) -> str:
         return f"Evaluate: {output}"
 
-    def _get_response_type(self):
+    def _get_response_type(self) -> Type[BaseModel]:
         return MyResponse
 
-    async def _compute_score(self, response) -> Score:
+    async def _compute_score(self, response: BaseModel) -> Score:
         return Score(name=self.name, value=response.score)
 ```
 
+**Plugin System:**
+- Custom middleware
+- Verification plugins (for FactualityEvaluator)
+- Storage backends
+- Custom providers
+
 ---
 
-## 5. Architecture
+## Architecture
 
-### 5.1 Layered Design
+### Layered Design
 
 ```
 ┌─────────────────────────────────────┐
@@ -249,17 +238,18 @@ class MyEvaluator(BasePydanticEvaluator):
                   │
 ┌─────────────────▼───────────────────┐
 │   Evaluators (via LLM Clients)      │  Business logic
-│  ├─ SemanticEvaluator              │
-│  ├─ FactualityEvaluator (planned)   │
+│  ├─ SemanticEvaluator               │
+│  ├─ CustomCriteriaEvaluator         │
+│  ├─ FactualityEvaluator             │
 │  └─ Custom Evaluators               │
 └─────────────────┬───────────────────┘
                   │
 ┌─────────────────▼───────────────────┐
 │   LLM Client + Connection Pool      │  Provider abstraction
 │  (OpenAI, Anthropic, Google, etc.)  │
-├─ PydanticAI Integration            │
-├─ Automatic Retry Logic             │
-└─ Token Tracking                    │
+├─ PydanticAI Integration             │
+├─ Automatic Retry Logic              │
+└─ Token Tracking                     │
 └─────────────────┬───────────────────┘
                   │
 ┌─────────────────▼───────────────────┐
@@ -268,345 +258,258 @@ class MyEvaluator(BasePydanticEvaluator):
 └─────────────────────────────────────┘
 ```
 
-### 5.2 Core Principles
+### Design Principles
 
-#### SOLID Principles
-- **Single Responsibility:** Each class has one reason to change
-- **Open/Closed:** Extensible via evaluator interface
-- **Liskov Substitution:** Evaluators are substitutable
-- **Interface Segregation:** Small, focused protocols
-- **Dependency Inversion:** Depends on abstractions (BaseEvaluator, StorageBackend)
+**SOLID:**
+- Single Responsibility - Each class has one reason to change
+- Open/Closed - Extensible via evaluator interface
+- Liskov Substitution - Evaluators are substitutable
+- Interface Segregation - Small, focused protocols
+- Dependency Inversion - Depends on abstractions
 
-#### Design Patterns
-- **Template Method:** BasePydanticEvaluator forces consistent structure
-- **Chain of Responsibility:** Middleware pipeline
-- **Object Pool:** LLMClientPool manages connections
-- **Strategy:** Multiple evaluators implement common interface
-- **Singleton:** LLMManager static methods
+**Design Patterns:**
+- Template Method - `BasePydanticEvaluator` enforces structure
+- Chain of Responsibility - Middleware pipeline
+- Object Pool - `LLMClientPool` manages connections
+- Strategy - Multiple evaluators, single interface
+- Registry - Evaluator discovery and validation
 
-#### Type Safety
-- **Strict mypy:** All functions typed, no `Any` without reason
-- **Pydantic models:** Runtime validation throughout
-- **PydanticAI:** Structured LLM outputs
-- **Protocol-based:** Duck typing with type safety
+**Type Safety:**
+- Strict mypy enforcement
+- Pydantic models throughout
+- PydanticAI structured outputs
+- Protocol-based duck typing
 
-### 5.3 Data Models
+---
 
-#### Core Models (Pydantic)
+## Data Models
 
-**Score** - Individual evaluation metric:
+### Score
+Individual evaluation metric:
 ```python
-- name: str              # "semantic_similarity"
-- value: float (0-1)    # Normalized score
-- confidence: float     # Evaluator confidence
-- explanation: str      # Human-readable reasoning
-- metadata: Dict        # Additional context
+class Score(BaseModel):
+    name: str              # "semantic_similarity"
+    value: float           # 0.0 to 1.0
+    confidence: float      # Evaluator confidence
+    explanation: str       # Human-readable reasoning
+    metadata: Dict         # Additional context
 ```
 
-**LLMInteraction** - Complete LLM call record:
+### LLMInteraction
+Complete LLM call record:
 ```python
-- prompt: str           # Sent to LLM
-- response: str         # LLM's response
-- model: str            # Model used
-- tokens_used: int      # Token count
-- latency: float        # Response time
-- timestamp: datetime   # When called
-- purpose: str          # Evaluation purpose
-- metadata: Dict        # Evaluator info
+class LLMInteraction(BaseModel):
+    prompt: str            # Sent to LLM
+    response: str          # LLM's response
+    model: str             # Model used
+    tokens_used: int       # Token count
+    latency: float         # Response time (seconds)
+    timestamp: datetime    # When called
+    purpose: str           # Evaluation purpose
+    metadata: Dict         # Evaluator info
 ```
 
-**EvaluationResult** - Complete evaluation outcome:
+### EvaluationResult
+Complete evaluation outcome:
 ```python
-# Inputs
-- output: str
-- reference: Optional[str]
-- criteria: Optional[str]
+class EvaluationResult(BaseModel):
+    # Inputs
+    output: str
+    reference: Optional[str]
+    criteria: Optional[str]
 
-# Results
-- scores: List[Score]
-- overall_score: float (0-1)
-- passed: bool (threshold comparison)
+    # Results
+    scores: List[Score]
+    overall_score: float   # 0.0 to 1.0
+    passed: bool           # Threshold comparison
 
-# Metadata
-- metrics: List[Metric]
-- evaluator_names: List[str]
-- total_tokens: int
-- processing_time: float
-- interactions: List[LLMInteraction]  # COMPLETE AUDIT TRAIL
+    # Metadata
+    metrics: List[Metric]
+    evaluator_names: List[str]
+    total_tokens: int
+    processing_time: float
+    interactions: List[LLMInteraction]  # Complete audit trail
 ```
 
 ---
 
-## 6. Differentiation
+## Current Evaluators
 
-### vs. LangChain Evaluators
-**Their Strength:** Large ecosystem, many evaluators
-**Their Weakness:** Complex API, requires LangChain framework
-**Arbiter Advantage:** Simpler API, better observability, framework-agnostic
+### SemanticEvaluator
+**Purpose:** Similarity scoring between output and reference
 
-### vs. TruLens
-**Their Strength:** Excellent observability, production-ready
-**Their Weakness:** Opinionated about RAG, heavier framework
-**Arbiter Advantage:** More general-purpose, lighter weight, simpler API
+**Backends:**
+- **LLM backend (default):** Rich explanations, slower (~2s), costs tokens
+- **FAISS backend (optional):** Fast (~50ms), free, deterministic (requires `pip install arbiter[scale]`)
 
-### vs. DeepEval
-**Their Strength:** pytest integration, many built-in metrics
-**Their Weakness:** Testing-focused, no streaming
-**Arbiter Advantage:** Production-focused, streaming support (planned)
+**Modes:**
+- With reference - Compare semantic similarity
+- With criteria - Evaluate against requirements
+- Standalone - Assess output quality (LLM backend only)
 
-### vs. Ragas
-**Their Strength:** Best-in-class RAG evaluation metrics
-**Their Weakness:** RAG-only focus
-**Arbiter Advantage:** General-purpose, broader applicability
+### CustomCriteriaEvaluator
+**Purpose:** Domain-specific evaluation
 
-### vs. OpenAI Evals
-**Their Strength:** Simple, OpenAI-maintained
-**Their Weakness:** OpenAI-only, limited features
-**Arbiter Advantage:** Provider-agnostic, production features
+**Capabilities:**
+- Single criterion assessment
+- Multi-criteria evaluation
+- Flexible prompt templates
+- Metadata-rich results (criteria met/not met)
 
-### vs. Braintrust
-**Their Strength:** Full platform with UI, dataset management
-**Their Weakness:** Commercial, opinionated workflows
-**Arbiter Advantage:** Open source, infrastructure-focused, flexible
+### PairwiseComparisonEvaluator
+**Purpose:** A/B testing and model comparison
 
-### Competitive Matrix
+**Capabilities:**
+- Side-by-side comparison
+- Winner determination with confidence
+- Aspect-level analysis
+- Comprehensive comparison metadata
 
-| Feature | Arbiter | LangChain | TruLens | DeepEval | Ragas | OpenAI |
-|---------|---------|-----------|---------|----------|-------|--------|
-| **API Simplicity** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **Observability** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ |
-| **Provider-Agnostic** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐ |
-| **Production** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐ |
-| **Type Safety** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
+### FactualityEvaluator (Phase 3)
+**Purpose:** Hallucination detection
 
-**Key Differentiators:**
-1. Automatic LLM interaction tracking (unique)
-2. Simple API + production features (rare combination)
-3. Provider-agnostic from ground up
-4. Open source infrastructure focus
+**Capabilities:**
+- Claim extraction
+- Fact verification
+- Source attribution (with plugins)
+- Claim-level accuracy
+
+See **ROADMAP.md** for upcoming evaluators.
 
 ---
 
-## 7. Success Metrics
+## Competitive Differentiation
 
-### Technical Metrics
-- ⭐ **8+ evaluators available** (competitive with market)
-- ⭐ **>80% test coverage** (quality assurance)
-- ⭐ **<200ms p95 latency** (single evaluator, production performance)
-- ⭐ **>0.85 agreement with human judgment** (evaluator quality)
+### Key Features
 
-### Adoption Metrics
-- ⭐ **100+ GitHub stars** (Month 3)
-- ⭐ **10+ production users** (Month 6)
-- ⭐ **5+ community evaluators** (Month 9)
-- ⭐ **Integration with 2+ major frameworks** (Month 6 - LangChain, LlamaIndex)
+1. **Automatic Interaction Tracking** - Tracks all LLM calls with cost, latency, and token usage
+2. **Simple + Production** - Easy 3-line API with production features (pooling, retry, middleware)
+3. **Provider-Agnostic** - Works with OpenAI, Anthropic, Google, Groq, Mistral, Cohere
+4. **Open Source Infrastructure** - MIT license, community-driven development
 
-### Quality Metrics
-- ⭐ **Clear documentation** for all evaluators
-- ⭐ **Performance benchmarks** published
-- ⭐ **Calibration data** available (evaluator reliability)
-- ⭐ **Active community** engagement
+### Comparison with Alternatives
 
-### Business Metrics
-- **Evaluation Cost Reduction:** 30-50% via caching and cheaper models
-- **Time to First Evaluation:** <10 minutes from install
-- **User Satisfaction:** >4.5/5 in surveys
-- **Retention:** >70% monthly active users return
+| Capability | Arbiter | LangChain | TruLens | OpenAI Evals |
+|------------|---------|-----------|---------|--------------|
+| API Simplicity | 3-line API | Requires framework integration | Moderate API | Simple config files |
+| Observability | Automatic interaction tracking | Manual instrumentation | Comprehensive dashboard | Limited |
+| Provider-Agnostic | 6 providers supported | Multiple providers | Multiple providers | OpenAI only |
+| Production Features | Pooling, retry, middleware | Limited | Comprehensive | Minimal |
 
 ---
 
-## 8. Roadmap Overview
-
-### Phase 1: Foundation ✅ COMPLETE
-**Goal:** Project setup and core infrastructure
-**Duration:** 2 weeks
-**Status:** Done
-
-### Phase 2: Core Evaluation Engine ✅ COMPLETE
-**Goal:** Working evaluation with SemanticEvaluator
-**Duration:** 1 week
-**Status:** Done + critical fixes applied
-
-### Phase 2.5: Fill Critical Gaps 🚧 CURRENT
-**Goal:** CustomCriteria, PairwiseComparison, docs
-**Duration:** 2-3 weeks
-**Status:** Starting now
-
-**Tasks:**
-1. CustomCriteriaEvaluator (2-3 days) 🔴 CRITICAL
-2. PairwiseComparisonEvaluator (2-3 days) 🔴 CRITICAL
-3. Multi-evaluator error handling (1 day)
-4. Documentation + 10 examples (5-7 days)
-
-### Phase 3: Semantic Comparison ⏳ NEXT
-**Goal:** Milvus integration for vector similarity
-**Duration:** 2 weeks
-**Status:** Planned
-
-### Phase 4: Batch Evaluation ⏳ PLANNED
-**Goal:** Batch evaluation API for production scale
-**Duration:** 1 week (reduced from 2 weeks)
-**Status:** Planned
-**Note:** Storage backends deferred to Phase 2.0 or community
-
-### Phase 5: Core Evaluators ⏳ PLANNED
-**Goal:** 5-7 production evaluators (focused on high-value)
-**Duration:** 4-5 weeks (reduced from 6 weeks)
-**Status:** Planned
-**Evaluators:** Factuality, Relevance, Groundedness, Consistency, Toxicity (if time permits)
-**Note:** Focus on quality over quantity. Registry enables community contributions.
-
-### Phase 6: Polish & Release ⏳ PLANNED
-**Goal:** CI/CD, PyPI package, documentation site
-**Duration:** 2 weeks
-**Status:** Planned
-**Note:** Moved up from Phase 7-9 to enable earlier adoption
-
-### ⏸️ DEFERRED Phases
-
-**Phase 6 (Original): Quality Assurance** - Deferred to Phase 2.0 or community
-**Phase 7: Streaming Support** - Deferred indefinitely (niche use case)
-**Storage Backends** - Deferred to Phase 2.0 (memory sufficient for MVP)
-
-**Total Timeline:** 4-5 months to v1.0 (revised from 7 months)
-
----
-
-## 9. Technical Decisions
-
-### 9.1 PydanticAI as Foundation
-**Decision:** Use PydanticAI instead of raw LLM APIs
-**Rationale:** Structured outputs, type safety, provider abstraction
-**Trade-off:** Dependency on relatively new library
-**Mitigation:** Abstract PydanticAI behind internal interfaces
-
-### 9.2 Template Method for Evaluators
-**Decision:** Force evaluators to implement 4 methods
-**Rationale:** Consistency, automatic tracking, reduced boilerplate
-**Trade-off:** Less flexibility for unusual evaluators
-**Mitigation:** Allow bypass for advanced users
-
-### 9.3 Automatic Interaction Tracking
-**Decision:** Track every LLM call in base evaluator
-**Rationale:** Complete observability without manual instrumentation
-**Trade-off:** Slight performance overhead
-**Mitigation:** Negligible overhead, huge value
-
-### 9.4 Provider-Agnostic from Day 1
-**Decision:** Support multiple providers from start
-**Rationale:** Future-proofs user investments
-**Trade-off:** More complex than OpenAI-only
-**Mitigation:** LLMClient abstraction handles complexity
-
-### 9.5 LLM-as-Judge Pattern
-**Decision:** Use LLMs for evaluation (not just metrics)
-**Rationale:** More nuanced, semantic understanding
-**Trade-off:** Cost and latency
-**Mitigation:** Caching, cheaper models, batch operations
-
----
-
-## 10. Constraints & Non-Goals
-
-### Constraints
-1. **Provider-Agnostic:** Must work with any LLM provider
-2. **Type Safety:** Strict mypy, Pydantic throughout
-3. **Production-Grade:** Retry, pooling, monitoring required
-4. **Simple API:** 3-line usage for common cases
-5. **Open Source:** MIT license, community-driven
-
-### Non-Goals
-1. **Not a UI:** Focus on infrastructure, not dashboards
-2. **Not experiment tracking:** Leave to W&B, MLflow
-3. **Not prompt engineering:** Focus on evaluation
-4. **Not training:** Evaluation only, not model training
-5. **Not data labeling:** Evaluation, not annotation
-
-### What We Won't Build
-- Web UI for result exploration (use Jupyter, custom dashboards)
-- Experiment tracking platform (integrate with existing tools)
-- Prompt optimization engine (focus on evaluation)
-- Dataset management (users bring their own data)
-
----
-
-## 11. Dependencies & Tech Stack
+## Technology Stack
 
 ### Core Dependencies
-- **Python:** 3.10+ (modern features)
-- **Pydantic:** 2.12+ (validation)
-- **PydanticAI:** 1.14+ (structured LLM outputs)
-- **Pymilvus:** 2.6+ (vector database)
-- **HTTPX:** 0.28+ (async HTTP)
-- **OpenAI SDK:** 2.0+ (LLM provider)
+- Python 3.10+ (modern type hints)
+- Pydantic 2.12+ (validation)
+- PydanticAI 1.14+ (structured LLM outputs)
+- HTTPX 0.28+ (async HTTP)
 
-### Optional Dependencies
-- **Provider SDKs:** Anthropic, Google, Mistral, Cohere
-- **ByteWax:** 0.20+ (streaming)
-- **Redis:** 5.0+ (storage backend)
+### Provider SDKs
+- OpenAI 2.0+
+- Anthropic 0.72+
+- Google (Gemini) 0.8.5+
+- Groq, Mistral, Cohere (latest)
+
+### Optional
+- FAISS (`pip install arbiter[scale]`) - ✅ Implemented for SemanticEvaluator, planned for fact verification caching
+- Redis 5.0+ (storage backend - deferred to v2.0)
 
 ### Development Tools
-- **pytest:** Testing framework
-- **black:** Code formatting
-- **ruff:** Linting
-- **mypy:** Type checking (strict mode)
+- pytest 9.0+ (testing)
+- black 25.0+ (formatting)
+- ruff 0.14+ (linting)
+- mypy 1.18+ (strict type checking)
 
 ---
 
-## 12. Risk Management
+## Design Constraints
 
-### Technical Risks
-1. **PydanticAI Breaking Changes**
-   - Risk: Relatively new library
-   - Mitigation: Abstract behind interfaces
+### Must Have
 
-2. **LLM-as-Judge Reliability**
-   - Risk: Inconsistent, expensive
-   - Mitigation: Calibration tools, hybrid approaches
+1. **Provider-Agnostic** - Must work with any LLM provider
+2. **Type Safety** - Strict mypy, Pydantic throughout
+3. **Production-Grade** - Retry, pooling, monitoring required
+4. **Simple API** - 3-line usage for common cases
+5. **Open Source** - MIT license, community-driven
 
-3. **Cost at Scale**
-   - Risk: Expensive with GPT-4
-   - Mitigation: Caching, cheaper models, batch ops
+### Will Not Do
 
-### Market Risks
-1. **Competition from Established Players**
-   - Risk: LangChain has network effects
-   - Mitigation: Focus on production, integrations
-
-2. **Provider Native Solutions**
-   - Risk: OpenAI/Anthropic might build in
-   - Mitigation: Provider-agnostic, workflow focus
-
-### Adoption Risks
-1. **Evaluator Coverage Gap** 🔴 HIGHEST
-   - Risk: Only semantic evaluator currently
-   - Mitigation: Accelerate Phase 5, CustomCriteria first
-
-2. **Documentation Gap**
-   - Risk: Users can't onboard
-   - Mitigation: Invest in docs early
+1. **UI Dashboards** - Infrastructure-focused, not UI-focused
+2. **Experiment Tracking** - Integrate with W&B, MLflow instead
+3. **Prompt Engineering Tools** - Orthogonal concern
+4. **LLM Training** - Evaluation only
+5. **Data Labeling** - Not an annotation tool
 
 ---
 
-## 13. Appendix
+## Performance Targets
 
-### Related Documents
-- **PROJECT_PLAN.md** - Detailed multi-milestone roadmap
-- **PROJECT_TODO.md** - Current milestone tracker
-- **AGENTS.md** - How to work with this repository
-- **PHASE2_REVIEW.md** - Comprehensive Phase 2 assessment
-- **EVALUATOR_RECOMMENDATIONS.md** - Evaluator priorities
-
-### References
-- [PydanticAI Documentation](https://ai.pydantic.dev/)
-- [Milvus Documentation](https://milvus.io/docs)
-- [LangChain Evaluators](https://python.langchain.com/docs/guides/evaluation/)
-- [TruLens](https://www.trulens.org/)
-- [OpenAI Evals](https://github.com/openai/evals)
-
-### Version History
-- **v1.0** (2025-11-12) - Initial design specification
+| Metric | Target | Current Status |
+|--------|--------|----------------|
+| Framework Overhead | <50ms (p95) | ✅ <50ms |
+| Test Coverage | >80% | ✅ 95% |
+| Factuality with External Verification | Planned | 🚧 Phase 5 |
+| Type Safety | 100% (strict mypy) | ✅ 100% |
 
 ---
 
-**End of Design Specification**
+## Integration Points
+
+### Loom Integration
+
+Arbiter serves as the evaluation engine for Loom AI pipelines:
+
+```yaml
+# Loom pipeline configuration
+evaluate:
+  evaluators:
+    - name: factuality_check
+      type: factuality
+      threshold: 0.85
+    - name: relevance_check
+      type: relevance
+      threshold: 0.80
+  quality_gate: all_pass
+```
+
+### LangChain Integration (Planned)
+
+Arbiter evaluators can be used in LangChain workflows:
+
+```python
+from langchain.evaluation import load_evaluator
+from arbiter import SemanticEvaluator
+
+# Use Arbiter evaluator in LangChain
+evaluator = load_evaluator("arbiter", evaluator_class=SemanticEvaluator)
+```
+
+---
+
+## Related Documentation
+
+- **ROADMAP.md** - Development timeline and phases
+- **DESIGN_DECISIONS.md** - Architectural choices and rationale
+- **AGENTS.md** - Development workflow and patterns
+- **PROJECT_TODO.md** - Current milestone tasks
+- **README.md** - User-facing overview
+
+---
+
+## Summary
+
+Arbiter is **production-grade LLM evaluation infrastructure** that prioritizes:
+
+**Simplicity** → 3-line API
+**Observability** → Automatic interaction tracking
+**Production-Ready** → Pooling, retry, middleware
+**Provider-Agnostic** → Works with any LLM
+**Extensibility** → Plugin system for customization
+
+Built for AI engineers, MLOps teams, and researchers who need reliable evaluation without complexity.
+
+---
+
+**Last Updated:** 2025-11-15
