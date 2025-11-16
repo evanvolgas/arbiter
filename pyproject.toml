@@ -27,7 +27,6 @@ classifiers = [
 dependencies = [
     "pydantic>=2.12.0",
     "pydantic-ai>=1.14.0",  # Latest PydanticAI with current API
-    "pymilvus>=2.6.0",  # Latest Milvus vector database
     "httpx>=0.28.0",
     "openai>=2.0.0",  # Latest OpenAI SDK
     "python-dotenv>=1.0.1",
@@ -43,6 +42,13 @@ anthropic = ["anthropic>=0.72.0"]
 gemini = ["google-generativeai>=0.8.5"]
 mistral = ["mistralai>=1.0.0"]
 cohere = ["cohere>=5.0.0"]
+
+# Scale features - optional fast backends
+scale = [
+    "faiss-cpu>=1.7.4",  # Fast in-memory vector similarity (CPU-only, no GPU required)
+    "sentence-transformers>=2.2.0",  # Local embeddings (free, offline, deterministic)
+    "pymilvus>=2.6.0",  # Optional Milvus for v2.0+ (enterprise scale)
+]
 
 # Streaming support
 streaming = ["bytewax>=0.20.0"]
@@ -84,7 +90,7 @@ dev = [
 ]
 
 # All features
-all = ["arbiter[anthropic,gemini,mistral,cohere,streaming,redis,dev]"]
+all = ["arbiter[anthropic,gemini,mistral,cohere,scale,streaming,redis,dev]"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -164,5 +170,5 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["pymilvus", "pymilvus.*", "logfire", "bytewax", "bytewax.*"]
+module = ["pymilvus", "pymilvus.*", "logfire", "bytewax", "bytewax.*", "faiss", "sentence_transformers", "sentence_transformers.*"]
 ignore_missing_imports = true
