@@ -14,7 +14,7 @@
 | **API Reference** | Complete API documentation | [API_REFERENCE.md](API_REFERENCE.md) |
 | **Architecture** | Design decisions and patterns | [DESIGN_SPEC.md](DESIGN_SPEC.md) |
 | **Development** | Contributing, testing, workflows | [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md) |
-| **Project Planning** | Roadmap and milestones | [PROJECT_PLAN.md](PROJECT_PLAN.md), [PROJECT_TODO.md](PROJECT_TODO.md) |
+| **Project Planning** | Roadmap and milestones | [ROADMAP.md](ROADMAP.md), [PROJECT_TODO.md](PROJECT_TODO.md) |
 | **Examples** | Usage examples and patterns | [examples/](examples/) |
 | **Analysis** | Code improvements and reviews | [claudedocs/](claudedocs/) |
 
@@ -180,10 +180,11 @@ comparison = await compare(output_a, output_b, middleware=pipeline)
 
 | File | Purpose | Status |
 |------|---------|--------|
-| [PROJECT_PLAN.md](PROJECT_PLAN.md) | Multi-milestone roadmap | Active (Phase 2.5 - 80% complete) |
+| [ROADMAP.md](ROADMAP.md) | Multi-milestone roadmap | Active (Phase 3 starting) |
 | [PROJECT_TODO.md](PROJECT_TODO.md) | Current milestone tasks | Active (Phase 2.5 tasks) |
 | [PHASE2_REVIEW.md](PHASE2_REVIEW.md) | Phase 2 retrospective | Complete |
 | [EVALUATOR_RECOMMENDATIONS.md](EVALUATOR_RECOMMENDATIONS.md) | Evaluator priorities | Reference |
+| [docs/TOOLS_PLUGIN_ARCHITECTURE.md](docs/TOOLS_PLUGIN_ARCHITECTURE.md) | Tools & plugins for FactualityEvaluator | Phase 5 Design |
 
 ### AI-Generated Analysis (claudedocs/)
 
@@ -602,7 +603,7 @@ make lint  # if Makefile available
 - Streaming evaluation
 - Additional evaluators (factuality, toxicity, etc.)
 
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for complete roadmap.
+See [ROADMAP.md](ROADMAP.md) for complete roadmap.
 
 ---
 

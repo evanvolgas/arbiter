@@ -14,29 +14,22 @@
 
 ---
 
-## Why This Matters
+## Why Arbiter?
 
-**The Problem:** When AI generates text, how do you know if it's good? Teams building with ChatGPT, Claude, or other AI models face a critical challenge: evaluating quality at scale. Manual review doesn't scale beyond a few examples, and writing custom evaluation code for every use case is time-consuming and error-prone.
+**The Problem:** Teams building with LLMs need to evaluate output quality at scale. Manual review becomes impractical beyond a few examples, and writing custom evaluation code for every use case is time-consuming.
 
-**What Arbiter Aims to Provide:**
-- **For Product Teams**: Track which AI responses are working and which aren't—automatically
-- **For Engineers**: Evaluate 1,000 AI outputs in the time it takes to review 10 manually
-- **For Businesses**: Visibility into AI costs and usage, with detailed audit trails
+**What Arbiter Provides:**
+- **Simple API**: Evaluate LLM outputs with 3 lines of code
+- **Automatic Tracking**: Complete visibility into LLM interactions, costs, and performance
+- **Provider-Agnostic**: Works with OpenAI, Anthropic, Google, Groq, Mistral, and Cohere
+- **Production-Ready**: Built-in retry logic, connection pooling, and middleware support
 
-**Real-World Example:**
-Imagine you're building a customer support chatbot. Without Arbiter, you'd need to:
-1. Manually review hundreds of responses
-2. Guess at what "good" means
-3. Hope nothing breaks in production
-4. Have no idea what your AI actually costs
-
-With Arbiter, you can:
-1. Automatically evaluate every response against your criteria
-2. Get objective quality scores in seconds
-3. See every AI call with full cost and performance data
-4. Catch problems before customers do
-
-**Bottom Line:** Arbiter makes AI quality measurable, trackable, and improvable—without requiring a PhD in machine learning.
+**Use Case Example:**
+A customer support chatbot needs quality evaluation. Arbiter provides:
+1. Automated evaluation against defined criteria
+2. Detailed scoring with explanations
+3. Complete audit trail of all LLM interactions
+4. Cost and performance metrics per evaluation
 
 ---
 
@@ -127,15 +120,15 @@ print(f"Confidence: {score.confidence:.2f}")
 ## Key Features
 
 - **✅ Simple API**: Evaluate LLM outputs with 3 lines of code
-- **✅ Automatic Observability**: Automatic LLM interaction tracking (unique differentiator)
+- **✅ Automatic Observability**: Automatic LLM interaction tracking with cost and performance metrics
 - **✅ Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
 - **✅ Middleware Pipeline**: Logging, metrics, caching, rate limiting
-- **✅ Semantic Evaluation**: Similarity scoring with confidence levels
+- **✅ Semantic Evaluation**: Similarity scoring with LLM or FAISS backends (significantly faster, zero cost for embeddings)
 - **✅ Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
 - **✅ Comparison Mode**: A/B testing with `compare()` API for pairwise evaluation
 - **✅ Multiple Evaluators**: Combine semantic, custom_criteria, and pairwise evaluators
 - **✅ Registry System**: Register custom evaluators for extensibility
-- **📋 Additional Evaluators**: Factuality, consistency, relevance (planned Phase 5+)
+- **📋 Additional Evaluators**: Factuality, consistency, relevance (planned Phase 3+)
 
 ## Core Concepts
 
@@ -147,13 +140,25 @@ Evaluators assess LLM outputs against criteria:
 ```python
 from arbiter import evaluate
 
-# Compare output to reference text
+# LLM backend (default) - Rich explanations
 result = await evaluate(
     output="Paris is the capital of France",
     reference="The capital of France is Paris",
     evaluators=["semantic"],
     model="gpt-4o-mini"
 )
+
+# FAISS backend (optional) - significantly faster, zero cost for embeddings
+# Requires: pip install arbiter[scale]
+from arbiter import SemanticEvaluator, LLMManager
+
+client = await LLMManager.get_client(model="gpt-4o-mini")
+evaluator = SemanticEvaluator(client, backend="faiss")
+score = await evaluator.evaluate(
+    output="Paris is the capital of France",
+    reference="The capital of France is Paris"
+)
+print(f"Similarity: {score.value:.2f}")  # Fast, free, deterministic
 ```
 
 **Custom Criteria** (No reference needed!)
@@ -261,8 +266,8 @@ See [DESIGN_SPEC.md](DESIGN_SPEC.md) for complete architecture details.
 ### Core Documentation
 - **[DESIGN_SPEC.md](DESIGN_SPEC.md)** - Vision, architecture, and competitive analysis
 - **[AGENTS.md](AGENTS.md)** - How to contribute and work with this repository
-- **[PROJECT_PLAN.md](PROJECT_PLAN.md)** - Complete roadmap (revised scope: 4-5 months)
-- **[PROJECT_TODO.md](PROJECT_TODO.md)** - Current milestone tracker (Phase 2.5 - 80% complete)
+- **[ROADMAP.md](ROADMAP.md)** - Complete roadmap (4-5 months to v1.0)
+- **[PROJECT_TODO.md](PROJECT_TODO.md)** - Current milestone tracker (Phase 3 - Core Evaluators)
 
 ### Examples (12 total)
 - [Basic Evaluation](examples/basic_evaluation.py) - Simple semantic evaluation
@@ -306,32 +311,40 @@ pytest
 - [x] Main evaluate() API
 - [x] Complete observability (interaction tracking)
 
-**Phase 2.5 - Fill Critical Gaps** 🚧 (Current - 80% Complete)
+**Phase 2.5 - Fill Critical Gaps** ✅ (Completed)
 - [x] CustomCriteriaEvaluator (domain-specific evaluation)
 - [x] PairwiseComparisonEvaluator (A/B testing)
+- [x] FAISS backend for SemanticEvaluator (faster than LLM-based, zero cost for embeddings)
 - [x] Multi-evaluator error handling with partial results
 - [x] 12 comprehensive examples (basic, custom criteria, pairwise, batch, advanced config, RAG evaluation, etc.)
 - [x] Complete API documentation (16 API reference pages + MkDocs setup)
 - [x] Evaluator registry system for extensibility
 
-**Phase 3 - Semantic Comparison** 📋 (Next - 2 weeks)
-- [ ] Milvus integration for vector storage
-- [ ] Embedding generation pipeline
-- [ ] Vector similarity scoring
+**Phase 3 - Core Evaluators** 🚧 (Current - 3 weeks)
+- [ ] FactualityEvaluator (hallucination detection)
+- [ ] GroundednessEvaluator (RAG validation)
+- [ ] RelevanceEvaluator (query alignment)
 
 **Phase 4 - Batch Evaluation** 📋 (1 week)
 - [ ] Batch evaluation API (`batch_evaluate()` function)
 - [ ] Parallel processing with progress tracking
-- ⏸️ **Storage backends deferred to Phase 2.0** (users can persist results manually)
+- ⏸️ **Storage backends deferred to v2.0** (users can persist results manually)
 
-**Phase 5 - Core Evaluators** 📋 (4-5 weeks, 5-7 evaluators)
-- [ ] Factuality evaluator (HIGHEST PRIORITY)
-- [ ] Relevance evaluator
-- [ ] Groundedness evaluator (RAG validation)
-- [ ] Consistency evaluator
-- [ ] Toxicity evaluator (if time permits)
+**Phase 5 - Enhanced Factuality** 📋 (6 weeks)
+- [ ] Plugin infrastructure for external verification
+- [ ] TavilyPlugin (web search for fact-checking)
+- [ ] FAISS-based fact verification caching (reuses existing FAISS backend from Phase 2.5)
+- [ ] Atomic claim decomposition
+- [ ] Additional plugins (Wikidata, Wolfram, PubMed)
+- ⏸️ **Milvus deferred to v2.0+** (FAISS covers scale needs for v1.0)
 
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the complete 9-phase roadmap.
+**Phase 6 - Polish & v1.0 Release** 📋 (2 weeks)
+- [ ] PyPI package publication
+- [ ] CI/CD pipeline setup
+- [ ] Documentation site deployment
+- [ ] v1.0 release announcement
+
+See [ROADMAP.md](ROADMAP.md) for the complete development roadmap.
 
 ## License
 

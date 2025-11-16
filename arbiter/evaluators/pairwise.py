@@ -23,10 +23,13 @@ is better, making it ideal for A/B testing, model comparison, and output selecti
     >>> print(f"Confidence: {comparison.confidence:.2f}")
 """
 
+import logging
 import time
 from typing import Dict, List, Literal, Optional, Type, cast
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 from ..core.models import ComparisonResult, LLMInteraction
 from .base import BasePydanticEvaluator
@@ -249,15 +252,47 @@ Provide clear reasoning that helps understand your decision."""
             result = await agent.run(user_prompt)
             pairwise_response = cast(PairwiseResponse, result.output)
 
-            # Extract token usage
-            tokens_used = 0
+            # Extract detailed token usage
+            input_tokens = 0
+            output_tokens = 0
+            cached_tokens = 0
+            tokens_used = 0  # Backward compatibility
+
             try:
                 if hasattr(result, "usage"):
                     usage = result.usage()
-                    if usage and hasattr(usage, "total_tokens"):
+                    if usage:
+                        # PydanticAI usage object structure
+                        input_tokens = getattr(usage, "request_tokens", 0)
+                        output_tokens = getattr(usage, "response_tokens", 0)
                         tokens_used = getattr(usage, "total_tokens", 0)
+
+                        # Some providers support cached tokens
+                        if hasattr(usage, "cached_tokens"):
+                            cached_tokens = getattr(usage, "cached_tokens", 0)
             except Exception:
-                tokens_used = 0
+                pass
+
+            # Calculate cost using cost calculator
+            cost = None
+            try:
+                from arbiter.core.cost_calculator import get_cost_calculator
+
+                calc = get_cost_calculator()
+                await calc.ensure_loaded()
+
+                cost = calc.calculate_cost(
+                    model=self.llm_client.model,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cached_tokens=cached_tokens,
+                )
+            except Exception as e:
+                # If cost calculation fails, continue without cost
+                logger.warning(
+                    f"Cost calculation failed for model {self.llm_client.model}: {e}"
+                )
+                pass
 
             # Build aspect_scores dictionary from aspect_comparisons
             aspect_scores: Dict[str, Dict[str, float]] = {}
@@ -277,7 +312,11 @@ Provide clear reasoning that helps understand your decision."""
                     else str(pairwise_response)
                 ),
                 model=self.llm_client.model,
-                tokens_used=tokens_used,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cached_tokens=cached_tokens,
+                tokens_used=tokens_used or (input_tokens + output_tokens),  # Backward compat
+                cost=cost,
                 latency=latency,
                 purpose=f"{self.name}_comparison",
                 metadata={

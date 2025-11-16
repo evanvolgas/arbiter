@@ -300,11 +300,23 @@ class LLMClient:
                 **{k: v for k, v in kwargs.items() if k != "temperature"},
             )
 
+            # Extract detailed token usage
+            usage_dict = {}
+            if response.usage:
+                usage_dict = {
+                    "prompt_tokens": response.usage.prompt_tokens,
+                    "completion_tokens": response.usage.completion_tokens,
+                    "total_tokens": response.usage.total_tokens,
+                }
+                # Some providers (e.g., Anthropic) support cached tokens
+                if hasattr(response.usage, "prompt_tokens_details"):
+                    details = response.usage.prompt_tokens_details
+                    if hasattr(details, "cached_tokens"):
+                        usage_dict["cached_tokens"] = details.cached_tokens
+
             return LLMResponse(
                 content=response.choices[0].message.content or "",
-                usage={
-                    "total_tokens": response.usage.total_tokens if response.usage else 0
-                },
+                usage=usage_dict,
                 model=provider_model,
             )
         except Exception as e:

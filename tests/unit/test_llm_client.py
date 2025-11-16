@@ -173,7 +173,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Test response"
-        mock_response.usage = Mock()
+        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage.prompt_tokens = 50
+        mock_response.usage.completion_tokens = 50
         mock_response.usage.total_tokens = 100
 
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
@@ -190,6 +192,8 @@ class TestLLMClient:
                 assert isinstance(result, LLMResponse)
                 assert result.content == "Test response"
                 assert result.usage["total_tokens"] == 100
+                assert result.usage["prompt_tokens"] == 50
+                assert result.usage["completion_tokens"] == 50
                 assert result.model == "gpt-4"
 
     @pytest.mark.asyncio
@@ -252,7 +256,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Success"
-        mock_response.usage = Mock()
+        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage.prompt_tokens = 25
+        mock_response.usage.completion_tokens = 25
         mock_response.usage.total_tokens = 50
 
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:
@@ -275,7 +281,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "No breaker"
-        mock_response.usage = Mock()
+        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage.prompt_tokens = 40
+        mock_response.usage.completion_tokens = 35
         mock_response.usage.total_tokens = 75
 
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai_class:

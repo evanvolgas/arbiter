@@ -12,6 +12,7 @@ This module contains the fundamental components:
 """
 
 from .circuit_breaker import CircuitBreaker, CircuitState
+from .cost_calculator import CostCalculator, ModelPricing, get_cost_calculator
 from .exceptions import (
     ArbiterError,
     CircuitBreakerOpenError,
@@ -62,6 +63,10 @@ __all__ = [
     # Circuit Breaker
     "CircuitBreaker",
     "CircuitState",
+    # Cost Calculator
+    "CostCalculator",
+    "ModelPricing",
+    "get_cost_calculator",
     # Models
     "EvaluationResult",
     "ComparisonResult",

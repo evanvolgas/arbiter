@@ -1,9 +1,10 @@
-"""Semantic similarity evaluator using LLM-based comparison.
+"""Semantic similarity evaluator with pluggable backends.
 
 This evaluator assesses how semantically similar two texts are,
-even if they use different wording. It's particularly useful for
-evaluating whether an LLM output conveys the same meaning as a
-reference text.
+even if they use different wording. Supports two backends:
+
+- **LLM backend (default)**: Rich explanations, slower, costs API tokens
+- **FAISS backend (optional)**: Fast, free, deterministic (requires: pip install arbiter[scale])
 
 ## When to Use:
 
@@ -12,24 +13,50 @@ reference text.
 - Comparing different phrasings of the same concept
 - Translation or summarization quality
 
+## Backends:
+
+**LLM (default)**:
+- Performance: 1-3s, ~$0.001/comparison
+- Provides detailed explanations
+- Best for: Understanding why scores differ
+
+**FAISS (optional)**:
+- Performance: 50ms, $0/comparison
+- No explanations (just scores)
+- Best for: Batch processing, development/testing
+
 ## Example:
 
+    >>> # LLM backend (default)
     >>> evaluator = SemanticEvaluator(llm_client)
     >>> score = await evaluator.evaluate(
     ...     output="Paris is the capital of France",
     ...     reference="The capital of France is Paris"
     ... )
-    >>> print(f"Semantic similarity: {score.value:.2f}")
-    Semantic similarity: 0.98
+    >>> print(f"Similarity: {score.value:.2f}")
+    >>> print(f"Why: {score.explanation}")
+    >>>
+    >>> # FAISS backend (requires: pip install arbiter[scale])
+    >>> evaluator = SemanticEvaluator(llm_client, backend="faiss")
+    >>> score = await evaluator.evaluate(
+    ...     output="Paris is the capital",
+    ...     reference="The capital is Paris"
+    ... )
+    >>> print(f"Similarity: {score.value:.2f}")  # Fast, free, no explanation
 """
 
-from typing import Optional, Type
+from typing import Optional, Type, Literal
 
 from pydantic import BaseModel, Field
 
 from ..core.llm_client import LLMClient
 from ..core.models import Score
 from .base import BasePydanticEvaluator
+from .similarity_backends import (
+    LLMSimilarityBackend,
+    FAISSSimilarityBackend,
+    SimilarityBackend,
+)
 
 __all__ = ["SemanticEvaluator", "SemanticResponse"]
 
@@ -63,38 +90,130 @@ class SemanticResponse(BaseModel):
 
 
 class SemanticEvaluator(BasePydanticEvaluator):
-    """Evaluates semantic similarity between output and reference.
+    """Evaluates semantic similarity with pluggable backends.
 
-    Uses LLM reasoning to assess how similar two texts are in meaning,
-    regardless of exact wording. This goes beyond simple string matching
-    to understand conceptual similarity.
+    Supports two computation backends:
+    - **LLM (default)**: Rich explanations, slower (~2s), costs tokens (~$0.001)
+    - **FAISS (optional)**: Fast (~50ms), free, deterministic, no explanations
 
     The evaluator:
     - Identifies core meaning in both texts
     - Compares semantic content, not just words
-    - Provides detailed explanation of similarities/differences
+    - Provides detailed explanation (LLM) or score only (FAISS)
     - Returns confidence in the assessment
 
     Example:
-        >>> # Create evaluator
+        >>> # LLM backend (default) - Rich explanations
         >>> from arbiter import LLMManager
         >>> client = await LLMManager.get_client(model="gpt-4o")
         >>> evaluator = SemanticEvaluator(client)
         >>>
-        >>> # Evaluate semantic similarity
         >>> score = await evaluator.evaluate(
         ...     output="The quick brown fox jumps over the lazy dog",
         ...     reference="A fast brown fox leaps above a sleepy canine"
         ... )
-        >>>
         >>> print(f"Similarity: {score.value:.2f}")
         >>> print(f"Explanation: {score.explanation}")
         >>>
-        >>> # Check LLM interactions
-        >>> interactions = evaluator.get_interactions()
-        >>> print(f"Made {len(interactions)} LLM calls")
-        >>> print(f"Total latency: {sum(i.latency for i in interactions):.2f}s")
+        >>> # FAISS backend (optional) - Fast and free
+        >>> evaluator_fast = SemanticEvaluator(client, backend="faiss")
+        >>> score_fast = await evaluator_fast.evaluate(
+        ...     output="Paris is the capital",
+        ...     reference="The capital is Paris"
+        ... )
+        >>> print(f"Similarity: {score_fast.value:.2f}")  # No explanation
     """
+
+    def __init__(
+        self,
+        llm_client: LLMClient,
+        backend: Literal["llm", "faiss"] = "llm",
+    ):
+        """Initialize semantic evaluator with specified backend.
+
+        Args:
+            llm_client: LLM client for evaluation (used by LLM backend)
+            backend: Similarity computation backend
+                    - "llm": LLM reasoning (default, rich explanations)
+                    - "faiss": Vector embeddings (fast, free, requires arbiter[scale])
+
+        Raises:
+            ImportError: If backend="faiss" but sentence-transformers not installed
+            ValueError: If backend is not "llm" or "faiss"
+
+        Example:
+            >>> # Default LLM backend
+            >>> evaluator = SemanticEvaluator(llm_client)
+            >>>
+            >>> # Fast FAISS backend (requires: pip install arbiter[scale])
+            >>> evaluator_fast = SemanticEvaluator(llm_client, backend="faiss")
+        """
+        super().__init__(llm_client)
+        self.backend_type = backend
+
+        # Initialize similarity backend
+        if backend == "faiss":
+            self._similarity_backend: SimilarityBackend = FAISSSimilarityBackend()
+        elif backend == "llm":
+            self._similarity_backend = LLMSimilarityBackend(llm_client)
+        else:
+            raise ValueError(f"Invalid backend: {backend}. Must be 'llm' or 'faiss'")
+
+    async def evaluate(
+        self,
+        output: str,
+        reference: Optional[str] = None,
+        criteria: Optional[str] = None,
+    ) -> Score:
+        """Evaluate semantic similarity between output and reference.
+
+        Uses the configured backend (LLM or FAISS) for similarity computation.
+        FAISS backend only works when reference is provided.
+
+        Args:
+            output: The text to evaluate
+            reference: Optional reference text for comparison
+            criteria: Optional criteria for evaluation (LLM backend only)
+
+        Returns:
+            Score object with similarity score and metadata
+
+        Raises:
+            ValueError: If FAISS backend used without reference
+
+        Example:
+            >>> # With reference (works for both backends)
+            >>> score = await evaluator.evaluate(
+            ...     output="Paris is the capital",
+            ...     reference="The capital is Paris"
+            ... )
+            >>>
+            >>> # Without reference (LLM backend only)
+            >>> score = await evaluator.evaluate(
+            ...     output="This text is clear and coherent"
+            ... )
+        """
+        # FAISS backend: Use direct similarity computation
+        if self.backend_type == "faiss":
+            if not reference:
+                raise ValueError(
+                    "FAISS backend requires a reference text for comparison. "
+                    "Use LLM backend for reference-free evaluation."
+                )
+
+            # Compute similarity using FAISS backend
+            result = await self._similarity_backend.compute_similarity(output, reference)
+
+            return Score(
+                name=self.name,
+                value=result.score,
+                confidence=result.confidence,
+                explanation=result.explanation,
+                metadata=result.metadata,
+            )
+
+        # LLM backend: Use template method pattern (default behavior)
+        return await super().evaluate(output, reference, criteria)
 
     @property
     def name(self) -> str:

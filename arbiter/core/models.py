@@ -21,6 +21,34 @@ __all__ = [
 ]
 
 
+def _get_interaction_cost(interaction: "LLMInteraction") -> float:
+    """Calculate cost for a single LLM interaction.
+
+    Helper function to avoid code duplication across cost calculation methods.
+    Uses cached cost if available, otherwise calculates from token counts.
+
+    Args:
+        interaction: LLMInteraction with token data and optional cached cost
+
+    Returns:
+        Cost in USD for this interaction
+    """
+    # Use cached cost if available
+    if interaction.cost is not None:
+        return interaction.cost
+
+    # Calculate on-the-fly using cost calculator
+    from arbiter.core.cost_calculator import get_cost_calculator
+
+    calc = get_cost_calculator()
+    return calc.calculate_cost(
+        model=interaction.model,
+        input_tokens=interaction.input_tokens,
+        output_tokens=interaction.output_tokens,
+        cached_tokens=interaction.cached_tokens,
+    )
+
+
 class Score(BaseModel):
     """Individual evaluation score for a specific metric.
 
@@ -55,7 +83,7 @@ class LLMInteraction(BaseModel):
 
     This provides:
     - Complete audit trail of LLM usage
-    - Token and cost tracking
+    - Detailed token and cost tracking (input/output/cached)
     - Debugging capabilities
     - Transparency in how evaluations were computed
 
@@ -64,17 +92,34 @@ class LLMInteraction(BaseModel):
         ...     prompt="Evaluate the factuality of this statement...",
         ...     response="Score: 0.85. The statement is mostly accurate...",
         ...     model="gpt-4o",
-        ...     tokens_used=150,
+        ...     input_tokens=120,
+        ...     output_tokens=30,
         ...     latency=1.2,
-        ...     purpose="factuality_scoring"
+        ...     purpose="factuality_scoring",
+        ...     cost=0.000045
         ... )
     """
 
     prompt: str = Field(..., description="The prompt sent to the LLM")
     response: str = Field(..., description="The LLM's response")
     model: str = Field(..., description="Model used for this call")
-    tokens_used: int = Field(default=0, description="Tokens consumed in this call")
-    latency: float = Field(..., description="Time taken for this call (seconds)")
+
+    # Token tracking (new detailed fields)
+    input_tokens: int = Field(default=0, ge=0, description="Input tokens consumed")
+    output_tokens: int = Field(default=0, ge=0, description="Output tokens generated")
+    cached_tokens: int = Field(
+        default=0, ge=0, description="Cached input tokens (e.g., Anthropic prompt caching)"
+    )
+
+    # Backward compatibility
+    tokens_used: int = Field(default=0, ge=0, description="Total tokens (for backward compatibility)")
+
+    # Cost tracking
+    cost: Optional[float] = Field(
+        None, ge=0, description="Actual cost in USD (calculated using llm-prices data)"
+    )
+
+    latency: float = Field(..., ge=0, description="Time taken for this call (seconds)")
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="When this call was made"
     )
@@ -85,6 +130,19 @@ class LLMInteraction(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional context about this call"
     )
+
+    @property
+    def total_tokens(self) -> int:
+        """Total tokens across input and output.
+
+        Returns:
+            Sum of input_tokens and output_tokens
+
+        Example:
+            >>> interaction.total_tokens
+            150
+        """
+        return self.input_tokens + self.output_tokens
 
 
 class Metric(BaseModel):
@@ -236,21 +294,111 @@ class EvaluationResult(BaseModel):
         """
         return [i for i in self.interactions if i.purpose == purpose]
 
-    def total_llm_cost(self, cost_per_1k_tokens: float = 0.01) -> float:
-        """Estimate total LLM cost based on token usage.
+    async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
+        """Calculate total LLM cost with accurate pricing.
+
+        Uses llm-prices.com data for accurate cost calculation. Falls back
+        to conservative estimates if pricing data unavailable.
 
         Args:
-            cost_per_1k_tokens: Cost per 1000 tokens (default: $0.01)
+            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
 
         Returns:
-            Estimated cost in dollars
+            Total cost in USD
 
         Example:
-            >>> cost = result.total_llm_cost(cost_per_1k_tokens=0.03)
-            >>> print(f"Evaluation cost: ${cost:.4f}")
+            >>> result = await evaluate(output, reference)
+            >>> cost = await result.total_llm_cost()
+            >>> print(f"Evaluation cost: ${cost:.6f}")
         """
-        total_tokens = sum(i.tokens_used for i in self.interactions)
-        return (total_tokens / 1000) * cost_per_1k_tokens
+        if not use_actual_pricing:
+            # Simple fallback: average $0.02 per 1K tokens
+            total_tokens = sum(i.total_tokens for i in self.interactions)
+            return (total_tokens / 1000) * 0.02
+
+        # Use cost calculator for accurate pricing
+        from arbiter.core.cost_calculator import get_cost_calculator
+
+        calc = get_cost_calculator()
+        await calc.ensure_loaded()
+
+        total = 0.0
+        for interaction in self.interactions:
+            total += _get_interaction_cost(interaction)
+
+        return total
+
+    async def cost_breakdown(self) -> Dict[str, Any]:
+        """Get detailed cost breakdown by evaluator and model.
+
+        Returns:
+            Dictionary with cost breakdowns including:
+            - total: Total cost in USD
+            - by_evaluator: Cost grouped by evaluator purpose
+            - by_model: Cost grouped by model
+            - token_breakdown: Token usage details
+
+        Example:
+            >>> breakdown = await result.cost_breakdown()
+            >>> print(breakdown)
+            {
+                "total": 0.0105,
+                "by_evaluator": {
+                    "semantic": 0.0045,
+                    "factuality": 0.0060
+                },
+                "by_model": {
+                    "gpt-4o-mini": 0.0105
+                },
+                "token_breakdown": {
+                    "input_tokens": 2000,
+                    "output_tokens": 500,
+                    "cached_tokens": 100
+                }
+            }
+        """
+        from arbiter.core.cost_calculator import get_cost_calculator
+
+        calc = get_cost_calculator()
+        await calc.ensure_loaded()
+
+        by_evaluator: Dict[str, float] = {}
+        by_model: Dict[str, float] = {}
+        total = 0.0
+        total_input = 0
+        total_output = 0
+        total_cached = 0
+
+        for interaction in self.interactions:
+            # Calculate cost using helper
+            cost = _get_interaction_cost(interaction)
+
+            # Aggregate by purpose (evaluator)
+            purpose = interaction.purpose
+            by_evaluator[purpose] = by_evaluator.get(purpose, 0.0) + cost
+
+            # Aggregate by model
+            model = interaction.model
+            by_model[model] = by_model.get(model, 0.0) + cost
+
+            # Track tokens
+            total_input += interaction.input_tokens
+            total_output += interaction.output_tokens
+            total_cached += interaction.cached_tokens
+
+            total += cost
+
+        return {
+            "total": round(total, 6),
+            "by_evaluator": {k: round(v, 6) for k, v in by_evaluator.items()},
+            "by_model": {k: round(v, 6) for k, v in by_model.items()},
+            "token_breakdown": {
+                "input_tokens": total_input,
+                "output_tokens": total_output,
+                "cached_tokens": total_cached,
+                "total_tokens": total_input + total_output,
+            },
+        }
 
 
 class ComparisonResult(BaseModel):
@@ -341,14 +489,36 @@ class ComparisonResult(BaseModel):
             return self.aspect_scores[aspect].get(output)
         return None
 
-    def total_llm_cost(self, cost_per_1k_tokens: float = 0.01) -> float:
-        """Estimate total LLM cost based on token usage.
+    async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
+        """Calculate total LLM cost with accurate pricing.
+
+        Uses llm-prices.com data for accurate cost calculation. Falls back
+        to conservative estimates if pricing data unavailable.
 
         Args:
-            cost_per_1k_tokens: Cost per 1000 tokens (default: $0.01)
+            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
 
         Returns:
-            Estimated cost in dollars
+            Total cost in USD
+
+        Example:
+            >>> result = await compare(output_a, output_b)
+            >>> cost = await result.total_llm_cost()
+            >>> print(f"Comparison cost: ${cost:.6f}")
         """
-        total_tokens = sum(i.tokens_used for i in self.interactions)
-        return (total_tokens / 1000) * cost_per_1k_tokens
+        if not use_actual_pricing:
+            # Simple fallback: average $0.02 per 1K tokens
+            total_tokens = sum(i.total_tokens for i in self.interactions)
+            return (total_tokens / 1000) * 0.02
+
+        # Use cost calculator for accurate pricing
+        from arbiter.core.cost_calculator import get_cost_calculator
+
+        calc = get_cost_calculator()
+        await calc.ensure_loaded()
+
+        total = 0.0
+        for interaction in self.interactions:
+            total += _get_interaction_cost(interaction)
+
+        return total

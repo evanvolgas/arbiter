@@ -10,6 +10,7 @@ from arbiter.core.models import (
     LLMInteraction,
     Metric,
     Score,
+    _get_interaction_cost,
 )
 
 
@@ -153,6 +154,90 @@ class TestLLMInteraction:
         )
         assert interaction.metadata == {}
         assert isinstance(interaction.metadata, dict)
+
+
+class TestGetInteractionCostHelper:
+    """Test suite for _get_interaction_cost() helper function."""
+
+    def test_get_interaction_cost_with_cached_cost(self):
+        """Test that helper uses cached cost if available."""
+        interaction = LLMInteraction(
+            prompt="test",
+            response="test",
+            model="gpt-4o-mini",
+            input_tokens=1000,
+            output_tokens=500,
+            latency=1.0,
+            purpose="test",
+            cost=0.00045,  # Pre-calculated cost
+        )
+
+        cost = _get_interaction_cost(interaction)
+        assert cost == 0.00045
+
+    def test_get_interaction_cost_calculates_on_fly(self):
+        """Test that helper calculates cost when not cached."""
+        from unittest.mock import MagicMock, patch
+
+        interaction = LLMInteraction(
+            prompt="test",
+            response="test",
+            model="gpt-4o-mini",
+            input_tokens=1000,
+            output_tokens=500,
+            cached_tokens=100,
+            latency=1.0,
+            purpose="test",
+            cost=None,  # No cached cost
+        )
+
+        # Mock the cost calculator (patch where it's imported)
+        with patch("arbiter.core.cost_calculator.get_cost_calculator") as mock_get_calc:
+            mock_calc = MagicMock()
+            mock_calc.calculate_cost.return_value = 0.00055
+            mock_get_calc.return_value = mock_calc
+
+            cost = _get_interaction_cost(interaction)
+
+            # Verify calculator was called with correct parameters
+            mock_calc.calculate_cost.assert_called_once_with(
+                model="gpt-4o-mini",
+                input_tokens=1000,
+                output_tokens=500,
+                cached_tokens=100,
+            )
+            assert cost == 0.00055
+
+    def test_get_interaction_cost_with_zero_tokens(self):
+        """Test helper with zero tokens."""
+        from unittest.mock import MagicMock, patch
+
+        interaction = LLMInteraction(
+            prompt="test",
+            response="test",
+            model="gpt-4o-mini",
+            input_tokens=0,
+            output_tokens=0,
+            cached_tokens=0,
+            latency=1.0,
+            purpose="test",
+            cost=None,
+        )
+
+        with patch("arbiter.core.cost_calculator.get_cost_calculator") as mock_get_calc:
+            mock_calc = MagicMock()
+            mock_calc.calculate_cost.return_value = 0.0
+            mock_get_calc.return_value = mock_calc
+
+            cost = _get_interaction_cost(interaction)
+
+            mock_calc.calculate_cost.assert_called_once_with(
+                model="gpt-4o-mini",
+                input_tokens=0,
+                output_tokens=0,
+                cached_tokens=0,
+            )
+            assert cost == 0.0
 
 
 class TestMetric:
@@ -389,12 +474,15 @@ class TestEvaluationResult:
         assert len(comparison_interactions) == 1
         assert interaction3 in comparison_interactions
 
-    def test_total_llm_cost(self):
+    @pytest.mark.asyncio
+    async def test_total_llm_cost(self):
         """Test calculating total LLM cost."""
         interaction1 = LLMInteraction(
             prompt="test1",
             response="test1",
             model="gpt-4o",
+            input_tokens=50,
+            output_tokens=50,
             tokens_used=100,
             latency=1.0,
             purpose="test",
@@ -403,6 +491,8 @@ class TestEvaluationResult:
             prompt="test2",
             response="test2",
             model="gpt-4o",
+            input_tokens=100,
+            output_tokens=100,
             tokens_used=200,
             latency=1.0,
             purpose="test",
@@ -416,17 +506,14 @@ class TestEvaluationResult:
             processing_time=2.0,
         )
 
-        # Default cost: $0.01 per 1k tokens
-        # Total tokens: 300, so cost = 300/1000 * 0.01 = 0.003
-        cost = result.total_llm_cost()
-        assert cost == pytest.approx(0.003, rel=1e-3)
+        # Use simple fallback calculation (not actual pricing)
+        # Default: $0.02 per 1k tokens
+        # Total tokens: 300, so cost = 300/1000 * 0.02 = 0.006
+        cost = await result.total_llm_cost(use_actual_pricing=False)
+        assert cost == pytest.approx(0.006, rel=1e-3)
 
-        # Custom cost: $0.03 per 1k tokens
-        # Total tokens: 300, so cost = 300/1000 * 0.03 = 0.009
-        cost = result.total_llm_cost(cost_per_1k_tokens=0.03)
-        assert cost == pytest.approx(0.009, rel=1e-3)
-
-    def test_total_llm_cost_zero_tokens(self):
+    @pytest.mark.asyncio
+    async def test_total_llm_cost_zero_tokens(self):
         """Test cost calculation with zero tokens."""
         result = EvaluationResult(
             output="test",
@@ -435,7 +522,7 @@ class TestEvaluationResult:
             processing_time=1.0,
         )
 
-        cost = result.total_llm_cost()
+        cost = await result.total_llm_cost(use_actual_pricing=False)
         assert cost == 0.0
 
     def test_evaluation_result_timestamp_default(self):
@@ -634,12 +721,15 @@ class TestComparisonResult:
         assert result.get_aspect_score("accuracy", "output_a") == 0.9
         assert result.get_aspect_score("accuracy", "output_b") is None
 
-    def test_total_llm_cost(self):
+    @pytest.mark.asyncio
+    async def test_total_llm_cost(self):
         """Test calculating total LLM cost."""
         interaction1 = LLMInteraction(
             prompt="test1",
             response="test1",
             model="gpt-4o",
+            input_tokens=75,
+            output_tokens=75,
             tokens_used=150,
             latency=1.0,
             purpose="comparison",
@@ -648,6 +738,8 @@ class TestComparisonResult:
             prompt="test2",
             response="test2",
             model="gpt-4o",
+            input_tokens=125,
+            output_tokens=125,
             tokens_used=250,
             latency=1.0,
             purpose="comparison",
@@ -663,17 +755,14 @@ class TestComparisonResult:
             processing_time=2.0,
         )
 
-        # Default cost: $0.01 per 1k tokens
-        # Total tokens: 400, so cost = 400/1000 * 0.01 = 0.004
-        cost = result.total_llm_cost()
-        assert cost == pytest.approx(0.004, rel=1e-3)
+        # Use simple fallback calculation (not actual pricing)
+        # Default: $0.02 per 1k tokens
+        # Total tokens: 400, so cost = 400/1000 * 0.02 = 0.008
+        cost = await result.total_llm_cost(use_actual_pricing=False)
+        assert cost == pytest.approx(0.008, rel=1e-3)
 
-        # Custom cost: $0.05 per 1k tokens
-        # Total tokens: 400, so cost = 400/1000 * 0.05 = 0.02
-        cost = result.total_llm_cost(cost_per_1k_tokens=0.05)
-        assert cost == pytest.approx(0.02, rel=1e-3)
-
-    def test_total_llm_cost_zero_tokens(self):
+    @pytest.mark.asyncio
+    async def test_total_llm_cost_zero_tokens(self):
         """Test cost calculation with zero tokens."""
         result = ComparisonResult(
             output_a="Output A",
@@ -684,7 +773,7 @@ class TestComparisonResult:
             processing_time=1.0,
         )
 
-        cost = result.total_llm_cost()
+        cost = await result.total_llm_cost(use_actual_pricing=False)
         assert cost == 0.0
 
     def test_comparison_result_timestamp_default(self):
