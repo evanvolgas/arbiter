@@ -319,9 +319,9 @@ class MetricsMiddleware(Middleware):
             total = self.metrics["total_requests"]
             old_avg = self.metrics["average_score"]
             # Handle both EvaluationResult (has overall_score) and ComparisonResult (has confidence)
-            score_value = getattr(result, "overall_score", None) or getattr(result, "confidence", 0.0)
+            score_value = getattr(result, "overall_score", None) or getattr(result, "confidence", None) or 0.0
             self.metrics["average_score"] = (
-                old_avg * (total - 1) + score_value
+                old_avg * (total - 1) + float(score_value)
             ) / total
 
             # Track pass/fail (ComparisonResult doesn't have 'passed' attribute)
@@ -587,7 +587,7 @@ class MiddlewarePipeline:
             EvaluationResult from the pipeline
         """
         if context is None:
-            context = {}  # type: ignore
+            context = {}
 
         # Build the chain
         async def chain(
@@ -606,7 +606,7 @@ class MiddlewarePipeline:
                 current_output,
                 current_reference,
                 lambda o, r: chain(index + 1, o, r),
-                context,  # type: ignore
+                context,
             )
 
         return await chain(0, output, reference)
@@ -660,11 +660,11 @@ class MiddlewarePipeline:
             ... )
         """
         if context is None:
-            context = {}  # type: ignore
+            context = {}
 
         # Mark this as a pairwise comparison for middleware
-        context["is_pairwise_comparison"] = True  # type: ignore
-        context["pairwise_data"] = {  # type: ignore
+        context["is_pairwise_comparison"] = True
+        context["pairwise_data"] = {
             "output_a": output_a,
             "output_b": output_b,
             "criteria": criteria,
@@ -695,7 +695,7 @@ class MiddlewarePipeline:
                 current_output,
                 current_reference,
                 lambda o, r: chain(index + 1, o, r),
-                context,  # type: ignore
+                context,
             )
 
             # For pairwise, middleware returns EvaluationResult but we need ComparisonResult

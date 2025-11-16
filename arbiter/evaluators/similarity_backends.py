@@ -14,9 +14,10 @@ Example:
     >>> score = await backend.compute_similarity("text1", "text2")
 """
 
-from typing import Protocol, Optional, Type
-from pydantic import BaseModel, Field
+from typing import Any, Dict, Optional, Protocol, Type
+
 import numpy as np
+from pydantic import BaseModel, Field
 
 from ..core.llm_client import LLMClient
 from ..core.models import Score
@@ -41,7 +42,9 @@ class SimilarityResult(BaseModel):
     explanation: str = Field(
         default="", description="Explanation of similarity (empty for FAISS)"
     )
-    metadata: dict = Field(default_factory=dict, description="Backend-specific metadata")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Backend-specific metadata"
+    )
 
 
 class SimilarityBackend(Protocol):

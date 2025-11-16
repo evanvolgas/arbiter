@@ -31,7 +31,7 @@ and consistent error handling.
 import logging
 import time
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, Type
 
 from pydantic import BaseModel, Field
 
@@ -61,7 +61,9 @@ class EvaluatorResponse(BaseModel):
         default=0.8, ge=0.0, le=1.0, description="Confidence in this score"
     )
     explanation: str = Field(..., description="Human-readable explanation")
-    metadata: dict = Field(default_factory=dict, description="Additional data")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict, description="Additional data"
+    )
 
 
 class BasePydanticEvaluator(BaseEvaluator):

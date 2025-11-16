@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Union
 try:
     from typing import TypedDict
 except ImportError:
-    from typing_extensions import TypedDict  # type: ignore
+    from typing_extensions import TypedDict
 
 __all__ = ["MiddlewareContext"]
 
@@ -28,6 +28,8 @@ class MiddlewareContext(TypedDict, total=False):
         start_time: Timestamp when evaluation started
         model: LLM model being used
         temperature: Temperature parameter for LLM
+        is_pairwise_comparison: Whether this is a pairwise comparison
+        pairwise_data: Data for pairwise comparisons
 
     Custom middleware can add their own keys as needed.
     """
@@ -39,3 +41,5 @@ class MiddlewareContext(TypedDict, total=False):
     start_time: float
     model: str
     temperature: float
+    is_pairwise_comparison: bool
+    pairwise_data: Dict[str, Any]

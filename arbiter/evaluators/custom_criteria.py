@@ -303,16 +303,50 @@ Example structure:
         result = await agent.run(user_prompt)
         multi_response = cast(MultiCriteriaResponse, result.output)
 
-        # Extract token usage from PydanticAI result
-        tokens_used = 0
+        # Extract detailed token usage from PydanticAI result
+        input_tokens = 0
+        output_tokens = 0
+        cached_tokens = 0
+        tokens_used = 0  # Backward compatibility
+
         try:
             if hasattr(result, "usage"):
                 usage = result.usage()  # Call as function
-                if usage and hasattr(usage, "total_tokens"):
+                if usage:
+                    # PydanticAI usage object structure
+                    input_tokens = getattr(usage, "request_tokens", 0)
+                    output_tokens = getattr(usage, "response_tokens", 0)
                     tokens_used = getattr(usage, "total_tokens", 0)
+
+                    # Some providers support cached tokens
+                    if hasattr(usage, "cached_tokens"):
+                        cached_tokens = getattr(usage, "cached_tokens", 0)
         except Exception:
             # Fallback if usage() call fails or not available
-            tokens_used = 0
+            pass
+
+        # Calculate cost using cost calculator
+        cost = None
+        try:
+            from arbiter.core.cost_calculator import get_cost_calculator
+
+            calc = get_cost_calculator()
+            await calc.ensure_loaded()
+
+            cost = calc.calculate_cost(
+                model=self.llm_client.model,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cached_tokens=cached_tokens,
+            )
+        except Exception as e:
+            # If cost calculation fails, continue without cost
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                f"Cost calculation failed for model {self.llm_client.model}: {e}"
+            )
+            pass
 
         # Record interaction for transparency
         latency = time.time() - start_time
@@ -324,7 +358,11 @@ Example structure:
                 else str(multi_response)
             ),
             model=self.llm_client.model,
-            tokens_used=tokens_used,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cached_tokens=cached_tokens,
+            tokens_used=tokens_used or (input_tokens + output_tokens),  # Backward compat
+            cost=cost,
             latency=latency,
             purpose=f"{self.name}_multi_evaluation",
             metadata={
