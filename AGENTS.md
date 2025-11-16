@@ -1,7 +1,7 @@
 # CLAUDE.md - AI Agent Guide
 
 **Purpose**: Quick reference for working on Arbiter
-**Last Updated**: 2025-11-15
+**Last Updated**: 2025-11-16
 
 ---
 
@@ -10,7 +10,6 @@
 **Arbiter**: Production-grade LLM evaluation framework (v0.1.0-alpha)
 **Stack**: Python 3.10+, PydanticAI, provider-agnostic (OpenAI/Anthropic/Google/Groq)
 **Coverage**: 95% test coverage, strict mypy, comprehensive examples
-**Related**: Used by Loom (AI pipeline orchestrator) for quality gates
 
 ### Directory Structure
 
@@ -19,21 +18,17 @@ arbiter/
 ├── arbiter/
 │   ├── api.py              # Public API (evaluate, compare)
 │   ├── core/               # Infrastructure (llm_client, middleware, monitoring, registry)
-│   ├── evaluators/         # Semantic, CustomCriteria, Pairwise, Factuality
+│   ├── evaluators/         # Semantic, CustomCriteria, Pairwise, Factuality, Groundedness, Relevance
 │   ├── storage/            # Storage backends (Phase 4)
 │   └── tools/              # Utilities
 ├── examples/               # 15+ comprehensive examples
 ├── tests/                  # Unit + integration tests
-├── DESIGN_SPEC.md          # Vision and architecture
-├── PROJECT_TODO.md         # Current milestone tasks
 └── pyproject.toml          # Dependencies and config
 ```
 
-**Key docs**: DESIGN_SPEC.md (vision) → PROJECT_TODO.md (current work) → CLAUDE.md (this file)
-
 ---
 
-## Critical Rules (Non-Negotiable)
+## Critical Rules
 
 ### 1. Template Method Pattern
 All evaluators extend `BasePydanticEvaluator` and implement 4 methods:
@@ -73,29 +68,8 @@ client = OpenAI()  # Hardcoded to OpenAI
 ### 3. Type Safety (Strict Mypy)
 All functions require type hints, no `Any` without justification.
 
-```python
-# ✅ GOOD
-async def evaluate(output: str, reference: Optional[str] = None) -> EvaluationResult:
-    ...
-
-# ❌ BAD
-async def evaluate(output, reference=None):  # Missing types
-    ...
-```
-
 ### 4. No Placeholders/TODOs
 Production-grade code only. Complete implementations or nothing.
-
-```python
-# ❌ NEVER
-def calculate_cost(tokens: int) -> float:
-    # TODO: implement
-    raise NotImplementedError()
-
-# ✅ ALWAYS
-def calculate_cost(tokens: int, cost_per_1k: float = 0.01) -> float:
-    return (tokens / 1000) * cost_per_1k
-```
 
 ### 5. Complete Features Only
 If you start, you finish:
@@ -108,28 +82,18 @@ If you start, you finish:
 ### 6. PydanticAI for Structured Outputs
 All evaluators use PydanticAI for type-safe LLM responses.
 
-```python
-class MyResponse(BaseModel):
-    score: float = Field(ge=0.0, le=1.0)
-    explanation: str
-
-# PydanticAI handles validation automatically
-```
-
 ---
 
 ## Development Workflow
 
 ### Before Starting
 1. Check `git status` and `git branch`
-2. Read PROJECT_TODO.md for current milestone
-3. Create feature branch: `git checkout -b feature/my-feature`
+2. Create feature branch: `git checkout -b feature/my-feature`
 
 ### During Development
 1. Follow template method pattern
 2. Write tests as you code (not after)
 3. Run `make test` frequently
-4. Update PROJECT_TODO.md checkboxes
 
 ### Before Committing
 ```bash
@@ -140,9 +104,8 @@ make format      # Black formatted
 ```
 
 ### After Completing
-1. Mark task complete in PROJECT_TODO.md
-2. Add example to `examples/` if user-facing
-3. Update README.md if API changed
+1. Add example to `examples/` if user-facing
+2. Update README.md if API changed
 
 ---
 
@@ -176,23 +139,6 @@ make test              # All tests with coverage
 pytest tests/unit/     # Unit tests only
 pytest -v              # Verbose output
 make test-cov          # Coverage report
-```
-
-### Add Middleware
-```python
-class MyMiddleware(Middleware):
-    async def process(self, output: str, reference: Optional[str], next_handler: Callable, context: Dict[str, Any]) -> EvaluationResult:
-        # Pre-processing
-        start = time.time()
-
-        # Call next in chain
-        result = await next_handler(output, reference)
-
-        # Post-processing
-        elapsed = time.time() - start
-        logger.info(f"Evaluation took {elapsed:.2f}s")
-
-        return result
 ```
 
 ---
@@ -231,13 +177,11 @@ async def evaluate(output: str, reference: Optional[str] = None) -> EvaluationRe
 
 ## Quick Reference
 
-### Essential Files
-- **DESIGN_SPEC.md** - Vision and architecture
-- **DESIGN_DECISIONS.md** - Architectural choices and rationale
-- **ROADMAP.md** - Development timeline and phases
-- **PROJECT_TODO.md** - Current milestone tasks
+### Key Files
 - **evaluators/semantic.py** - Reference evaluator implementation
 - **pyproject.toml** - Dependencies and config
+- **README.md** - User documentation with examples
+- **examples/** - 15+ comprehensive examples
 
 ### Key Patterns
 - **Evaluators**: Template method pattern (4 required methods)
@@ -256,6 +200,6 @@ make all           # Format + lint + type-check + test
 
 ---
 
-**Questions?** Check DESIGN_SPEC.md (vision), PROJECT_TODO.md (current work), or evaluators/semantic.py (reference implementation)
+**Questions?** Check evaluators/semantic.py (reference implementation) or README.md (user docs)
 
-**Last Updated**: 2025-11-15 | **Next Review**: 2025-12-15
+**Last Updated**: 2025-11-16

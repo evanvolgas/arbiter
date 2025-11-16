@@ -261,17 +261,9 @@ Built on proven patterns with type-safe foundations:
 - **Middleware Pipeline**: Composable logging, metrics, caching, rate limiting
 - **Provider-Agnostic Design**: Works with any LLM provider
 
-See [DESIGN_SPEC.md](DESIGN_SPEC.md) for complete architecture details.
+## Examples
 
-## Documentation
-
-### Core Documentation
-- **[DESIGN_SPEC.md](DESIGN_SPEC.md)** - Vision, architecture, and competitive analysis
-- **[AGENTS.md](AGENTS.md)** - How to contribute and work with this repository
-- **[ROADMAP.md](ROADMAP.md)** - Complete roadmap (4-5 months to v1.0)
-- **[PROJECT_TODO.md](PROJECT_TODO.md)** - Current milestone tracker (Phase 3 - Core Evaluators)
-
-### Examples (15 total)
+15 comprehensive examples demonstrating all evaluators:
 - [Basic Evaluation](examples/basic_evaluation.py) - Simple semantic evaluation
 - [Multiple Evaluators](examples/multiple_evaluators.py) - Combining evaluators
 - [Custom Criteria](examples/custom_criteria_example.py) - Domain-specific evaluation
@@ -287,13 +279,6 @@ See [DESIGN_SPEC.md](DESIGN_SPEC.md) for complete architecture details.
 - [Middleware Usage](examples/middleware_usage.py) - Logging, metrics, caching
 - [Provider Switching](examples/provider_switching.py) - Multi-provider support
 - [Evaluator Registry](examples/evaluator_registry_example.py) - Custom evaluators
-
-### API Documentation
-- **[docs/api/](docs/api/)** - Complete API reference
-- **[docs/evaluator-registry.md](docs/evaluator-registry.md)** - Custom evaluator registration guide
-- **[docs/multiple-evaluators.md](docs/multiple-evaluators.md)** - Combining multiple evaluators
-- **[docs/TOOLS_PLUGIN_ARCHITECTURE.md](docs/TOOLS_PLUGIN_ARCHITECTURE.md)** - Tools & plugins architecture (Phase 5)
-- **[MkDocs Setup](mkdocs.yml)** - Documentation site configuration
 
 ## Development
 
@@ -350,8 +335,6 @@ pytest
 - [ ] CI/CD pipeline setup
 - [ ] Documentation site deployment
 - [ ] v1.0 release announcement
-
-See [ROADMAP.md](ROADMAP.md) for the complete development roadmap.
 
 ## License
 
