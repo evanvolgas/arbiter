@@ -1,6 +1,6 @@
 """Unit tests for core data models."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -83,7 +83,7 @@ class TestLLMInteraction:
 
     def test_interaction_creation(self):
         """Test creating an LLMInteraction with all fields."""
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         interaction = LLMInteraction(
             prompt="Test prompt",
             response="Test response",

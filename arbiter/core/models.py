@@ -22,6 +22,15 @@ __all__ = [
 ]
 
 
+def _utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime.
+
+    Replacement for deprecated datetime.utcnow() which returns naive datetime.
+    Uses timezone.utc for Python 3.10+ compatibility.
+    """
+    return datetime.now(timezone.utc)
+
+
 def _get_interaction_cost(interaction: "LLMInteraction") -> float:
     """Calculate cost for a single LLM interaction.
 
@@ -128,7 +137,7 @@ class LLMInteraction(BaseModel):
 
     latency: float = Field(..., ge=0, description="Time taken for this call (seconds)")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When this call was made"
+        default_factory=_utc_now, description="When this call was made"
     )
     purpose: str = Field(
         ...,
@@ -247,7 +256,7 @@ class EvaluationResult(BaseModel):
     total_tokens: int = Field(default=0, description="Total tokens used")
     processing_time: float = Field(..., description="Total processing time in seconds")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When evaluation completed"
+        default_factory=_utc_now, description="When evaluation completed"
     )
 
     # LLM interaction tracking (like Sifaka's generations)
@@ -470,7 +479,7 @@ class ComparisonResult(BaseModel):
     total_tokens: int = Field(default=0, description="Total tokens used")
     processing_time: float = Field(..., description="Total processing time in seconds")
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When comparison completed"
+        default_factory=_utc_now, description="When comparison completed"
     )
 
     # LLM interaction tracking
