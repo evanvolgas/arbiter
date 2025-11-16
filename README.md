@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Arbiter</h1>
 
-  <p><strong>LLM evaluation framework with automatic observability</strong></p>
+  <p><strong>LLM Evaluations with automatic interaction tracking, multiple evaluators, and extensible architecture</strong></p>
 
   <p>
     <a href="https://python.org"><img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python"></a>
