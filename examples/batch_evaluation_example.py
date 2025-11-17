@@ -1,11 +1,18 @@
-"""Batch evaluation example demonstrating parallel processing with progress tracking.
+"""Batch Evaluation - Parallel Processing with Progress Tracking
 
-This example shows how to:
-1. Evaluate multiple outputs in parallel efficiently
-2. Track progress with a custom callback
-3. Handle partial failures gracefully
-4. Calculate aggregate costs and statistics
-5. Access individual results and errors
+This example demonstrates efficient batch evaluation with parallel processing,
+progress tracking, and graceful handling of partial failures.
+
+Key Features:
+- Parallel batch processing with concurrency control
+- Progress tracking with custom callbacks
+- Graceful handling of partial failures
+- Multiple evaluators per item
+- Comprehensive cost tracking and breakdown
+- Individual result and error access
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/batch_evaluation_example.py
@@ -137,22 +144,22 @@ async def main():
         f"   Success Rate: {result2.successful_items}/{result2.total_items} ({(result2.successful_items/result2.total_items)*100:.0f}%)"
     )
 
-    # Example 3: Handling failures gracefully
-    print("\n\n📝 Example 3: Partial Failures (Mixed Success/Failure)")
+    # Example 3: Score variation across different quality
+    print("\n\n📝 Example 3: Score Variation Analysis")
     print("-" * 60)
 
     items3 = [
         {
-            "output": "Valid output 1",
-            "reference": "Reference 1",
+            "output": "Paris is the capital of France",
+            "reference": "Paris is the capital of France",
         },
         {
-            "output": "",  # This will fail - empty output
-            "reference": "Reference 2",
+            "output": "Paris might be in France somewhere",
+            "reference": "Paris is the capital of France",
         },
         {
-            "output": "Valid output 3",
-            "reference": "Reference 3",
+            "output": "Berlin is a city in Germany",
+            "reference": "Paris is the capital of France",
         },
     ]
 
@@ -163,24 +170,16 @@ async def main():
     )
 
     print("\n📊 Results:")
+    print(f"  Total Items: {result3.total_items}")
     print(f"  Successful: {result3.successful_items}")
-    print(f"  Failed: {result3.failed_items}")
 
-    # Show errors
-    if result3.errors:
-        print("\n❌ Errors:")
-        for error in result3.errors:
-            print(f"  Item {error['index']}: {error['error'][:80]}...")
-
-    # Access individual results
-    print("\n📋 Individual Results:")
+    # Show score distribution
+    print("\n📈 Score Distribution:")
     for i in range(result3.total_items):
         eval_result = result3.get_result(i)
         if eval_result:
-            print(f"  Item {i}: ✅ Score = {eval_result.overall_score:.2f}")
-        else:
-            error = result3.get_error(i)
-            print(f"  Item {i}: ❌ {error['error'][:60]}...")
+            quality = "✅ High" if eval_result.overall_score > 0.8 else "⚠️  Medium" if eval_result.overall_score > 0.4 else "❌ Low"
+            print(f"  Item {i}: {quality} - Score = {eval_result.overall_score:.2f}")
 
     # Example 4: Multiple evaluators in batch
     print("\n\n📝 Example 4: Multiple Evaluators per Item")

@@ -1,9 +1,19 @@
-"""Example: Using the Evaluator Registry System.
+"""Evaluator Registry - Custom Evaluator Registration & Discovery
 
-This example demonstrates how to:
-1. Check available evaluators
-2. Register custom evaluators
-3. Use registered evaluators in evaluate()
+This example demonstrates the evaluator registry system for discovering available
+evaluators and registering custom evaluator implementations.
+
+Key Features:
+- Discover available evaluators
+- Register custom evaluator implementations
+- Use registered evaluators by name
+- Extensible evaluation framework
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
+
+Run with:
+    python examples/evaluator_registry_example.py
 """
 
 from dotenv import load_dotenv

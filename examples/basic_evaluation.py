@@ -1,10 +1,17 @@
-"""Basic evaluation example demonstrating LLM interaction tracking.
+"""Basic Evaluation - Getting Started with Arbiter
 
-This example shows how to:
-1. Evaluate semantic similarity between output and reference
-2. Access detailed LLM interaction tracking
-3. Calculate evaluation costs
-4. Inspect individual scores and confidence levels
+This example provides a comprehensive introduction to Arbiter's core evaluation
+features, demonstrating semantic similarity assessment and interaction tracking.
+
+Key Features:
+- Semantic similarity evaluation
+- Automatic LLM interaction tracking
+- Cost calculation from token usage
+- Score confidence levels and explanations
+- Both high-level API and direct evaluator usage
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/basic_evaluation.py

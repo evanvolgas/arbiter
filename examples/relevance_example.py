@@ -1,15 +1,20 @@
-"""Example: Relevance evaluation for query-output alignment assessment.
+"""Relevance Evaluation - Query-Output Alignment Assessment
 
-This example demonstrates how to use the RelevanceEvaluator to:
-1. Assess if outputs are relevant to queries
-2. Identify addressed and missing query points
-3. Detect irrelevant or off-topic content
-4. Evaluate completeness of responses
+This example demonstrates using RelevanceEvaluator to assess whether LLM outputs
+are relevant to queries, identifying addressed points and detecting off-topic content.
 
-The RelevanceEvaluator analyzes content and categorizes it as:
-- Addressed points: Query aspects that were covered
-- Missing points: Query aspects not addressed or incomplete
-- Irrelevant content: Off-topic information
+Key Features:
+- Query-output relevance assessment
+- Addressed vs missing query point identification
+- Irrelevant/off-topic content detection
+- Response completeness evaluation
+- Detailed breakdown of coverage and gaps
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
+
+Run with:
+    python examples/relevance_example.py
 """
 
 import asyncio

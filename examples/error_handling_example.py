@@ -1,7 +1,16 @@
-"""Error handling example.
+"""Error Handling - Graceful Degradation & Partial Failures
 
-This example demonstrates how Arbiter handles partial failures when
-using multiple evaluators, showing graceful degradation.
+This example demonstrates Arbiter's robust error handling with graceful
+degradation when evaluators fail, ensuring reliable evaluation pipelines.
+
+Key Features:
+- Partial failure handling (continue with successful evaluators)
+- Detailed error reporting and diagnostics
+- Graceful degradation strategies
+- Production-ready error resilience
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/error_handling_example.py

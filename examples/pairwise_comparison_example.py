@@ -1,7 +1,16 @@
-"""Pairwise comparison example.
+"""Pairwise Comparison - A/B Testing & Model Selection
 
-This example demonstrates how to compare two LLM outputs to determine
-which is better, useful for A/B testing and model comparison.
+This example demonstrates comparing two LLM outputs to determine which is better,
+essential for A/B testing, model selection, and prompt optimization.
+
+Key Features:
+- Direct A/B comparison of outputs
+- Preference scoring with confidence levels
+- Detailed reasoning for preferences
+- Production-ready model selection workflows
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/pairwise_comparison_example.py

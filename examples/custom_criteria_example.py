@@ -1,7 +1,16 @@
-"""Custom criteria evaluation example.
+"""Custom Criteria Evaluation - Domain-Specific Quality Assessment
 
-This example demonstrates how to use CustomCriteriaEvaluator for
-domain-specific quality assessment without needing reference text.
+This example demonstrates how to evaluate LLM outputs against custom criteria
+without needing reference text, enabling flexible domain-specific evaluation.
+
+Key Features:
+- Custom criteria evaluation (no reference needed)
+- Flexible quality assessment for any domain
+- Confidence scoring and detailed explanations
+- Direct evaluator usage for fine-grained control
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/custom_criteria_example.py

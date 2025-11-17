@@ -1,7 +1,17 @@
-"""Middleware usage example.
+"""Middleware - Production Cross-Cutting Concerns
 
-This example demonstrates how to use middleware for logging, metrics,
-caching, and other cross-cutting concerns in production.
+This example demonstrates using middleware for logging, metrics, caching,
+and other production-grade cross-cutting concerns.
+
+Key Features:
+- Custom middleware for logging and metrics
+- Pre/post-processing hooks
+- Request/response transformation
+- Production monitoring integration
+- Composable middleware chains
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/middleware_usage.py

@@ -1,14 +1,20 @@
-"""Example: Groundedness evaluation for RAG system validation.
+"""Groundedness Evaluation - RAG System Validation & Citation Tracking
 
-This example demonstrates how to use the GroundednessEvaluator to:
-1. Validate RAG outputs are grounded in source documents
-2. Detect hallucinations and ungrounded claims
-3. Track citation mappings from statements to sources
-4. Evaluate partial groundedness in mixed outputs
+This example demonstrates using GroundednessEvaluator to validate that RAG
+outputs are properly grounded in source documents with accurate citations.
 
-The GroundednessEvaluator extracts statements and categorizes them as:
-- Grounded: Directly supported by source documents (with citation)
-- Ungrounded: Not found in sources, contradicts sources, or hallucinated
+Key Features:
+- RAG output validation against source documents
+- Hallucination and ungrounded claim detection
+- Citation mapping (statements → source documents)
+- Partial groundedness evaluation for mixed outputs
+- Statement categorization (grounded/ungrounded with citations)
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
+
+Run with:
+    python examples/groundedness_example.py
 """
 
 import asyncio

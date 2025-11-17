@@ -134,9 +134,8 @@ class CostCalculator:
                     f"Loaded pricing data for {len(self._pricing_cache)} models"
                 )
             except Exception as e:
-                logger.warning(
-                    f"Failed to fetch pricing data from {self.PRICING_URL}: {e}. "
-                    "Using conservative fallback estimates."
+                logger.info(
+                    f"Using fallback cost estimates (pricing API unavailable: {e})"
                 )
                 self._loaded = False
 

@@ -1,9 +1,9 @@
-"""Advanced Configuration Example - Fine-Tuning Evaluation Behavior
+"""Advanced Configuration - Fine-Tuning Evaluation Behavior
 
-This example demonstrates advanced configuration options for Arbiter evaluations,
-including temperature control, retry configuration, custom clients, and more.
+This example demonstrates advanced configuration options for production-grade
+evaluations including temperature control, retry logic, and custom clients.
 
-**Key Features Shown:**
+Key Features:
 - Temperature control for evaluation consistency
 - Custom LLM client configuration
 - Retry configuration for reliability
@@ -11,11 +11,8 @@ including temperature control, retry configuration, custom clients, and more.
 - Provider-specific settings
 - Model selection strategies
 
-**Why This Matters:**
-- **Consistency**: Lower temperature = more consistent evaluations
-- **Reliability**: Retry configs handle transient failures
-- **Performance**: Connection pooling reduces overhead
-- **Cost**: Choose models based on accuracy vs cost tradeoffs
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/advanced_config.py

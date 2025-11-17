@@ -1,15 +1,20 @@
-"""Example: Factuality evaluation for hallucination detection and fact-checking.
+"""Factuality Evaluation - Hallucination Detection & Fact-Checking
 
-This example demonstrates how to use the FactualityEvaluator to:
-1. Detect hallucinations by comparing outputs to reference text
-2. Perform standalone fact-checking using general knowledge
-3. Validate RAG (Retrieval-Augmented Generation) outputs
-4. Focus on specific types of facts (dates, numbers, names, etc.)
+This example demonstrates using FactualityEvaluator for detecting hallucinations
+and verifying factual claims in LLM outputs.
 
-The FactualityEvaluator extracts factual claims and categorizes them as:
-- Factual: Verified and correct
-- Non-factual: Incorrect, misleading, or hallucinated
-- Uncertain: Cannot be verified with available information
+Key Features:
+- Hallucination detection via reference comparison
+- Standalone fact-checking using general knowledge
+- RAG output validation
+- Factual claim extraction and categorization (factual/non-factual/uncertain)
+- Focus on specific fact types (dates, numbers, names, etc.)
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
+
+Run with:
+    python examples/factuality_example.py
 """
 
 import asyncio

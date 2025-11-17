@@ -1,7 +1,16 @@
-"""Multiple evaluators example.
+"""Multiple Evaluators - Comprehensive Multi-Perspective Evaluation
 
-This example demonstrates how to combine multiple evaluators to get
-comprehensive evaluation results from different perspectives.
+This example demonstrates combining multiple evaluators to assess LLM outputs
+from different perspectives, providing comprehensive quality analysis.
+
+Key Features:
+- Multi-evaluator composition (semantic + custom criteria)
+- Aggregate scoring across different perspectives
+- Individual score access and analysis
+- Performance comparison between evaluators
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/multiple_evaluators.py

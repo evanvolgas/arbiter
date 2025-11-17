@@ -1,20 +1,21 @@
-"""FAISS semantic similarity example - Fast, free, deterministic evaluation.
+"""FAISS Semantic Similarity - Fast, Free, Deterministic Evaluation
 
-This example demonstrates the FAISS backend for SemanticEvaluator:
+This example demonstrates the FAISS backend for semantic evaluation: 20-60x faster,
+$0 cost, deterministic results, and completely offline operation.
+
+Key Features:
 - 20-60x faster than LLM backend (50ms vs 2s)
 - 100% cost reduction ($0 vs $0.001 per comparison)
-- Deterministic results (same input → same score)
+- Deterministic results (reproducible scores)
 - No API keys required (runs locally)
+- Ideal for batch processing (1000s of comparisons)
 
 Trade-offs:
-+ Fast, free, offline, deterministic
-- No explanations (just returns scores)
+- No explanations (scores only)
 - Requires: pip install arbiter[scale]
 
-Best for:
-- Batch processing (1000s of comparisons)
-- Development/testing (no API costs)
-- Simple similarity checks (just need numbers)
+Requirements:
+    pip install arbiter[scale]  # Installs FAISS and sentence-transformers
 
 Run with:
     # Install scale dependencies first

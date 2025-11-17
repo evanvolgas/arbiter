@@ -1,7 +1,17 @@
-"""Provider switching example.
+"""Provider Switching - Multi-Provider Flexibility
 
-This example demonstrates Arbiter's provider-agnostic design, showing
-how easy it is to switch between different LLM providers.
+This example demonstrates Arbiter's provider-agnostic design, enabling seamless
+switching between OpenAI, Anthropic, Google, and other LLM providers.
+
+Key Features:
+- Provider-agnostic evaluation (OpenAI, Anthropic, Google, Groq)
+- Easy provider switching without code changes
+- Consistent API across all providers
+- Cost comparison across providers
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
+    export ANTHROPIC_API_KEY=your_key_here  # Optional for comparison
 
 Run with:
     python examples/provider_switching.py

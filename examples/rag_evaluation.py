@@ -1,20 +1,17 @@
-"""RAG System Evaluation Example - Evaluating Retrieval-Augmented Generation Systems
+"""RAG System Evaluation - Retrieval-Augmented Generation Assessment
 
-This example demonstrates how to evaluate RAG (Retrieval-Augmented Generation) systems
-using Arbiter's evaluators. RAG systems combine retrieval from a knowledge base with
-LLM generation, requiring evaluation of both retrieval quality and generation quality.
+This example demonstrates evaluating RAG systems with Arbiter, assessing both
+retrieval quality and generation accuracy with comprehensive evaluators.
 
-**Key Evaluation Aspects:**
-- Semantic similarity: Does the answer match the expected answer?
-- Custom criteria: Accuracy, completeness, citation quality
-- Source attribution: Are claims supported by retrieved context?
-- Answer quality: Is the answer helpful and well-structured?
+Key Features:
+- Semantic similarity for answer matching
+- Custom criteria (accuracy, completeness, citations)
+- Groundedness evaluation (claims supported by sources)
+- Source attribution validation
+- Multi-aspect RAG quality assessment
 
-**Why This Matters:**
-- RAG systems are complex (retrieval + generation)
-- Need to evaluate both components
-- Source attribution is critical for trust
-- Multi-faceted evaluation provides comprehensive assessment
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/rag_evaluation.py

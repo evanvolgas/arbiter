@@ -1,10 +1,17 @@
-"""Circuit breaker example for resilient LLM evaluation.
+"""Circuit Breaker - Resilient Production Evaluation
 
-This example demonstrates how the circuit breaker pattern prevents cascading
-failures when LLM providers experience outages or degraded performance.
+This example demonstrates the circuit breaker pattern for preventing cascading
+failures during LLM provider outages or degraded performance.
 
-The circuit breaker monitors failure rates and temporarily blocks requests
-when failures exceed a threshold, allowing the provider time to recover.
+Key Features:
+- Automatic failure detection and circuit opening
+- Configurable failure thresholds and timeouts
+- Graceful degradation during outages
+- Provider recovery monitoring
+- Production-grade resilience patterns
+
+Requirements:
+    export OPENAI_API_KEY=your_key_here
 
 Run with:
     python examples/circuit_breaker_example.py
