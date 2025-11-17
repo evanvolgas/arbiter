@@ -80,7 +80,7 @@ async def main():
                 reference=reference,
                 evaluators=["semantic"],
                 provider=Provider.ANTHROPIC,
-                model="claude-3-5-sonnet-20241022",
+                model="claude-3-opus-20240229",
             )
 
             print(f"Provider: Anthropic")

@@ -171,7 +171,7 @@ async def main():
 
     # Add Anthropic if key is available
     if os.getenv("ANTHROPIC_API_KEY"):
-        providers_to_test.append((Provider.ANTHROPIC, "Anthropic", "claude-3-5-sonnet-20241022"))
+        providers_to_test.append((Provider.ANTHROPIC, "Anthropic", "claude-3-opus-20240229"))
 
     # Add Google if key is available
     if os.getenv("GOOGLE_API_KEY"):
