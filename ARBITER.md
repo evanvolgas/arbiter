@@ -42,32 +42,6 @@ cost = await result.total_llm_cost()  # Real pricing from llm-prices.com
 print(f"💰 Cost: ${cost:.6f}")
 ```
 
-**Key Point:**
-> No instrumentation. No manual tracking. It's automatic. This solves the '15 LLM calls' debugging nightmare.
-
----
-
-## Observability
-### `examples/observability_example.py` lines 224-256
-
-```python
-# "For compliance, you get complete audit trail..."
-print(f"📋 Complete Audit Trail:")
-print(f"   Timestamp: {result.timestamp}")
-print(f"   Score: {result.overall_score}")
-print(f"   Evaluators: {', '.join(result.evaluator_names)}")
-
-# Every interaction timestamped and logged
-for interaction in result.interactions:
-    print(f"   {interaction.purpose}")
-    print(f"      Timestamp: {interaction.timestamp}")
-    print(f"      Tokens: {interaction.tokens_used}")
-    print(f"      Cost: ${interaction.cost:.6f}")
-```
-
-**Key Point:**
-> You have complete visibility at scale.*
-
 ---
 
 ## Provider flexibility
@@ -113,8 +87,6 @@ result3 = await evaluate(
 - Mistral AI
 - Cohere
 
-**Key Point:**
-> This is provider-agnostic by design - built for the multi-model future where you're using OpenAI AND Anthropic AND Google.
 ---
 
 ## Custom Evaluations & Evaluators
@@ -200,9 +172,6 @@ class CustomCriteriaEvaluator(BasePydanticEvaluator):
 # "That's it. 4 methods. Production-ready evaluator."
 # "Now export it and use it anywhere:"
 ```
-
-**Key Point:**
-> It's straightforward to write custom production-grade evaluators
 
 ---
 
@@ -360,16 +329,19 @@ https://github.com/evanvolgas/arbiter/issues
 
 ## Closing
 
+So that's Arbiter:
 
-✅ Zero-integration observability - automatic tracking via inheritance
-✅ Provider-agnostic from day one - OpenAI, Anthropic, Google, Groq
-✅ Extensible via template method pattern - 4 methods to custom evaluators
-✅ Production-grade - 95% test coverage, strict mypy typing
-✅ Built for the multi-model, multi-agent future
+- ✅ Zero-integration observability - automatic tracking via inheritance
+- ✅ Provider-agnostic from day one - OpenAI, Anthropic, Google, Groq
+- ✅ Extensible via template method pattern - 4 methods to custom evaluators
+- ✅ Production-grade - 95% test coverage, strict mypy typing
+- ✅ Built for the multi-model, multi-agent future
+
+What evaluation problem do YOU have?
 
 Submit an issue - let's solve it together.
 
-github.com/evanvolgas/arbiter
+**github.com/evanvolgas/arbiter**
 
 
 ## Q&A
