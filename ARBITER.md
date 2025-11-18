@@ -1,26 +1,22 @@
 # Arbiter Presentation - AI Tinkerers
 
-## Opening (30 seconds)
+## Opening
 ```
-"Quick question: How much did your last LLM evaluation cost?
+"Quick question: When your AI agent makes 15 LLM calls to answer ONE user question,
+and something goes wrong... which call failed? What did it cost? How do you know
+your fix worked?
 
-[pause for awkward silence]
+[pause]
 
-If you don't know... you're not alone. Most evaluation frameworks don't tell you.
-
-Arbiter is different. It's a PydanticAI-native evaluation library with automatic
-cost tracking built in.
-
-Let me show you what that means."
+That's the problem Arbiter solves. Let me show you."
 ```
 
 ---
 
-## Cost Transparency Demo
-### `examples/cost_comparison.py` (NEW)
+## Basic Evaluation
+### `examples/basic_evaluation.py` lines 47-84
 
 ```python
-# "Here's the simplest possible evaluation..."
 from arbiter import evaluate
 
 result = await evaluate(
@@ -30,55 +26,16 @@ result = await evaluate(
     model="gpt-4o-mini"
 )
 
-# "Notice what you get automatically - no extra code:"
 print(f"Score: {result.overall_score:.2f}")
-print(f"Cost: ${await result.total_llm_cost():.6f}")  # UNIQUE TO ARBITER
+print(f"Cost: ${await result.total_llm_cost():.6f}")
 print(f"Time: {result.processing_time:.2f}s")
 print(f"LLM Calls: {len(result.interactions)}")
-
-# "This is real pricing data from llm-prices.com"
-# "Same source Langfuse uses"
-# "But we show it by DEFAULT, not hidden in dashboards"
 ```
 
 **Talking points:**
-- Cost is front and center - not buried
-- Real pricing data, updated automatically
-- No other evaluation framework does this
-
----
-
-## Cost Comparison Demo
-### `examples/cost_comparison.py` example2
-
-```python
-# "Now watch this - let's compare models"
-
-# Expensive model
-result_gpt4 = await evaluate(
-    output=output, reference=reference,
-    model="gpt-4o", evaluators=["semantic"]
-)
-
-# Cheaper model
-result_mini = await evaluate(
-    output=output, reference=reference,
-    model="gpt-4o-mini", evaluators=["semantic"]
-)
-
-cost_gpt4 = await result_gpt4.total_llm_cost()
-cost_mini = await result_mini.total_llm_cost()
-
-print(f"GPT-4o: ${cost_gpt4:.6f}")
-print(f"GPT-4o-mini: ${cost_mini:.6f}")
-print(f"Savings: {((cost_gpt4 - cost_mini) / cost_gpt4 * 100):.1f}%")
-print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_score):.3f}")
-```
-
-**Talking points:**
-- 80%+ cost savings with minimal quality loss
-- Make informed decisions about model selection
-- This is the kind of insight Arbiter gives you automatically
+- Automatic cost tracking with real pricing data
+- Complete observability of all LLM interactions
+- No manual instrumentation required
 
 ---
 
