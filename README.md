@@ -10,7 +10,7 @@
     <a href="https://ai.pydantic.dev"><img src="https://img.shields.io/badge/PydanticAI-native-purple" alt="PydanticAI"></a>
   </p>
 
-  <p><em>⚠️ Alpha Software: Early development stage. Use for evaluation and experimentation.</em></p>
+  <p><em>Alpha Software: Early development stage. Use for evaluation and experimentation.</em></p>
 </div>
 
 ---
@@ -109,10 +109,10 @@ result = await evaluate(
 )
 
 # See everything that happened
-print(f"✓ Score: {result.overall_score:.2f}")
-print(f"💰 Cost: ${await result.total_llm_cost():.6f}")
-print(f"⏱️  Time: {result.processing_time:.2f}s")
-print(f"🔍 LLM Calls: {len(result.interactions)}")
+print(f"Score: {result.overall_score:.2f}")
+print(f"Cost: ${await result.total_llm_cost():.6f}")
+print(f"Time: {result.processing_time:.2f}s")
+print(f"LLM Calls: {len(result.interactions)}")
 
 # Get detailed cost breakdown
 breakdown = await result.cost_breakdown()
@@ -150,18 +150,18 @@ print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_s
 
 ## Key Features
 
-- **✅ Simple API**: Evaluate LLM outputs with 3 lines of code
-- **✅ Automatic Observability**: Automatic LLM interaction tracking with cost and performance metrics
-- **✅ Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
-- **✅ Middleware Pipeline**: Logging, metrics, caching, rate limiting
-- **✅ Semantic Evaluation**: Similarity scoring with LLM or FAISS backends (significantly faster, zero cost for embeddings)
-- **✅ Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
-- **✅ Comparison Mode**: A/B testing with `compare()` API for pairwise evaluation
-- **✅ Multiple Evaluators**: Combine semantic, custom_criteria, pairwise, factuality, groundedness, and relevance evaluators
-- **✅ Registry System**: Register custom evaluators for extensibility
-- **✅ Factuality Evaluation**: Hallucination detection and fact verification
-- **✅ Groundedness Evaluation**: RAG system validation (source attribution)
-- **✅ Relevance Evaluation**: Query-output alignment assessment
+- **Simple API**: Evaluate LLM outputs with 3 lines of code
+- **Automatic Observability**: Automatic LLM interaction tracking with cost and performance metrics
+- **Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
+- **Middleware Pipeline**: Logging, metrics, caching, rate limiting
+- **Semantic Evaluation**: Similarity scoring with LLM or FAISS backends (significantly faster, zero cost for embeddings)
+- **Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
+- **Comparison Mode**: A/B testing with `compare()` API for pairwise evaluation
+- **Multiple Evaluators**: Combine semantic, custom_criteria, pairwise, factuality, groundedness, and relevance evaluators
+- **Registry System**: Register custom evaluators for extensibility
+- **Factuality Evaluation**: Hallucination detection and fact verification
+- **Groundedness Evaluation**: RAG system validation (source attribution)
+- **Relevance Evaluation**: Query-output alignment assessment
 
 ## Core Concepts
 
@@ -209,7 +209,7 @@ print(f"Criteria met: {result.scores[0].metadata['criteria_met']}")
 print(f"Criteria not met: {result.scores[0].metadata['criteria_not_met']}")
 ```
 
-**Multiple Evaluators** ✅
+**Multiple Evaluators**
 ```python
 # Combine multiple evaluators for comprehensive assessment
 result = await evaluate(
@@ -299,7 +299,7 @@ result = await evaluate(
 
 # Check for hallucinations and source attribution
 if result.scores[0].metadata.get("criteria_not_met"):
-    print("⚠️ Potential hallucination detected")
+    print("WARNING: Potential hallucination detected")
 ```
 
 See [examples/rag_evaluation.py](examples/rag_evaluation.py) for complete RAG evaluation patterns.
@@ -319,7 +319,7 @@ Built on proven patterns with type-safe foundations:
 
 **Getting Started:**
 - [Basic Evaluation](examples/basic_evaluation.py) - Simple semantic evaluation with cost tracking
-- [Cost Comparison](examples/cost_comparison.py) - **NEW:** Model cost/quality analysis ⭐
+- [Cost Comparison](examples/cost_comparison.py) - NEW: Model cost/quality analysis
 - [Multiple Evaluators](examples/multiple_evaluators.py) - Combining evaluators
 
 **Evaluators:**
@@ -352,19 +352,19 @@ pytest
 
 ## Roadmap
 
-**Phase 1 - Foundation** ✅ (Completed)
+**Phase 1 - Foundation** (Completed)
 - [x] Project setup and structure
 - [x] Core infrastructure (LLM client, middleware, monitoring)
 - [x] Exception handling and retry logic
 
-**Phase 2 - Core Evaluation** ✅ (Completed)
+**Phase 2 - Core Evaluation** (Completed)
 - [x] Core evaluation engine with PydanticAI
 - [x] BasePydanticEvaluator with automatic LLM tracking
 - [x] SemanticEvaluator implementation
 - [x] Main evaluate() API
 - [x] Complete observability (interaction tracking)
 
-**Phase 2.5 - Fill Critical Gaps** ✅ (Completed)
+**Phase 2.5 - Fill Critical Gaps** (Completed)
 - [x] CustomCriteriaEvaluator (domain-specific evaluation)
 - [x] PairwiseComparisonEvaluator (A/B testing)
 - [x] FAISS backend for SemanticEvaluator (faster than LLM-based, zero cost for embeddings)
@@ -373,26 +373,26 @@ pytest
 - [x] Complete API documentation (16 API reference pages + MkDocs setup)
 - [x] Evaluator registry system for extensibility
 
-**Phase 3 - Core Evaluators** ✅ (Complete - 2 days, accelerated from 3 weeks)
+**Phase 3 - Core Evaluators** (Complete - 2 days, accelerated from 3 weeks)
 - [x] FactualityEvaluator (hallucination detection) - 100% coverage
 - [x] GroundednessEvaluator (RAG validation) - 100% coverage
 - [x] RelevanceEvaluator (query alignment) - 100% coverage
 
-**Phase 4 - Batch Evaluation** ✅ (Complete - 1 day, accelerated from 1 week)
+**Phase 4 - Batch Evaluation** (Complete - 1 day, accelerated from 1 week)
 - [x] Batch evaluation API (`batch_evaluate()` function)
 - [x] Parallel processing with progress tracking
 - [x] Concurrency control and error handling
-- ⏸️ **Storage backends deferred to v2.0** (users can persist results manually)
+- **Storage backends deferred to v2.0** (users can persist results manually)
 
-**Phase 5 - Enhanced Factuality** 📋 (6 weeks)
+**Phase 5 - Enhanced Factuality** (Planned - 6 weeks)
 - [ ] Plugin infrastructure for external verification
 - [ ] TavilyPlugin (web search for fact-checking)
 - [ ] FAISS-based fact verification caching (reuses existing FAISS backend from Phase 2.5)
 - [ ] Atomic claim decomposition
 - [ ] Additional plugins (Wikidata, Wolfram, PubMed)
-- ⏸️ **Milvus deferred to v2.0+** (FAISS covers scale needs for v1.0)
+- **Milvus deferred to v2.0+** (FAISS covers scale needs for v1.0)
 
-**Phase 6 - Polish & v1.0 Release** 📋 (2 weeks)
+**Phase 6 - Polish & v1.0 Release** (Planned - 2 weeks)
 - [ ] PyPI package publication
 - [ ] CI/CD pipeline setup
 - [ ] Documentation site deployment
