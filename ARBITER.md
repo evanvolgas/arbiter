@@ -14,9 +14,6 @@ cost tracking built in.
 Let me show you what that means."
 ```
 
-**Key Hook**: Cost transparency - something no other framework emphasizes
-**Positioning**: PydanticAI-native (not generic), cost-first (unique)
-
 ---
 
 ## Cost Transparency Demo
@@ -44,10 +41,10 @@ print(f"LLM Calls: {len(result.interactions)}")
 # "But we show it by DEFAULT, not hidden in dashboards"
 ```
 
-**Talk track**:
-- "Cost is front and center - not buried"
-- "Real pricing data, updated automatically"
-- "No other evaluation framework does this"
+**Talking points:**
+- Cost is front and center - not buried
+- Real pricing data, updated automatically
+- No other evaluation framework does this
 
 ---
 
@@ -78,10 +75,10 @@ print(f"Savings: {((cost_gpt4 - cost_mini) / cost_gpt4 * 100):.1f}%")
 print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_score):.3f}")
 ```
 
-**Talk track**:
-- "80%+ cost savings with minimal quality loss"
-- "Make informed decisions about model selection"
-- "This is the kind of insight Arbiter gives you automatically"
+**Talking points:**
+- 80%+ cost savings with minimal quality loss
+- Make informed decisions about model selection
+- This is the kind of insight Arbiter gives you automatically
 
 ---
 
@@ -169,10 +166,10 @@ print(f"Circuit state: {circuit_breaker.state}")
 - **Logging**: Structured observability
 - **Metrics**: Performance monitoring
 
-**Talk track:**
-- "DeepEval, TruLens, Phoenix - none have this"
-- "They assume evaluations always work"
-- "Arbiter treats evaluation as production infrastructure"
+**Talking points:**
+- DeepEval, TruLens, Phoenix - none have this
+- They assume evaluations always work
+- Arbiter treats evaluation as production infrastructure
 
 ---
 
