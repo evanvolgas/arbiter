@@ -130,6 +130,52 @@ result3 = await evaluate(
 
 ---
 
+## Production-Grade Middleware
+### `examples/circuit_breaker_example.py`
+
+```python
+# "Here's what makes Arbiter production-ready - middleware pipeline"
+
+from arbiter import evaluate
+from arbiter.core.middleware import CircuitBreakerMiddleware, MiddlewarePipeline
+
+# Protect against cascading failures
+circuit_breaker = CircuitBreakerMiddleware(
+    failure_threshold=3,    # Open after 3 failures
+    recovery_timeout=60.0,  # Try again after 60s
+    half_open_max_calls=2   # Test with 2 calls
+)
+
+pipeline = MiddlewarePipeline()
+pipeline.add(circuit_breaker)
+
+# If LLM calls start failing, circuit opens automatically
+# Prevents costly retry storms
+result = await evaluate(
+    output=output,
+    reference=reference,
+    evaluators=["semantic"],
+    middleware=pipeline,
+    model="gpt-4o-mini"
+)
+
+# "Circuit breaker state: closed (healthy) | open (failing) | half_open (testing)"
+print(f"Circuit state: {circuit_breaker.state}")
+```
+
+**Other Middleware Available:**
+- **Rate Limiting**: Control evaluation throughput
+- **Caching**: Avoid redundant LLM calls
+- **Logging**: Structured observability
+- **Metrics**: Performance monitoring
+
+**Talk track:**
+- "DeepEval, TruLens, Phoenix - none have this"
+- "They assume evaluations always work"
+- "Arbiter treats evaluation as production infrastructure"
+
+---
+
 ## Custom Evaluations & Evaluators
 ### Part A: `examples/custom_criteria_example.py` lines 43-70
 
@@ -245,51 +291,6 @@ AVAILABLE_EVALUATORS = {
 | **relevance** | "Answers query?" | "Eiffel Tower height" for "What's capital?" FALSE |
 
 
-
----
-
-## Production-Grade Middleware
-### `examples/circuit_breaker_example.py`
-
-```python
-# "One more thing that makes Arbiter production-ready: Middleware"
-
-from arbiter import evaluate
-from arbiter.core.middleware import CircuitBreakerMiddleware, MiddlewarePipeline
-
-# Circuit breaker prevents cascading failures
-circuit_breaker = CircuitBreakerMiddleware(
-    failure_threshold=3,    # Open after 3 failures
-    recovery_timeout=60.0,  # Try again after 60s
-    half_open_max_calls=2   # Test with 2 calls before fully closing
-)
-
-pipeline = MiddlewarePipeline()
-pipeline.add(circuit_breaker)
-
-# If evaluations start failing, circuit breaker opens automatically
-# Protects your application from costly retry storms
-result = await evaluate(
-    output=output,
-    reference=reference,
-    evaluators=["semantic"],
-    middleware=pipeline
-)
-
-# "Other frameworks don't have this - they assume evaluations always work"
-# "Arbiter is built for production from day one"
-```
-
-**Other Middleware:**
-- Rate limiting - Control evaluation throughput
-- Caching - Avoid redundant LLM calls
-- Logging - Structured observability
-- Metrics - Performance monitoring
-
-**Talk track:**
-- "DeepEval, TruLens, Phoenix - none have middleware"
-- "Arbiter treats evaluation as a production system"
-- "Circuit breakers, rate limiting, caching - built in"
 
 ---
 
