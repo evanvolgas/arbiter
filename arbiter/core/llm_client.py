@@ -14,10 +14,12 @@ internally. It integrates with PydanticAI for structured outputs.
 
 ## Supported Providers:
 
-- **OpenAI**: GPT-3.5, GPT-4, GPT-4 Turbo models
-- **Anthropic**: Claude 3 family (via PydanticAI)
-- **Google Gemini**: Gemini Pro models (via PydanticAI)
-- **Groq**: Fast inference for open models
+- **OpenAI**: GPT-4o, GPT-4o-mini, GPT-4 Turbo, GPT-3.5 Turbo
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus/Sonnet/Haiku
+- **Google**: Gemini 2.0 Flash, Gemini 1.5 Pro/Flash
+- **Groq**: Fast inference (Llama, Mixtral, Gemma models)
+- **Mistral**: Mistral Large/Medium/Small, Mixtral models
+- **Cohere**: Command R/R+, Embed models
 
 ## Usage:
 

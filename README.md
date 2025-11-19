@@ -156,7 +156,7 @@ print(f"Score difference: {abs(result_gpt4.overall_score - result_mini.overall_s
 
 - **Simple API**: Evaluate LLM outputs with 3 lines of code
 - **Automatic Observability**: Automatic LLM interaction tracking with cost and performance metrics
-- **Provider-Agnostic**: OpenAI, Anthropic, Google, Groq, Mistral, Cohere support
+- **Provider-Agnostic**: Works with OpenAI (GPT-4o, GPT-4o-mini), Anthropic (Claude 3.5 Sonnet), Google (Gemini 2.0 Flash), Groq, Mistral, Cohere
 - **Middleware Pipeline**: Logging, metrics, caching, rate limiting
 - **Semantic Evaluation**: Similarity scoring with LLM or FAISS backends (significantly faster, zero cost for embeddings)
 - **Custom Criteria**: Domain-specific evaluation (medical, technical, brand voice)
