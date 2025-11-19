@@ -409,89 +409,45 @@ Use Arbiter if: You want a simple library that shows costs and tracks interactio
 
 ---
 
-## GitHub Issues Needed!
+## 💬 GitHub Issues Needed!
 
-```python
-print("""
-GitHub Issues That Would Help:
+**What would make Arbiter more useful for you?**
 
-1. **Evaluator Ideas**: What domain-specific evaluators would help you?
-   - Legal compliance checker?
-   - Code quality evaluator?
-   - Customer service tone analyzer?
-   - Medical accuracy validator?
+**Evaluator Ideas:**
+- Legal compliance checker? Code quality evaluator?
+- Customer service tone analyzer? Medical accuracy validator?
 
-2. **Storage Backends**: Current storage is in-memory only
-   - PostgreSQL for persistent evaluation history?
-   - Redis for distributed caching?
-   - S3 for archival storage?
-   - What do you need?
+**Storage Backends** (currently in-memory only):
+- PostgreSQL for persistent history? Redis for distributed caching? S3 for archival?
 
-3. **Real-time Monitoring Integrations**:
-   - Datadog dashboards?
-   - Prometheus metrics?
-   - Grafana visualization?
-   - Custom webhooks?
+**Real-time Monitoring:**
+- Datadog dashboards? Prometheus metrics? Grafana? Custom webhooks?
 
-4. **Streaming Support**: Evaluate streaming outputs
-   - Partial evaluation as tokens arrive?
-   - Progressive scoring?
-   - Real-time quality gates?
+**Streaming Support:**
+- Partial evaluation as tokens arrive? Progressive scoring? Real-time quality gates?
 
-5. **Your Pain Points**: What evaluation problem keeps you up at night?
-   - Share what you're struggling with
-   - Let's the evaluator together!
+**Your Pain Points:**
+- What evaluation problem keeps you up at night?
 
-https://github.com/evanvolgas/arbiter/issues
-""")
-```
+**👉 https://github.com/evanvolgas/arbiter/issues**
 
 ---
 
-## Closing (1 minute)
+## Closing
 
-**Summary - What Makes Arbiter Different:**
+**What Makes Arbiter Different:**
+1. **PydanticAI Native** - Same patterns, same type safety
+2. **Cost Transparency** - Real-time tracking with live pricing data
+3. **Pure Library** - No platform, no server, no signup
+4. **Automatic Observability** - Every LLM call tracked automatically
 
-```
-1. PydanticAI Native
-   → If you use PydanticAI, Arbiter feels familiar
-   → Same patterns, same type safety
+**How You Can Help:**
+- 🔍 **REVIEW THIS PR**: https://github.com/evanvolgas/arbiter/pull/7
+- 💬 **Open issues** with evaluator ideas (see section above ☝️)
+- 🤝 **Contribute** domain-specific evaluators
+- ⭐ **Star the repo**: github.com/evanvolgas/arbiter
 
-2. Cost Transparency First
-   → Real-time cost tracking with live pricing data
-   → No other framework makes this a first-class feature
-   → Make informed decisions about model selection
-
-3. Pure Library Philosophy
-   → No platform signup
-   → No server to run
-   → No vendor lock-in to SaaS
-   → Just pip install and go
-
-4. Automatic Observability
-   → Every LLM call tracked automatically
-   → Complete visibility into evaluation process
-   → Perfect for debugging
-```
-
-**Who is Arbiter for?**
-- PydanticAI users who want native evaluation
-- Teams who need to know what evaluations cost
-- Developers who want a library, not a platform
-- Anyone tired of evaluation framework complexity
-
-**What's next:**
-- Currently v0.1.0-alpha
-- Looking for early adopters and feedback
-- What evaluation problems do YOU have?
-
-**How you can help:**
-- ⭐ Star the repo: github.com/evanvolgas/arbiter
-- 🔍 REVIEW THIS PR: [Link to your current PR]
-- 💬 Open issues with feature requests or bugs
-- 🤝 Contribute evaluators for your domain
-
-**github.com/evanvolgas/arbiter**
+v0.1.0-alpha - looking for early adopters and feedback!
 
 
 ## Q&A
