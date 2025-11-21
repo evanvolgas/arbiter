@@ -49,9 +49,6 @@ scale = [
     "pymilvus>=2.6.0",  # Optional Milvus for v2.0+ (enterprise scale)
 ]
 
-# Streaming support
-streaming = ["bytewax>=0.20.0"]
-
 # Storage backends
 redis = ["redis>=5.0.0"]
 
@@ -87,7 +84,7 @@ dev = [
 ]
 
 # All features
-all = ["arbiter[anthropic,gemini,mistral,cohere,scale,streaming,redis,dev]"]
+all = ["arbiter[anthropic,gemini,mistral,cohere,scale,redis,dev]"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -167,5 +164,5 @@ module = "tests.*"
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["pymilvus", "pymilvus.*", "logfire", "bytewax", "bytewax.*", "faiss", "sentence_transformers", "sentence_transformers.*"]
+module = ["pymilvus", "pymilvus.*", "logfire", "faiss", "sentence_transformers", "sentence_transformers.*"]
 ignore_missing_imports = true

@@ -180,7 +180,6 @@ dependencies = [
 all = [
     { name = "anthropic" },
     { name = "black" },
-    { name = "bytewax" },
     { name = "cohere" },
     { name = "faiss-cpu" },
     { name = "google-generativeai" },
@@ -246,17 +245,13 @@ scale = [
     { name = "pymilvus" },
     { name = "sentence-transformers" },
 ]
-streaming = [
-    { name = "bytewax" },
-]
 
 [package.metadata]
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.0.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.72.0" },
-    { name = "arbiter", extras = ["anthropic", "gemini", "mistral", "cohere", "scale", "streaming", "redis", "dev"], marker = "extra == 'all'" },
+    { name = "arbiter", extras = ["anthropic", "gemini", "mistral", "cohere", "scale", "redis", "dev"], marker = "extra == 'all'" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=25.0.0" },
-    { name = "bytewax", marker = "extra == 'streaming'", specifier = ">=0.20.0" },
     { name = "cohere", marker = "extra == 'cohere'", specifier = ">=5.0.0" },
     { name = "faiss-cpu", marker = "extra == 'scale'", specifier = ">=1.7.4" },
     { name = "google-generativeai", marker = "extra == 'gemini'", specifier = ">=0.8.5" },
@@ -290,7 +285,7 @@ requires-dist = [
     { name = "typing-extensions", specifier = ">=4.0.0" },
     { name = "watchdog", marker = "extra == 'dev'", specifier = ">=6.0.0" },
 ]
-provides-extras = ["anthropic", "gemini", "mistral", "cohere", "scale", "streaming", "redis", "dev", "all"]
+provides-extras = ["anthropic", "gemini", "mistral", "cohere", "scale", "redis", "dev", "all"]
 
 [[package]]
 name = "argcomplete"
@@ -426,29 +421,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/07/eb/50e2d280589a3c20c3b649bb66262d2b53a25c03262e4cc492048ac7540a/botocore-1.40.76.tar.gz", hash = "sha256:2b16024d68b29b973005adfb5039adfe9099ebe772d40a90ca89f2e165c495dc", size = 14494001, upload-time = "2025-11-18T20:22:59.131Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7f/6c/522e05388aa6fc66cf8ea46c6b29809a1a6f527ea864998b01ffb368ca36/botocore-1.40.76-py3-none-any.whl", hash = "sha256:fe425d386e48ac64c81cbb4a7181688d813df2e2b4c78b95ebe833c9e868c6f4", size = 14161738, upload-time = "2025-11-18T20:22:55.332Z" },
-]
-
-[[package]]
-name = "bytewax"
-version = "0.21.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "prometheus-client" },
-    { name = "typing-extensions" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/7a/a102ec999fb53634589e186b03fc25904ed64d632840714f8085ba2a007f/bytewax-0.21.1-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:c53a7fd5b2c4dc30f7574c85f9e7dd017c2365c05f714cf5215871dea190199c", size = 6141867, upload-time = "2024-11-25T20:09:46.138Z" },
-    { url = "https://files.pythonhosted.org/packages/2f/cf/3d2e7a19dda70a0399f690b87419ce57d5f04d0693941f157edc4feb9cef/bytewax-0.21.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:87f01bd8e92a873e84fb98959bd53c0ef955fcd9f8b9d0f6c0945014bc7f59d0", size = 6049823, upload-time = "2024-11-25T20:09:48.376Z" },
-    { url = "https://files.pythonhosted.org/packages/b5/aa/00658c797fcc28a1bba208b8bf92fc6892059b75ece180894a4cd17ed4b3/bytewax-0.21.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e809e15308262679c3366b262a56675f699bd53cc0ff41b0e124768c59232e94", size = 7960629, upload-time = "2024-11-25T20:09:50.771Z" },
-    { url = "https://files.pythonhosted.org/packages/31/e5/7f7775dd2a2f64e454a215cfab3bd5955241a261dd4c1f055c7cf6497f49/bytewax-0.21.1-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:9495b4a677f6675a70790c66176646a4994ca5af82624703292e54b0e45d5682", size = 7688534, upload-time = "2024-11-25T20:09:52.468Z" },
-    { url = "https://files.pythonhosted.org/packages/b2/dd/6c2d93f9c699f36462e37611b9e370d099953b6ab9f7171bd504db0c3567/bytewax-0.21.1-cp311-cp311-manylinux_2_31_x86_64.whl", hash = "sha256:877f63068c963b62d2171302d1fc1b7aa221c40087c7b2478e4ba4e50e26eb1e", size = 7978417, upload-time = "2024-11-25T20:09:53.95Z" },
-    { url = "https://files.pythonhosted.org/packages/90/a9/e06af46d9d0122c235abd9604e1fd286adf464450f18d726e9b36cba7e94/bytewax-0.21.1-cp311-none-win_amd64.whl", hash = "sha256:7ede7d3b1626fb65a584a0d8944244da329a64a6f974ab386b12243dc934b52d", size = 5177076, upload-time = "2024-11-25T20:09:55.353Z" },
-    { url = "https://files.pythonhosted.org/packages/41/eb/ee253e60ab676e2a70aa306cffee67d6a6a40993c8467d3b83ea8bb91e99/bytewax-0.21.1-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:62f5edef91908e555b70f3794271cd29ff29132a63b0b5cd367c5f53695a3c14", size = 6140409, upload-time = "2024-11-25T20:09:56.772Z" },
-    { url = "https://files.pythonhosted.org/packages/38/ef/4dd07083f32f9b019101837a10dc97806fbe3455c70f8cd976eb987dedab/bytewax-0.21.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:e3ab20069f323ffe508249d72c8c708cac05fddea11b74943103c623676785b6", size = 6041464, upload-time = "2024-11-25T20:09:58.244Z" },
-    { url = "https://files.pythonhosted.org/packages/20/1c/41b84d0de3949d75dd52b4b04341bed1c72250c4c1e017b527d7f7570f0b/bytewax-0.21.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ed8da9bfceb3299df8cf4e8e7efbbda924dbbfea990dff50c8602a059dc8b9cf", size = 7953966, upload-time = "2024-11-25T20:09:59.709Z" },
-    { url = "https://files.pythonhosted.org/packages/87/f2/57829eea0d188bd1d54e2555a11ecfd3589ec66d710c8163fb7010a0c82e/bytewax-0.21.1-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ba078e8bc7c6f1e7d7c99c4c07433977717b949112fc53377a0b0f3289398072", size = 7681915, upload-time = "2024-11-25T20:10:01.819Z" },
-    { url = "https://files.pythonhosted.org/packages/1f/66/47d1dbdd2a035074b2be3eac983d15742cc2749fee24aa3cc0c505277622/bytewax-0.21.1-cp312-cp312-manylinux_2_31_x86_64.whl", hash = "sha256:a118a61a5fc5a1849605e062f80e897922dbdadd37790cf8379e8f1e000d463c", size = 7983932, upload-time = "2024-11-25T20:10:03.284Z" },
-    { url = "https://files.pythonhosted.org/packages/de/bc/82686047e63fa709dc084399230c430c4fd2f2f2de3cf8be8d339ebd3f21/bytewax-0.21.1-cp312-none-win_amd64.whl", hash = "sha256:9b3c44984fe76da1fbac941392103610f884523a733a43fcd74543927c179854", size = 5183365, upload-time = "2024-11-25T20:10:04.676Z" },
 ]
 
 [[package]]
@@ -2648,15 +2620,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a6/49/7845c2d7bf6474efd8e27905b51b11e6ce411708c91e829b93f324de9929/pre_commit-4.4.0.tar.gz", hash = "sha256:f0233ebab440e9f17cabbb558706eb173d19ace965c68cdce2c081042b4fab15", size = 197501, upload-time = "2025-11-08T21:12:11.607Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/27/11/574fe7d13acf30bfd0a8dd7fa1647040f2b8064f13f43e8c963b1e65093b/pre_commit-4.4.0-py2.py3-none-any.whl", hash = "sha256:b35ea52957cbf83dcc5d8ee636cbead8624e3a15fbfa61a370e42158ac8a5813", size = 226049, upload-time = "2025-11-08T21:12:10.228Z" },
-]
-
-[[package]]
-name = "prometheus-client"
-version = "0.23.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/23/53/3edb5d68ecf6b38fcbcc1ad28391117d2a322d9a1a3eff04bfdb184d8c3b/prometheus_client-0.23.1.tar.gz", hash = "sha256:6ae8f9081eaaaf153a2e959d2e6c4f4fb57b12ef76c8c7980202f1e57b48b2ce", size = 80481, upload-time = "2025-09-18T20:47:25.043Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/db/14bafcb4af2139e046d03fd00dea7873e48eafe18b7d2797e73d6681f210/prometheus_client-0.23.1-py3-none-any.whl", hash = "sha256:dd1913e6e76b59cfe44e7a4b83e01afc9873c1bdfd2ed8739f1e76aeca115f99", size = 61145, upload-time = "2025-09-18T20:47:23.875Z" },
 ]
 
 [[package]]
