@@ -1,7 +1,12 @@
-# CLAUDE.md - AI Agent Guide
+---
+name: arbiter-agent
+description: Production-grade LLM evaluation framework developer
+---
+
+# AGENTS.md - AI Agent Guide
 
 **Purpose**: Quick reference for working on Arbiter
-**Last Updated**: 2025-11-16
+**Last Updated**: 2025-01-21
 
 ---
 
@@ -84,6 +89,42 @@ All evaluators use PydanticAI for type-safe LLM responses.
 
 ---
 
+## Boundaries
+
+### ✅ Always Do (No Permission Needed)
+- Run tests: `make test`, `pytest tests/`, `pytest -v`
+- Format code: `make format` (runs black)
+- Lint code: `make lint` (runs ruff)
+- Type check: `make type-check` (runs mypy in strict mode)
+- Add unit tests for new evaluators in `tests/unit/`
+- Update docstrings when changing function signatures
+- Add examples to `examples/` for new user-facing features
+- Export new evaluators in `__init__.py` files
+- Run `make all` before committing (format + lint + type-check + test)
+
+### ⚠️ Ask First
+- Add new evaluators to `arbiter/evaluators/`
+- Modify core API in `arbiter/api.py` (evaluate, compare functions)
+- Change template method pattern in `BasePydanticEvaluator`
+- Add/update dependencies in `pyproject.toml`
+- Change public API examples in `README.md`
+- Modify middleware pipeline in `arbiter/core/middleware.py`
+- Change LLM client abstraction in `arbiter/core/llm_client.py`
+- Add new storage backends in `arbiter/storage/`
+- Modify interaction tracking in `arbiter/core/monitoring.py`
+
+### 🚫 Never Touch
+- `.env` files or API keys (use environment variables)
+- Production deployment configurations
+- Git history manipulation (no force push, interactive rebase on shared branches)
+- User's `~/.claude/` configuration files
+- Any files outside the `arbiter/` repository
+- Test files to make them pass (fix the code, not the tests)
+- Type checking configuration to reduce strictness
+- Coverage thresholds (must maintain >80%)
+
+---
+
 ## Development Workflow
 
 ### Before Starting
@@ -135,10 +176,12 @@ touch examples/my_evaluator_example.py
 
 ### Run Tests
 ```bash
-make test              # All tests with coverage
-pytest tests/unit/     # Unit tests only
-pytest -v              # Verbose output
-make test-cov          # Coverage report
+make test              # Run all tests with coverage (requires >80% coverage to pass)
+pytest tests/unit/     # Run unit tests only (fast, mocked dependencies)
+pytest -v              # Run all tests with verbose output (shows test names and results)
+make test-cov          # Generate detailed coverage report with missing lines
+pytest tests/unit/test_semantic.py -v  # Run specific test file with verbose output
+pytest -k "test_evaluate" -v  # Run tests matching pattern "test_evaluate"
 ```
 
 ---
@@ -191,11 +234,11 @@ async def evaluate(output: str, reference: Optional[str] = None) -> EvaluationRe
 
 ### Make Targets
 ```bash
-make test          # Run tests with coverage
-make type-check    # Run mypy
-make lint          # Run ruff
-make format        # Run black
-make all           # Format + lint + type-check + test
+make test          # Run pytest with coverage (requires >80%, shows missing lines)
+make type-check    # Run mypy in strict mode (all functions must have type hints)
+make lint          # Run ruff linter (checks code style and potential bugs)
+make format        # Run black formatter (line length 88, modifies files in place)
+make all           # Run all checks in order: format → lint → type-check → test
 ```
 
 ---
