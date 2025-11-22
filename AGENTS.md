@@ -291,4 +291,4 @@ make all           # Run all checks in order: format → lint → type-check →
 ---
 **Questions?** Check evaluators/semantic.py (reference implementation) or README.md (user docs)
 
-**Last Updated**: 2025-11-16
+**Last Updated**: 2025-01-22
