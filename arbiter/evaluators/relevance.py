@@ -298,9 +298,7 @@ Provide your relevance assessment."""
                 "irrelevant_count": len(
                     getattr(relevance_response, "irrelevant_content", [])
                 ),
-                "total_points": len(
-                    getattr(relevance_response, "addressed_points", [])
-                )
+                "total_points": len(getattr(relevance_response, "addressed_points", []))
                 + len(getattr(relevance_response, "missing_points", [])),
             },
         )

@@ -1,7 +1,7 @@
 """Unit tests for pairwise comparison middleware integration."""
 
-from unittest.mock import AsyncMock, MagicMock
 from typing import Any, Callable, Optional
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 

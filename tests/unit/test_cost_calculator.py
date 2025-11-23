@@ -1,7 +1,8 @@
 """Unit tests for cost calculator functionality."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from arbiter.core.cost_calculator import (
     CostCalculator,
@@ -35,7 +36,6 @@ class TestModelPricing:
 
     def test_model_pricing_with_cached(self):
         """Test ModelPricing with cached token pricing."""
-        from datetime import datetime
 
         pricing = ModelPricing(
             id="claude-3-5-sonnet",
@@ -150,6 +150,7 @@ class TestCostCalculator:
     async def test_fetch_with_retry_success_on_second_attempt(self, mock_pricing_data):
         """Test retry logic succeeds after initial failure."""
         import httpx
+
         calc = CostCalculator()
 
         with patch("httpx.AsyncClient") as mock_client:
@@ -181,6 +182,7 @@ class TestCostCalculator:
     async def test_fetch_with_all_retries_exhausted(self):
         """Test that all retry attempts are exhausted on persistent failure."""
         import httpx
+
         calc = CostCalculator()
 
         with patch("httpx.AsyncClient") as mock_client:
@@ -205,6 +207,7 @@ class TestCostCalculator:
     async def test_ensure_loaded_concurrent_calls(self, mock_pricing_data):
         """Test that concurrent calls only fetch pricing data once (lock test)."""
         import asyncio
+
         calc = CostCalculator()
 
         with patch("httpx.AsyncClient") as mock_client:

@@ -35,7 +35,9 @@ def mock_llm_client():
     mock_response.criteria_met = ["criteria1"]
     mock_response.criteria_not_met = []
     # Add model_dump_json method that returns a string
-    mock_response.model_dump_json = MagicMock(return_value='{"score": 0.9, "confidence": 0.85, "explanation": "Test explanation"}')
+    mock_response.model_dump_json = MagicMock(
+        return_value='{"score": 0.9, "confidence": 0.85, "explanation": "Test explanation"}'
+    )
 
     # Mock usage
     mock_usage = MagicMock()
@@ -67,9 +69,7 @@ async def test_semantic_evaluator_name_consistency(mock_llm_client):
     evaluator_name = evaluator.name
 
     # Perform evaluation
-    score = await evaluator.evaluate(
-        output="Test output", reference="Test reference"
-    )
+    score = await evaluator.evaluate(output="Test output", reference="Test reference")
 
     # Critical check: score name must match evaluator name
     assert score.name == evaluator_name, (
@@ -87,9 +87,7 @@ async def test_custom_criteria_evaluator_name_consistency(mock_llm_client):
     evaluator_name = evaluator.name
 
     # Perform evaluation
-    score = await evaluator.evaluate(
-        output="Test output", criteria="Test criteria"
-    )
+    score = await evaluator.evaluate(output="Test output", criteria="Test criteria")
 
     # Critical check: score name must match evaluator name
     assert score.name == evaluator_name, (
@@ -151,12 +149,8 @@ async def test_score_name_matches_in_multi_evaluator_run(mock_llm_client):
     criteria_eval = CustomCriteriaEvaluator(mock_llm_client)
 
     # Run evaluations
-    semantic_score = await semantic_eval.evaluate(
-        output="Test", reference="Reference"
-    )
-    criteria_score = await criteria_eval.evaluate(
-        output="Test", criteria="Quality"
-    )
+    semantic_score = await semantic_eval.evaluate(output="Test", reference="Reference")
+    criteria_score = await criteria_eval.evaluate(output="Test", criteria="Quality")
 
     # Verify names match
     assert semantic_score.name == semantic_eval.name

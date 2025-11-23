@@ -1,20 +1,20 @@
 """Unit tests for similarity backends (LLM and FAISS)."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
-import pytest
-import numpy as np
 
+import pytest
+
+from arbiter.evaluators.semantic import SemanticEvaluator
 from arbiter.evaluators.similarity_backends import (
-    LLMSimilarityBackend,
     FAISSSimilarityBackend,
+    LLMSimilarityBackend,
     SimilarityResult,
 )
-from arbiter.evaluators.semantic import SemanticEvaluator
 from tests.conftest import MockAgentResult
 
 # Check if sentence-transformers is available
 try:
-    import sentence_transformers
+    import sentence_transformers  # noqa: F401
 
     HAS_SENTENCE_TRANSFORMERS = True
 except ImportError:
@@ -35,10 +35,6 @@ class TestLLMSimilarityBackend:
         backend = LLMSimilarityBackend(mock_llm_client)
         assert backend.llm_client == mock_llm_client
 
-    # Note: Full integration test with PydanticAI is tested in test_semantic.py
-    # This test just verifies empty text validation
-    # (Mocking PydanticAI's Agent is complex and already tested via SemanticEvaluator)
-
     @pytest.mark.asyncio
     async def test_compute_similarity_empty_text(self, mock_llm_client):
         """Test LLM backend with empty text."""
@@ -51,6 +47,92 @@ class TestLLMSimilarityBackend:
         with pytest.raises(ValueError) as exc_info:
             await backend.compute_similarity("test", "")
         assert "non-empty" in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_compute_similarity_success(self, mock_llm_client):
+        """Test LLM backend compute_similarity with mocked Agent."""
+        from pydantic import BaseModel, Field
+
+        # Create mock response matching SemanticResponse structure
+        class MockSemanticResponse(BaseModel):
+            score: float = Field(ge=0.0, le=1.0)
+            confidence: float = Field(default=0.85, ge=0.0, le=1.0)
+            explanation: str
+            key_differences: list[str] = Field(default_factory=list)
+            key_similarities: list[str] = Field(default_factory=list)
+
+        mock_response = MockSemanticResponse(
+            score=0.92,
+            confidence=0.88,
+            explanation="The texts are very similar",
+            key_similarities=["Both discuss testing", "Same topic"],
+            key_differences=["Different wording"],
+        )
+
+        # Mock the Agent and its result
+        mock_agent_result = MockAgentResult(mock_response)
+        mock_agent = AsyncMock()
+        mock_agent.run = AsyncMock(return_value=mock_agent_result)
+
+        # Patch Agent class (imported inside the method)
+        with patch("pydantic_ai.Agent") as mock_agent_class:
+            mock_agent_class.return_value = mock_agent
+
+            backend = LLMSimilarityBackend(mock_llm_client)
+            result = await backend.compute_similarity(
+                "This is a test", "This is also a test"
+            )
+
+            # Verify result
+            assert isinstance(result, SimilarityResult)
+            assert result.score == 0.92
+            assert result.confidence == 0.88
+            assert "The texts are very similar" in result.explanation
+            assert "Both discuss testing" in result.explanation
+            assert "Different wording" in result.explanation
+            assert result.metadata["backend"] == "llm"
+
+            # Verify Agent was called correctly
+            mock_agent_class.assert_called_once()
+            call_kwargs = mock_agent_class.call_args[1]
+            assert call_kwargs["model"] == mock_llm_client.model
+            assert "semantic similarity" in call_kwargs["system_prompt"]
+            assert call_kwargs["result_type"].__name__ == "SemanticResponse"
+
+    @pytest.mark.asyncio
+    async def test_compute_similarity_no_key_differences(self, mock_llm_client):
+        """Test LLM backend with response containing no key differences or similarities."""
+        from pydantic import BaseModel, Field
+
+        class MockSemanticResponse(BaseModel):
+            score: float = Field(ge=0.0, le=1.0)
+            confidence: float = Field(default=0.85, ge=0.0, le=1.0)
+            explanation: str
+            key_differences: list[str] = Field(default_factory=list)
+            key_similarities: list[str] = Field(default_factory=list)
+
+        mock_response = MockSemanticResponse(
+            score=0.75,
+            confidence=0.80,
+            explanation="Basic explanation",
+            key_similarities=[],
+            key_differences=[],
+        )
+
+        mock_agent_result = MockAgentResult(mock_response)
+        mock_agent = AsyncMock()
+        mock_agent.run = AsyncMock(return_value=mock_agent_result)
+
+        with patch("pydantic_ai.Agent") as mock_agent_class:
+            mock_agent_class.return_value = mock_agent
+
+            backend = LLMSimilarityBackend(mock_llm_client)
+            result = await backend.compute_similarity("Text A", "Text B")
+
+            # Should only contain base explanation, no similarity/difference sections
+            assert result.explanation == "Basic explanation"
+            assert "Key Similarities" not in result.explanation
+            assert "Key Differences" not in result.explanation
 
 
 class TestFAISSSimilarityBackend:

@@ -11,13 +11,13 @@ Tests cover:
 - Global pool access
 """
 
-import asyncio
 import time
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
 
+from arbiter.core.exceptions import ModelProviderError
 from arbiter.core.llm_client_pool import (
     ConnectionMetrics,
     LLMClientPool,
@@ -25,7 +25,6 @@ from arbiter.core.llm_client_pool import (
     PooledConnection,
     get_global_pool,
 )
-from arbiter.core.exceptions import ModelProviderError
 from arbiter.core.types import Provider
 
 
@@ -227,9 +226,7 @@ class TestLLMClientPool:
     @pytest.mark.asyncio
     async def test_get_pool_key(self, initialized_pool):
         """Test pool key generation."""
-        key = initialized_pool._get_pool_key(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        key = initialized_pool._get_pool_key(Provider.OPENAI, "gpt-4o-mini", 0.7)
         assert key == "openai:gpt-4o-mini:0.7"
 
     @pytest.mark.asyncio
@@ -239,9 +236,7 @@ class TestLLMClientPool:
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
 
-        client = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        client = await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         assert client is mock_client
         mock_client_class.assert_called_once_with(
@@ -262,17 +257,13 @@ class TestLLMClientPool:
         mock_client_class.return_value = mock_client
 
         # First get creates client
-        client1 = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        client1 = await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         # Return to pool
         await initialized_pool.return_client(client1)
 
         # Second get should reuse from pool
-        client2 = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        client2 = await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         assert client2 is mock_client
 
@@ -288,9 +279,7 @@ class TestLLMClientPool:
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
 
-        client = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        client = await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         await initialized_pool.return_client(client)
 
@@ -422,7 +411,9 @@ class TestPoolCleanup:
             # Manually mark connection as expired by manipulating created_at
             pool_key = "openai:gpt-4o-mini:0.7"
             for conn in pool._pools.get(pool_key, []):
-                conn.created_at = time.time() - 65  # 65 seconds ago (> 60 second max age)
+                conn.created_at = (
+                    time.time() - 65
+                )  # 65 seconds ago (> 60 second max age)
 
             # Trigger cleanup manually
             async with pool._lock:
@@ -459,7 +450,9 @@ class TestPoolCleanup:
             # Manually mark connection as idle by manipulating last_used
             pool_key = "openai:gpt-4o-mini:0.7"
             for conn in pool._pools.get(pool_key, []):
-                conn.last_used = time.time() - 15  # 15 seconds ago (> 10 second max idle)
+                conn.last_used = (
+                    time.time() - 15
+                )  # 15 seconds ago (> 10 second max idle)
 
             # Trigger cleanup manually
             async with pool._lock:
@@ -568,7 +561,7 @@ class TestPoolMetrics:
             mock_client = MagicMock()
             mock_client_class.return_value = mock_client
 
-            client = await pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
+            await pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
             # Metrics should not increment
             metrics = pool.get_metrics()
@@ -579,15 +572,15 @@ class TestPoolMetrics:
 
     @pytest.mark.asyncio
     @patch("arbiter.core.llm_client_pool.LLMClient")
-    async def test_comprehensive_metrics_tracking(self, mock_client_class, initialized_pool):
+    async def test_comprehensive_metrics_tracking(
+        self, mock_client_class, initialized_pool
+    ):
         """Test comprehensive metrics tracking."""
         mock_client = MagicMock()
         mock_client_class.return_value = mock_client
 
         # Get client (miss)
-        client1 = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        client1 = await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         metrics = initialized_pool.get_metrics()
         assert metrics.pool_misses == 1
@@ -604,9 +597,7 @@ class TestPoolMetrics:
         assert metrics.active_connections == 0
 
         # Get client again (hit)
-        client2 = await initialized_pool.get_client(
-            Provider.OPENAI, "gpt-4o-mini", 0.7
-        )
+        await initialized_pool.get_client(Provider.OPENAI, "gpt-4o-mini", 0.7)
 
         metrics = initialized_pool.get_metrics()
         assert metrics.pool_hits == 1

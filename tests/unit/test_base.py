@@ -3,11 +3,11 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from pydantic import BaseModel
 
 from arbiter.core.exceptions import EvaluatorError
 from arbiter.core.models import LLMInteraction, Score
 from arbiter.evaluators.base import BasePydanticEvaluator, EvaluatorResponse
-from pydantic import BaseModel
 from tests.conftest import MockAgentResult
 
 
@@ -21,9 +21,7 @@ class ConcreteEvaluator(BasePydanticEvaluator):
     def _get_system_prompt(self) -> str:
         return "You are a test evaluator."
 
-    def _get_user_prompt(
-        self, output: str, reference: None, criteria: None
-    ) -> str:
+    def _get_user_prompt(self, output: str, reference: None, criteria: None) -> str:
         return f"Evaluate: {output}"
 
     def _get_response_type(self):
@@ -390,4 +388,3 @@ class TestEvaluatorResponse:
         )
 
         assert response.metadata == {"key": "value"}
-

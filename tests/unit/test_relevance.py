@@ -82,10 +82,7 @@ class TestRelevanceEvaluator:
             score=1.0,
             confidence=0.9,
             explanation="Output fully addresses the query",
-            addressed_points=[
-                "Capital city identified",
-                "Country specified"
-            ],
+            addressed_points=["Capital city identified", "Country specified"],
             missing_points=[],
             irrelevant_content=[],
         )
@@ -153,11 +150,7 @@ class TestRelevanceEvaluator:
             confidence=0.95,
             explanation="Output does not address the query at all",
             addressed_points=[],
-            missing_points=[
-                "Capital city",
-                "Country name",
-                "Geographic information"
-            ],
+            missing_points=["Capital city", "Country name", "Geographic information"],
             irrelevant_content=["Sports statistics", "Weather data"],
         )
 
@@ -272,7 +265,7 @@ class TestRelevanceEvaluator:
             missing_points=[],
             irrelevant_content=[
                 "Historical tourism information",
-                "Restaurant recommendations"
+                "Restaurant recommendations",
             ],
         )
 

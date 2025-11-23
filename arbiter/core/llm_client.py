@@ -178,10 +178,14 @@ class LLMClient:
 
         # Initialize circuit breaker with default settings if not provided
         # Can be disabled by passing circuit_breaker=None explicitly
-        self.circuit_breaker = circuit_breaker if circuit_breaker is not None else CircuitBreaker(
-            failure_threshold=5,
-            timeout=60.0,
-            half_open_max_calls=1,
+        self.circuit_breaker = (
+            circuit_breaker
+            if circuit_breaker is not None
+            else CircuitBreaker(
+                failure_threshold=5,
+                timeout=60.0,
+                half_open_max_calls=1,
+            )
         )
 
         # For OpenAI-compatible providers
@@ -281,7 +285,10 @@ class LLMClient:
         )
 
     async def _execute_completion(
-        self, provider_model: str, typed_messages: List[ChatCompletionMessageParam], **kwargs: Any
+        self,
+        provider_model: str,
+        typed_messages: List[ChatCompletionMessageParam],
+        **kwargs: Any,
     ) -> LLMResponse:
         """Internal method to execute the actual API call.
 
@@ -334,7 +341,9 @@ class LLMClient:
                 raise ModelProviderError("Rate limit exceeded", details=details) from e
             elif "api key" in error_msg or "unauthorized" in error_msg:
                 details["error_code"] = "authentication"
-                raise ModelProviderError("Authentication failed", details=details) from e
+                raise ModelProviderError(
+                    "Authentication failed", details=details
+                ) from e
             else:
                 raise ModelProviderError(
                     f"LLM API error: {e!s}", details=details
@@ -376,7 +385,9 @@ class LLMClient:
             )
         else:
             # No circuit breaker, call directly
-            return await self._execute_completion(provider_model, typed_messages, **kwargs)
+            return await self._execute_completion(
+                provider_model, typed_messages, **kwargs
+            )
 
 
 class LLMManager:

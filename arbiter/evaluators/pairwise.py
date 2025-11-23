@@ -29,10 +29,10 @@ from typing import Dict, List, Literal, Optional, Type, cast
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
-
 from ..core.models import ComparisonResult, LLMInteraction
 from .base import BasePydanticEvaluator
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "PairwiseComparisonEvaluator",
@@ -51,7 +51,9 @@ class AspectComparison(BaseModel):
     output_b_score: float = Field(
         ..., ge=0.0, le=1.0, description="Score for output_b on this aspect"
     )
-    reasoning: str = Field(..., description="Explanation of the comparison for this aspect")
+    reasoning: str = Field(
+        ..., description="Explanation of the comparison for this aspect"
+    )
 
 
 class PairwiseResponse(BaseModel):
@@ -67,7 +69,9 @@ class PairwiseResponse(BaseModel):
         le=1.0,
         description="Confidence in the comparison decision",
     )
-    reasoning: str = Field(..., description="Detailed explanation of why this winner was chosen")
+    reasoning: str = Field(
+        ..., description="Detailed explanation of why this winner was chosen"
+    )
     aspect_comparisons: List[AspectComparison] = Field(
         default_factory=list,
         description="Detailed comparison for each aspect/criterion",
@@ -315,7 +319,8 @@ Provide clear reasoning that helps understand your decision."""
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 cached_tokens=cached_tokens,
-                tokens_used=tokens_used or (input_tokens + output_tokens),  # Backward compat
+                tokens_used=tokens_used
+                or (input_tokens + output_tokens),  # Backward compat
                 cost=cost,
                 latency=latency,
                 purpose=f"{self.name}_comparison",

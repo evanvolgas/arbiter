@@ -1,7 +1,6 @@
 """Unit tests for monitoring.py."""
 
 import time
-from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -272,6 +271,7 @@ class TestGlobalMonitor:
         """Test that get_global_monitor creates a monitor."""
         # Clear any existing global monitor
         import arbiter.core.monitoring as mon_module
+
         mon_module._global_monitor = None
 
         monitor = get_global_monitor()
@@ -291,6 +291,7 @@ class TestGlobalMonitor:
         """Test the monitor() context manager."""
         # Reset global monitor
         import arbiter.core.monitoring as mon_module
+
         mon_module._global_monitor = None
 
         async with monitor("test_operation") as metrics:
@@ -309,6 +310,7 @@ class TestGlobalMonitor:
         """Test monitor() with default operation name."""
         # Reset global monitor
         import arbiter.core.monitoring as mon_module
+
         mon_module._global_monitor = PerformanceMonitor()
 
         async with monitor() as metrics:
@@ -327,10 +329,9 @@ class TestLogfireIntegration:
     def test_logfire_configured_when_token_present(self, mock_configure):
         """Test that logfire is configured when LOGFIRE_TOKEN is set."""
         # Re-import to trigger configuration
-        import importlib
-        import arbiter.core.monitoring as mon_module
 
         # The module level code runs on import
         # Since we can't re-run that easily, just verify the env var is set
         import os
+
         assert os.getenv("LOGFIRE_TOKEN") == "test_token"

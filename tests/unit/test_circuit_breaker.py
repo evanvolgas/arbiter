@@ -213,7 +213,9 @@ async def test_half_open_limits_test_calls(circuit_breaker):
     circuit_breaker.half_open_calls = circuit_breaker.half_open_max_calls
 
     # Now the next call should be blocked
-    with pytest.raises(CircuitBreakerOpenError, match="half-open and max test calls reached"):
+    with pytest.raises(
+        CircuitBreakerOpenError, match="half-open and max test calls reached"
+    ):
         await circuit_breaker.call(success_operation)
 
 

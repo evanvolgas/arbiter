@@ -56,8 +56,6 @@ from typing import Any, Dict, List, Optional
 
 import logfire
 
-from .models import EvaluationResult
-
 # Configure logfire if token is available
 if os.getenv("LOGFIRE_TOKEN"):
     logfire.configure(token=os.getenv("LOGFIRE_TOKEN"))

@@ -91,7 +91,10 @@ class TestCustomCriteriaEvaluator:
         assert score.value == 0.85
         assert score.confidence == 0.9
         assert score.explanation == "The output meets most criteria"
-        assert score.metadata["criteria_met"] == ["Medical accuracy", "HIPAA compliance"]
+        assert score.metadata["criteria_met"] == [
+            "Medical accuracy",
+            "HIPAA compliance",
+        ]
         assert score.metadata["criteria_not_met"] == ["Appropriate tone"]
         assert score.metadata["criteria_met_count"] == 2
         assert score.metadata["criteria_not_met_count"] == 1
@@ -179,7 +182,10 @@ class TestCustomCriteriaEvaluator:
             explanation="Overall good performance across criteria",
             criteria_details={
                 "accuracy": {"met": "yes", "reasoning": "Factually correct"},
-                "persuasiveness": {"met": "partial", "reasoning": "Could be more compelling"},
+                "persuasiveness": {
+                    "met": "partial",
+                    "reasoning": "Could be more compelling",
+                },
                 "brand_voice": {"met": "yes", "reasoning": "Matches brand guidelines"},
             },
         )

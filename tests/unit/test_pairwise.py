@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError, ValidationError
+from arbiter.core.exceptions import EvaluatorError
 from arbiter.core.models import ComparisonResult
 from arbiter.evaluators.pairwise import (
     AspectComparison,
@@ -260,7 +260,7 @@ class TestPairwiseComparisonEvaluator:
 
         evaluator.clear_interactions()
 
-        comparison = await evaluator.compare(
+        await evaluator.compare(
             output_a="Output A",
             output_b="Output B",
         )
@@ -370,10 +370,14 @@ class TestPairwiseResponse:
     def test_winner_validation(self):
         """Test that winner must be one of the allowed values."""
         # Valid winners
-        response1 = PairwiseResponse(winner="output_a", confidence=0.9, reasoning="Test")
+        response1 = PairwiseResponse(
+            winner="output_a", confidence=0.9, reasoning="Test"
+        )
         assert response1.winner == "output_a"
 
-        response2 = PairwiseResponse(winner="output_b", confidence=0.9, reasoning="Test")
+        response2 = PairwiseResponse(
+            winner="output_b", confidence=0.9, reasoning="Test"
+        )
         assert response2.winner == "output_b"
 
         response3 = PairwiseResponse(winner="tie", confidence=0.9, reasoning="Test")

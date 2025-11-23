@@ -163,7 +163,9 @@ class CostCalculator:
                     # Parse and cache pricing data
                     # Handle both old format (list) and new format (dict with "prices" key)
                     self._pricing_cache = {}
-                    prices = data.get("prices", data) if isinstance(data, dict) else data
+                    prices = (
+                        data.get("prices", data) if isinstance(data, dict) else data
+                    )
                     for model_data in prices:
                         pricing = ModelPricing(
                             id=model_data["id"],

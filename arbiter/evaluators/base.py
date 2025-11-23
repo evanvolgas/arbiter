@@ -353,12 +353,17 @@ class BasePydanticEvaluator(BaseEvaluator):
             latency = time.time() - start_time
             interaction = LLMInteraction(
                 prompt=user_prompt,
-                response=result.output.model_dump_json() if hasattr(result.output, 'model_dump_json') else str(result.output),
+                response=(
+                    result.output.model_dump_json()
+                    if hasattr(result.output, "model_dump_json")
+                    else str(result.output)
+                ),
                 model=self.llm_client.model,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 cached_tokens=cached_tokens,
-                tokens_used=tokens_used or (input_tokens + output_tokens),  # Backward compat
+                tokens_used=tokens_used
+                or (input_tokens + output_tokens),  # Backward compat
                 cost=cost,
                 latency=latency,
                 purpose=f"{self.name}_evaluation",

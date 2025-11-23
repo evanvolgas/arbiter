@@ -45,7 +45,7 @@ even if they use different wording. Supports two backends:
     >>> print(f"Similarity: {score.value:.2f}")  # Fast, free, no explanation
 """
 
-from typing import Optional, Type, Literal
+from typing import Literal, Optional, Type
 
 from pydantic import BaseModel, Field
 
@@ -53,8 +53,8 @@ from ..core.llm_client import LLMClient
 from ..core.models import Score
 from .base import BasePydanticEvaluator
 from .similarity_backends import (
-    LLMSimilarityBackend,
     FAISSSimilarityBackend,
+    LLMSimilarityBackend,
     SimilarityBackend,
 )
 
@@ -202,7 +202,9 @@ class SemanticEvaluator(BasePydanticEvaluator):
                 )
 
             # Compute similarity using FAISS backend
-            result = await self._similarity_backend.compute_similarity(output, reference)
+            result = await self._similarity_backend.compute_similarity(
+                output, reference
+            )
 
             return Score(
                 name=self.name,
@@ -290,13 +292,19 @@ even if expressed differently. Provide a detailed analysis."""
         # Build detailed explanation
         explanation_parts = [semantic_response.explanation]
 
-        if hasattr(semantic_response, "key_similarities") and semantic_response.key_similarities:
+        if (
+            hasattr(semantic_response, "key_similarities")
+            and semantic_response.key_similarities
+        ):
             explanation_parts.append(
                 "\n\nKey Similarities:\n- "
                 + "\n- ".join(semantic_response.key_similarities)
             )
 
-        if hasattr(semantic_response, "key_differences") and semantic_response.key_differences:
+        if (
+            hasattr(semantic_response, "key_differences")
+            and semantic_response.key_differences
+        ):
             explanation_parts.append(
                 "\n\nKey Differences:\n- "
                 + "\n- ".join(semantic_response.key_differences)

@@ -1,13 +1,12 @@
 """Unit tests for multi-evaluator error handling."""
 
-import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError, ModelProviderError, ValidationError
+from arbiter.core.exceptions import EvaluatorError, ModelProviderError
 from arbiter.core.models import EvaluationResult
-from arbiter.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
+from arbiter.evaluators import SemanticEvaluator
 from tests.conftest import MockAgentResult
 
 
@@ -83,7 +82,6 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_partial_result_with_errors(self, mock_llm_client, mock_agent):
         """Test that partial results include error information."""
-        from arbiter.api import _evaluate_impl
 
         # Mock successful semantic response
         from arbiter.evaluators.semantic import SemanticResponse
@@ -110,7 +108,9 @@ class TestMultiEvaluatorErrorHandling:
                 return "failing_evaluator"
 
             async def evaluate(self, output, reference=None, criteria=None):
-                raise ModelProviderError("API timeout", details={"error": "API timeout"})
+                raise ModelProviderError(
+                    "API timeout", details={"error": "API timeout"}
+                )
 
         evaluators.append(FailingEvaluator(mock_llm_client))
 
@@ -136,7 +136,9 @@ class TestMultiEvaluatorErrorHandling:
         from arbiter.core.exceptions import EvaluatorError
 
         # Test error with details
-        error = EvaluatorError("Test error", details={"error": "Detailed error message"})
+        error = EvaluatorError(
+            "Test error", details={"error": "Detailed error message"}
+        )
         error_msg = str(error)
         if hasattr(error, "details") and isinstance(error.details, dict):
             error_msg = error.details.get("error", error_msg)
@@ -181,13 +183,14 @@ class TestMultiEvaluatorErrorHandling:
         assert len(result.errors) == 0
 
     @pytest.mark.asyncio
-    async def test_multiple_evaluators_partial_failure_main_use_case(self, mock_llm_client, mock_agent):
+    async def test_multiple_evaluators_partial_failure_main_use_case(
+        self, mock_llm_client, mock_agent
+    ):
         """Test the MAIN USE CASE: multiple evaluators where some succeed and some fail."""
         from arbiter.api import evaluate
 
         # Mock successful semantic response
         from arbiter.evaluators.semantic import SemanticResponse
-        from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
 
         semantic_response = SemanticResponse(
             score=0.85,
@@ -197,13 +200,14 @@ class TestMultiEvaluatorErrorHandling:
             key_differences=[],
         )
 
-        custom_criteria_response = CustomCriteriaResponse(
-            score=0.75,
-            confidence=0.8,
-            explanation="Meets some criteria",
-            criteria_met=["accuracy"],
-            criteria_not_met=["completeness"],
-        )
+        # CustomCriteriaResponse defined for reference but not used directly
+        # custom_criteria_response = CustomCriteriaResponse(
+        #     score=0.75,
+        #     confidence=0.8,
+        #     explanation="Meets some criteria",
+        #     criteria_met=["accuracy"],
+        #     criteria_not_met=["completeness"],
+        # )
 
         # Create a call counter to control which evaluator succeeds/fails
         call_count = 0
@@ -239,21 +243,28 @@ class TestMultiEvaluatorErrorHandling:
         assert result.scores[0].name == "semantic", "Should have semantic score"
         assert "custom_criteria" in result.errors, "custom_criteria should be in errors"
         # Error message includes details formatting
-        assert "API timeout" in result.errors["custom_criteria"], "Error message should contain 'API timeout'"
+        assert (
+            "API timeout" in result.errors["custom_criteria"]
+        ), "Error message should contain 'API timeout'"
 
         # Verify overall score is calculated from successful evaluators only
-        assert result.overall_score == 0.85, "Overall score should be semantic score (0.85), not average"
+        assert (
+            result.overall_score == 0.85
+        ), "Overall score should be semantic score (0.85), not average"
         assert result.metadata["successful_evaluators"] == 1
         assert result.metadata["failed_evaluators"] == 1
 
         # Verify we can still use the result
         assert result.passed is True, "Should pass threshold (0.85 > 0.7)"
-        assert len(result.interactions) > 0, "Should have interactions from successful evaluator"
+        assert (
+            len(result.interactions) > 0
+        ), "Should have interactions from successful evaluator"
 
     @pytest.mark.asyncio
-    async def test_multiple_evaluators_partial_failure(self, mock_llm_client, mock_agent):
+    async def test_multiple_evaluators_partial_failure(
+        self, mock_llm_client, mock_agent
+    ):
         """Test multiple evaluators where some fail."""
-        from arbiter.api import _evaluate_impl
 
         # This test requires multiple evaluators, so we'll test the internal logic
         # Since we only have semantic and custom_criteria, let's test with those
@@ -352,10 +363,11 @@ class TestMultiEvaluatorErrorHandling:
             )
 
     @pytest.mark.asyncio
-    async def test_overall_score_calculation_with_partial_failure(self, mock_llm_client, mock_agent):
+    async def test_overall_score_calculation_with_partial_failure(
+        self, mock_llm_client, mock_agent
+    ):
         """Test that overall score only includes successful evaluators."""
         from arbiter.api import evaluate
-
         from arbiter.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
@@ -396,7 +408,6 @@ class TestMultiEvaluatorErrorHandling:
     async def test_logging_for_evaluator_failures(self, mock_llm_client, mock_agent):
         """Test that evaluator failures are logged."""
         from arbiter.api import evaluate
-
         from arbiter.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
@@ -421,7 +432,7 @@ class TestMultiEvaluatorErrorHandling:
         mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
 
         with patch("arbiter.api.logger") as mock_logger:
-            result = await evaluate(
+            _result = await evaluate(
                 output="Test",
                 reference="Test",
                 evaluators=["semantic", "custom_criteria"],
@@ -432,7 +443,10 @@ class TestMultiEvaluatorErrorHandling:
             # Verify warning was logged for evaluator failure
             mock_logger.warning.assert_called()
             warning_call = mock_logger.warning.call_args
-            assert "custom_criteria" in warning_call[0][0] or "failed" in warning_call[0][0].lower()
+            assert (
+                "custom_criteria" in warning_call[0][0]
+                or "failed" in warning_call[0][0].lower()
+            )
 
     @pytest.mark.asyncio
     async def test_logging_for_unexpected_errors(self, mock_llm_client, mock_agent):
@@ -442,7 +456,6 @@ class TestMultiEvaluatorErrorHandling:
         in EvaluatorError by the base class, so it will be logged as a warning, not error.
         """
         from arbiter.api import evaluate
-
         from arbiter.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
@@ -468,7 +481,7 @@ class TestMultiEvaluatorErrorHandling:
         mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
 
         with patch("arbiter.api.logger") as mock_logger:
-            result = await evaluate(
+            _result = await evaluate(
                 output="Test",
                 reference="Test",
                 evaluators=["semantic", "custom_criteria"],
@@ -482,8 +495,11 @@ class TestMultiEvaluatorErrorHandling:
             # Verify the custom_criteria evaluator failure was logged
             found_failure_log = False
             for call in mock_logger.warning.call_args_list:
-                if call[0] and "custom_criteria" in call[0][0] and "failed" in call[0][0]:
+                if (
+                    call[0]
+                    and "custom_criteria" in call[0][0]
+                    and "failed" in call[0][0]
+                ):
                     found_failure_log = True
                     break
             assert found_failure_log, "Should have logged evaluator failure"
-

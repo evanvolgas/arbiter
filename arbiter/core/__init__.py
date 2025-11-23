@@ -36,9 +36,20 @@ from .middleware import (
     RateLimitingMiddleware,
     monitor as monitor_context,
 )
-from .models import BatchEvaluationResult, ComparisonResult, EvaluationResult, LLMInteraction, Metric, Score
-from .monitoring import PerformanceMetrics, PerformanceMonitor, get_global_monitor, monitor
-from .retry import RETRY_PERSISTENT, RETRY_QUICK, RETRY_STANDARD, RetryConfig, with_retry
+from .models import (
+    BatchEvaluationResult,
+    ComparisonResult,
+    EvaluationResult,
+    LLMInteraction,
+    Metric,
+    Score,
+)
+from .monitoring import (
+    PerformanceMetrics,
+    PerformanceMonitor,
+    get_global_monitor,
+    monitor,
+)
 from .registry import (
     AVAILABLE_EVALUATORS,
     get_available_evaluators,
@@ -46,8 +57,15 @@ from .registry import (
     register_evaluator,
     validate_evaluator_name,
 )
+from .retry import (
+    RETRY_PERSISTENT,
+    RETRY_QUICK,
+    RETRY_STANDARD,
+    RetryConfig,
+    with_retry,
+)
 from .type_defs import MiddlewareContext
-from .types import EvaluatorName, MetricType, Provider, StorageType
+from .types import EvaluatorName, MetricType, StorageType
 
 __all__ = [
     # Exceptions
@@ -105,7 +123,6 @@ __all__ = [
     "RETRY_STANDARD",
     "RETRY_PERSISTENT",
     # Types
-    "Provider",
     "MetricType",
     "StorageType",
     "EvaluatorName",

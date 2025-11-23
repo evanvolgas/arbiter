@@ -140,7 +140,9 @@ class TestLLMInteraction:
         )
 
         # Timestamps should be close (within 1 second)
-        time_diff = abs((interaction1.timestamp - interaction2.timestamp).total_seconds())
+        time_diff = abs(
+            (interaction1.timestamp - interaction2.timestamp).total_seconds()
+        )
         assert time_diff < 1.0
 
     def test_interaction_metadata_default(self):
@@ -294,7 +296,9 @@ class TestEvaluationResult:
         """Test creating an EvaluationResult with all fields."""
         score1 = Score(name="semantic", value=0.9)
         score2 = Score(name="factuality", value=0.85)
-        metric = Metric(name="semantic", evaluator="SemanticEvaluator", processing_time=1.0)
+        metric = Metric(
+            name="semantic", evaluator="SemanticEvaluator", processing_time=1.0
+        )
         interaction = LLMInteraction(
             prompt="test",
             response="test",
@@ -812,4 +816,3 @@ class TestComparisonResult:
 
         assert result.winner == "tie"
         assert result.confidence == 0.7
-

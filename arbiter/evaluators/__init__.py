@@ -32,10 +32,10 @@ from .pairwise import (
 from .relevance import RelevanceEvaluator, RelevanceResponse
 from .semantic import SemanticEvaluator, SemanticResponse
 from .similarity_backends import (
+    FAISSSimilarityBackend,
+    LLMSimilarityBackend,
     SimilarityBackend,
     SimilarityResult,
-    LLMSimilarityBackend,
-    FAISSSimilarityBackend,
 )
 
 __all__ = [

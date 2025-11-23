@@ -63,6 +63,7 @@ class TestCustomEvaluatorRegistration:
 
     def test_register_custom_evaluator(self):
         """Test registering a custom evaluator."""
+
         # Create a mock evaluator class
         class MockEvaluator(BaseEvaluator):
             @property
@@ -87,6 +88,7 @@ class TestCustomEvaluatorRegistration:
 
     def test_register_duplicate_evaluator(self):
         """Test that registering duplicate evaluator raises error."""
+
         class MockEvaluator(BaseEvaluator):
             @property
             def name(self) -> str:
@@ -109,6 +111,7 @@ class TestCustomEvaluatorRegistration:
 
     def test_register_invalid_evaluator_class(self):
         """Test that registering non-BaseEvaluator class raises error."""
+
         class NotAnEvaluator:
             pass
 
@@ -174,7 +177,7 @@ class TestCustomEvaluatorRegistration:
             # Use in evaluate()
             from arbiter.api import evaluate
 
-            result = evaluate(
+            evaluate(
                 output="Test output",
                 evaluators=["test_evaluator"],
                 llm_client=mock_client,
@@ -294,4 +297,3 @@ class TestRegistryEdgeCases:
         # Registry should be unchanged
         assert len(get_available_evaluators()) == original_count
         assert "should_not_appear" not in get_available_evaluators()
-

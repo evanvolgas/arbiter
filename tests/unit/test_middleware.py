@@ -1,8 +1,7 @@
 """Unit tests for middleware.py."""
 
 import logging
-from unittest.mock import AsyncMock, MagicMock
-from typing import Any, Callable, Optional
+from typing import Optional
 
 import pytest
 
@@ -63,7 +62,9 @@ class TestLoggingMiddleware:
 
         middleware = LoggingMiddleware(log_level="INFO")
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         result = await middleware.process(
@@ -84,7 +85,9 @@ class TestLoggingMiddleware:
 
         middleware = LoggingMiddleware(log_level="INFO")
 
-        async def mock_handler(output: str, reference: Optional[str]) -> ComparisonResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> ComparisonResult:
             return comparison_result
 
         result = await middleware.process(
@@ -105,7 +108,9 @@ class TestLoggingMiddleware:
 
         middleware = LoggingMiddleware(log_level="INFO")
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             raise ValueError("Test error")
 
         with pytest.raises(ValueError, match="Test error"):
@@ -128,7 +133,9 @@ class TestMetricsMiddleware:
         """Test that passed_count is tracked for EvaluationResult."""
         middleware = MetricsMiddleware()
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         # Process 3 successful evaluations
@@ -150,7 +157,9 @@ class TestMetricsMiddleware:
         middleware = MetricsMiddleware()
 
         # First successful call
-        async def success_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def success_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         await middleware.process(
@@ -161,7 +170,9 @@ class TestMetricsMiddleware:
         )
 
         # Second call fails
-        async def error_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def error_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             raise RuntimeError("Test error")
 
         with pytest.raises(RuntimeError):
@@ -223,7 +234,9 @@ class TestCachingMiddleware:
 
         call_count = 0
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             nonlocal call_count
             call_count += 1
             return eval_result
@@ -257,7 +270,9 @@ class TestCachingMiddleware:
         """Test cache eviction when max_size is exceeded."""
         cache = CachingMiddleware(max_size=2)
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         context: MiddlewareContext = {}
@@ -298,7 +313,9 @@ class TestRateLimitingMiddleware:
         """Test that rate limiter allows requests under limit."""
         limiter = RateLimitingMiddleware(max_requests_per_minute=10)
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         # Should allow 10 requests
@@ -316,7 +333,9 @@ class TestRateLimitingMiddleware:
         """Test that rate limiter blocks requests over limit."""
         limiter = RateLimitingMiddleware(max_requests_per_minute=5)
 
-        async def mock_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def mock_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         # First 5 should succeed
@@ -380,7 +399,9 @@ class TestMiddlewarePipeline:
         metrics_mw = MetricsMiddleware()
         pipeline.add(metrics_mw)
 
-        async def final_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def final_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
         result = await pipeline.execute(
@@ -408,10 +429,15 @@ class TestMiddlewarePipeline:
 
         pipeline.add(ContextCheckMiddleware())
 
-        async def final_handler(output: str, reference: Optional[str]) -> EvaluationResult:
+        async def final_handler(
+            output: str, reference: Optional[str]
+        ) -> EvaluationResult:
             return eval_result
 
-        custom_context: MiddlewareContext = {"evaluators": ["semantic"], "custom_key": "custom_value"}
+        custom_context: MiddlewareContext = {
+            "evaluators": ["semantic"],
+            "custom_key": "custom_value",
+        }
 
         await pipeline.execute(
             output="Test",

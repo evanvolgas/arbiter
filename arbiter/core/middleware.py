@@ -319,7 +319,11 @@ class MetricsMiddleware(Middleware):
             total = self.metrics["total_requests"]
             old_avg = self.metrics["average_score"]
             # Handle both EvaluationResult (has overall_score) and ComparisonResult (has confidence)
-            score_value = getattr(result, "overall_score", None) or getattr(result, "confidence", None) or 0.0
+            score_value = (
+                getattr(result, "overall_score", None)
+                or getattr(result, "confidence", None)
+                or 0.0
+            )
             self.metrics["average_score"] = (
                 old_avg * (total - 1) + float(score_value)
             ) / total
@@ -617,9 +621,7 @@ class MiddlewarePipeline:
         output_b: str,
         criteria: Optional[str],
         reference: Optional[str],
-        final_handler: Callable[
-            [str, str, Optional[str], Optional[str]], Any
-        ],
+        final_handler: Callable[[str, str, Optional[str], Optional[str]], Any],
         context: Optional[MiddlewareContext] = None,
     ) -> ComparisonResult:
         """Execute middleware pipeline for pairwise comparison.

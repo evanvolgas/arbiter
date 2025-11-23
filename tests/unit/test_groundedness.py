@@ -27,14 +27,18 @@ class TestGroundednessEvaluator:
         prompt = evaluator._get_system_prompt()
         assert isinstance(prompt, str)
         assert len(prompt) > 0
-        assert "source attribution" in prompt.lower() or "groundedness" in prompt.lower()
+        assert (
+            "source attribution" in prompt.lower() or "groundedness" in prompt.lower()
+        )
         assert "statements" in prompt.lower()
         assert "grounded" in prompt.lower()
 
     def test_user_prompt_with_reference(self, evaluator):
         """Test user prompt generation with reference."""
         output = "Paris is the capital of France with population of 2.2M"
-        reference = "Paris, the capital city of France, has a population of 2.16 million"
+        reference = (
+            "Paris, the capital city of France, has a population of 2.16 million"
+        )
         prompt = evaluator._get_user_prompt(output, reference, None)
 
         assert output in prompt
@@ -76,12 +80,12 @@ class TestGroundednessEvaluator:
             explanation="All statements are grounded in sources",
             grounded_statements=[
                 "Paris is the capital of France",
-                "The Eiffel Tower is in Paris"
+                "The Eiffel Tower is in Paris",
             ],
             ungrounded_statements=[],
             citations={
                 "Paris is the capital of France": "Paris, the capital city of France...",
-                "The Eiffel Tower is in Paris": "The Eiffel Tower, located in Paris..."
+                "The Eiffel Tower is in Paris": "The Eiffel Tower, located in Paris...",
             },
         )
 
@@ -133,7 +137,7 @@ class TestGroundednessEvaluator:
             ungrounded_statements=[
                 "Invented fact 1",
                 "Invented fact 2",
-                "Hallucinated claim"
+                "Hallucinated claim",
             ],
             citations={},
         )
@@ -203,12 +207,12 @@ class TestGroundednessEvaluator:
             explanation="Partially grounded in sources",
             grounded_statements=[
                 "The Eiffel Tower is in Paris",
-                "It was built in 1889"
+                "It was built in 1889",
             ],
             ungrounded_statements=["It is 324 meters tall"],
             citations={
                 "The Eiffel Tower is in Paris": "Located in Paris, France...",
-                "It was built in 1889": "Constructed in 1889 for the World's Fair..."
+                "It was built in 1889": "Constructed in 1889 for the World's Fair...",
             },
         )
 
@@ -259,10 +263,7 @@ class TestGroundednessEvaluator:
             confidence=0.9,
             explanation="Contains hallucinated information",
             grounded_statements=["Paris is the capital of France"],
-            ungrounded_statements=[
-                "Population of 5 million",
-                "Founded in 1200 AD"
-            ],
+            ungrounded_statements=["Population of 5 million", "Founded in 1200 AD"],
             citations={"Paris is the capital of France": "Paris, the capital..."},
         )
 
@@ -455,7 +456,7 @@ class TestGroundednessResponse:
         citations = {
             "Paris is the capital": "Paris, the capital city...",
             "Population is 2.16M": "The city has 2.16 million inhabitants...",
-            "Built in 1889": "Constructed in 1889 for the exposition..."
+            "Built in 1889": "Constructed in 1889 for the exposition...",
         }
 
         response = GroundednessResponse(

@@ -136,6 +136,12 @@ markers = [
     "performance: marks tests as performance tests"
 ]
 
+[tool.coverage.run]
+omit = [
+    "arbiter/storage/__init__.py",
+    "arbiter/tools/__init__.py",
+]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

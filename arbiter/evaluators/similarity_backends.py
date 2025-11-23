@@ -14,13 +14,12 @@ Example:
     >>> score = await backend.compute_similarity("text1", "text2")
 """
 
-from typing import Any, Dict, Optional, Protocol, Type
+from typing import Any, Dict, Protocol
 
 import numpy as np
 from pydantic import BaseModel, Field
 
 from ..core.llm_client import LLMClient
-from ..core.models import Score
 
 __all__ = [
     "SimilarityBackend",
@@ -54,9 +53,7 @@ class SimilarityBackend(Protocol):
     between 0.0 (completely different) and 1.0 (identical meaning).
     """
 
-    async def compute_similarity(
-        self, text1: str, text2: str
-    ) -> SimilarityResult:
+    async def compute_similarity(self, text1: str, text2: str) -> SimilarityResult:
         """Compute semantic similarity between two texts.
 
         Args:
@@ -101,9 +98,7 @@ class LLMSimilarityBackend:
         """
         self.llm_client = llm_client
 
-    async def compute_similarity(
-        self, text1: str, text2: str
-    ) -> SimilarityResult:
+    async def compute_similarity(self, text1: str, text2: str) -> SimilarityResult:
         """Compute similarity using LLM reasoning.
 
         Args:
@@ -249,9 +244,7 @@ class FAISSSimilarityBackend:
         self.model = SentenceTransformer(model_name)
         self.model_name = model_name
 
-    async def compute_similarity(
-        self, text1: str, text2: str
-    ) -> SimilarityResult:
+    async def compute_similarity(self, text1: str, text2: str) -> SimilarityResult:
         """Compute similarity using vector embeddings.
 
         Args:

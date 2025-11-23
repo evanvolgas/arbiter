@@ -1,6 +1,5 @@
 """Unit tests for main API functions (evaluate and compare)."""
 
-import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -580,4 +579,3 @@ class TestCompareFunction:
 
         mock_manager.get_client.assert_called_once()
         assert result.winner == "output_a"
-

@@ -342,6 +342,7 @@ Example structure:
         except Exception as e:
             # If cost calculation fails, continue without cost
             import logging
+
             logger = logging.getLogger(__name__)
             logger.warning(
                 f"Cost calculation failed for model {self.llm_client.model}: {e}"
@@ -361,7 +362,8 @@ Example structure:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             cached_tokens=cached_tokens,
-            tokens_used=tokens_used or (input_tokens + output_tokens),  # Backward compat
+            tokens_used=tokens_used
+            or (input_tokens + output_tokens),  # Backward compat
             cost=cost,
             latency=latency,
             purpose=f"{self.name}_multi_evaluation",
@@ -382,7 +384,9 @@ Example structure:
         if not multi_response.criteria_scores:
             # Fallback: assign overall score to all criteria
             for criterion_name in criteria.keys():
-                multi_response.criteria_scores[criterion_name] = multi_response.overall_score
+                multi_response.criteria_scores[criterion_name] = (
+                    multi_response.overall_score
+                )
 
         for criterion_name, criterion_score in multi_response.criteria_scores.items():
             criterion_detail = multi_response.criteria_details.get(criterion_name, {})

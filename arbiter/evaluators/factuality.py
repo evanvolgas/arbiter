@@ -29,7 +29,6 @@ from typing import List, Optional, Type, cast
 
 from pydantic import BaseModel, Field
 
-from ..core.llm_client import LLMClient
 from ..core.models import Score
 from .base import BasePydanticEvaluator
 

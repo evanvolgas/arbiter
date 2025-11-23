@@ -1,7 +1,6 @@
 """Unit tests for retry.py."""
 
 import asyncio
-from unittest.mock import AsyncMock
 
 import pytest
 

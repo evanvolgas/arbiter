@@ -232,7 +232,10 @@ Provide your assessment with clear categorization and citation mappings."""
                 + "\n- ".join(groundedness_response.ungrounded_statements)
             )
 
-        if hasattr(groundedness_response, "citations") and groundedness_response.citations:
+        if (
+            hasattr(groundedness_response, "citations")
+            and groundedness_response.citations
+        ):
             citations_text = "\n".join(
                 f"- '{stmt}' → '{source}'"
                 for stmt, source in groundedness_response.citations.items()

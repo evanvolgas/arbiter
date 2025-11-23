@@ -76,7 +76,7 @@ class TestFactualityEvaluator:
             explanation="All claims are factually correct",
             factual_claims=[
                 "Paris is the capital of France",
-                "The Eiffel Tower is in Paris"
+                "The Eiffel Tower is in Paris",
             ],
             non_factual_claims=[],
             uncertain_claims=[],

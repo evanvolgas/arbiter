@@ -19,13 +19,14 @@ import pytest
 from pydantic import BaseModel
 
 from arbiter.core.circuit_breaker import CircuitBreaker
-from arbiter.core.exceptions import CircuitBreakerOpenError, ModelProviderError
+from arbiter.core.exceptions import ModelProviderError
 from arbiter.core.llm_client import LLMClient, LLMManager, LLMResponse
 from arbiter.core.types import Provider
 
 
 class MockEvaluationResponse(BaseModel):
     """Mock response model for agent creation tests."""
+
     score: float
     explanation: str
 
@@ -38,9 +39,7 @@ class TestLLMClient:
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai:
             with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
                 client = LLMClient(
-                    provider=Provider.OPENAI,
-                    model="gpt-4o-mini",
-                    temperature=0.7
+                    provider=Provider.OPENAI, model="gpt-4o-mini", temperature=0.7
                 )
 
                 assert client.provider == Provider.OPENAI
@@ -54,9 +53,7 @@ class TestLLMClient:
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai:
             with patch.dict(os.environ, {"GROQ_API_KEY": "test-key"}):
                 client = LLMClient(
-                    provider=Provider.GROQ,
-                    model="gpt-4",
-                    temperature=0.5
+                    provider=Provider.GROQ, model="gpt-4", temperature=0.5
                 )
 
                 assert client.provider == Provider.GROQ
@@ -75,7 +72,7 @@ class TestLLMClient:
                 client = LLMClient(
                     provider=Provider.OPENAI,
                     model="gpt-4",
-                    circuit_breaker=custom_breaker
+                    circuit_breaker=custom_breaker,
                 )
 
                 assert client.circuit_breaker is custom_breaker
@@ -83,10 +80,8 @@ class TestLLMClient:
     def test_client_initialization_with_api_key_override(self):
         """Test client initialization with API key override."""
         with patch("arbiter.core.llm_client.openai.AsyncOpenAI") as mock_openai:
-            client = LLMClient(
-                provider=Provider.OPENAI,
-                model="gpt-4",
-                api_key="custom-api-key"
+            _client = LLMClient(
+                provider=Provider.OPENAI, model="gpt-4", api_key="custom-api-key"
             )
 
             call_kwargs = mock_openai.call_args[1]
@@ -155,9 +150,9 @@ class TestLLMClient:
                 with patch("arbiter.core.llm_client.Agent") as mock_agent_class:
                     client = LLMClient(Provider.OPENAI, "gpt-4o-mini")
 
-                    agent = client.create_agent(
+                    _agent = client.create_agent(
                         system_prompt="You are a test assistant",
-                        result_type=MockEvaluationResponse
+                        result_type=MockEvaluationResponse,
                     )
 
                     # Verify Agent was created with correct parameters
@@ -173,7 +168,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Test response"
-        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage = Mock(
+            spec=["prompt_tokens", "completion_tokens", "total_tokens"]
+        )
         mock_response.usage.prompt_tokens = 50
         mock_response.usage.completion_tokens = 50
         mock_response.usage.total_tokens = 100
@@ -256,7 +253,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "Success"
-        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage = Mock(
+            spec=["prompt_tokens", "completion_tokens", "total_tokens"]
+        )
         mock_response.usage.prompt_tokens = 25
         mock_response.usage.completion_tokens = 25
         mock_response.usage.total_tokens = 50
@@ -281,7 +280,9 @@ class TestLLMClient:
         mock_response = Mock()
         mock_response.choices = [Mock()]
         mock_response.choices[0].message.content = "No breaker"
-        mock_response.usage = Mock(spec=["prompt_tokens", "completion_tokens", "total_tokens"])
+        mock_response.usage = Mock(
+            spec=["prompt_tokens", "completion_tokens", "total_tokens"]
+        )
         mock_response.usage.prompt_tokens = 40
         mock_response.usage.completion_tokens = 35
         mock_response.usage.total_tokens = 75
@@ -339,7 +340,9 @@ class TestLLMManager:
         """Test get_client with OpenAI API key."""
         with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
             with patch("arbiter.core.llm_client.openai.AsyncOpenAI"):
-                with patch("arbiter.core.llm_client_pool.LLMClient") as mock_client_class:
+                with patch(
+                    "arbiter.core.llm_client_pool.LLMClient"
+                ) as mock_client_class:
                     mock_client = MagicMock()
                     mock_client_class.return_value = mock_client
 
@@ -351,13 +354,14 @@ class TestLLMManager:
         """Test get_client with provider as string."""
         with patch.dict(os.environ, {"GROQ_API_KEY": "test-key"}):
             with patch("arbiter.core.llm_client.openai.AsyncOpenAI"):
-                with patch("arbiter.core.llm_client_pool.LLMClient") as mock_client_class:
+                with patch(
+                    "arbiter.core.llm_client_pool.LLMClient"
+                ) as mock_client_class:
                     mock_client = MagicMock()
                     mock_client_class.return_value = mock_client
 
                     client = await LLMManager.get_client(
-                        provider="groq",
-                        model="llama-3.1-8b"
+                        provider="groq", model="llama-3.1-8b"
                     )
                     assert client is not None
 
@@ -391,15 +395,10 @@ class TestLLMManager:
             mock_get_pool.return_value = mock_pool
 
             await LLMManager.warm_up(
-                Provider.OPENAI,
-                "gpt-4",
-                temperature=0.5,
-                connections=3
+                Provider.OPENAI, "gpt-4", temperature=0.5, connections=3
             )
 
-            mock_pool.warm_up.assert_called_once_with(
-                Provider.OPENAI, "gpt-4", 0.5, 3
-            )
+            mock_pool.warm_up.assert_called_once_with(Provider.OPENAI, "gpt-4", 0.5, 3)
 
     @pytest.mark.asyncio
     async def test_get_metrics(self):
@@ -443,9 +442,7 @@ class TestLLMResponse:
     def test_response_creation(self):
         """Test creating LLMResponse."""
         response = LLMResponse(
-            content="Test content",
-            usage={"total_tokens": 100},
-            model="gpt-4"
+            content="Test content", usage={"total_tokens": 100}, model="gpt-4"
         )
 
         assert response.content == "Test content"
@@ -454,9 +451,6 @@ class TestLLMResponse:
 
     def test_response_default_usage(self):
         """Test LLMResponse with default usage."""
-        response = LLMResponse(
-            content="Test",
-            model="gpt-4"
-        )
+        response = LLMResponse(content="Test", model="gpt-4")
 
         assert response.usage == {}

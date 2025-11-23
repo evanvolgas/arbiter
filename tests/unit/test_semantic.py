@@ -142,7 +142,9 @@ class TestSemanticEvaluator:
         mock_agent.run = AsyncMock(return_value=mock_result)
         evaluator.llm_client.create_agent = MagicMock(return_value=mock_agent)
 
-        score = await evaluator.evaluate(output="This is a coherent text with clear meaning.")
+        score = await evaluator.evaluate(
+            output="This is a coherent text with clear meaning."
+        )
 
         assert score.value == 0.8
         assert len(evaluator.interactions) == 1
@@ -315,4 +317,3 @@ class TestSemanticResponse:
 
         with pytest.raises(Exception):  # Pydantic validation error
             SemanticResponse(score=1.1, explanation="test")
-

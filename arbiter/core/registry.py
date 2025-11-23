@@ -170,4 +170,3 @@ def validate_evaluator_name(name: str) -> None:
 
 # Initialize built-in evaluators when module is imported
 _initialize_builtin_evaluators()
-
