@@ -50,6 +50,16 @@ class TestPairwiseComparisonEvaluator:
         assert "OUTPUT A:" in prompt
         assert "OUTPUT B" in prompt
 
+    def test_user_prompt_without_criteria(self, evaluator):
+        """Test that _get_user_prompt works without criteria."""
+        prompt = evaluator._get_user_prompt("test output", "reference text", None)
+        assert "test output" in prompt
+        assert "reference text" in prompt
+        assert "OUTPUT A:" in prompt
+        assert "OUTPUT B (REFERENCE):" in prompt
+        # Should have overall comparison instructions, not criteria-specific
+        assert "overall" in prompt.lower() or "determine" in prompt.lower()
+
     def test_response_type(self, evaluator):
         """Test that response type is correct."""
         response_type = evaluator._get_response_type()
@@ -94,6 +104,52 @@ class TestPairwiseComparisonEvaluator:
         score = await evaluator._compute_score(mock_response)
         assert 0.4 < score.value < 0.6  # Medium score for tie
         assert score.confidence == 0.8
+
+    @pytest.mark.asyncio
+    async def test_compute_score_with_aspect_comparisons(self, evaluator):
+        """Test _compute_score includes aspect comparisons in explanation."""
+        mock_response = PairwiseResponse(
+            winner="output_a",
+            confidence=0.9,
+            reasoning="Output is better overall",
+            aspect_comparisons=[
+                AspectComparison(
+                    aspect="accuracy",
+                    output_a_score=0.95,
+                    output_b_score=0.80,
+                    reasoning="More accurate facts",
+                ),
+                AspectComparison(
+                    aspect="clarity",
+                    output_a_score=0.85,
+                    output_b_score=0.90,
+                    reasoning="Reference is clearer",
+                ),
+            ],
+        )
+        score = await evaluator._compute_score(mock_response)
+        assert score.value > 0.7
+        assert "accuracy" in score.explanation
+        assert "clarity" in score.explanation
+        assert "0.95" in score.explanation  # output_a accuracy score
+        assert "0.80" in score.explanation  # output_b accuracy score
+        assert score.metadata["aspect_count"] == 2
+
+    @pytest.mark.asyncio
+    async def test_compute_score_low_confidence(self, evaluator):
+        """Test _compute_score with low confidence pulls score toward 0.5."""
+        # Low confidence winner should be closer to 0.5
+        mock_response = PairwiseResponse(
+            winner="output_a",
+            confidence=0.3,  # Low confidence
+            reasoning="Uncertain winner",
+            aspect_comparisons=[],
+        )
+        score = await evaluator._compute_score(mock_response)
+        # With low confidence (0.3), score should be closer to 0.5 than 0.9
+        # Formula: 0.9 * 0.3 + 0.5 * 0.7 = 0.27 + 0.35 = 0.62
+        assert 0.5 < score.value < 0.7
+        assert score.confidence == 0.3
 
     @pytest.mark.asyncio
     async def test_compare_output_a_wins(self, evaluator, mock_agent):
