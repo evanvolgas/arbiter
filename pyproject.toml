@@ -50,7 +50,9 @@ scale = [
 ]
 
 # Storage backends
+postgres = ["asyncpg>=0.29.0", "alembic>=1.13.0", "sqlalchemy>=2.0.0"]
 redis = ["redis>=5.0.0"]
+storage = ["arbiter[postgres,redis]"]  # All storage backends
 
 # Development tools
 dev = [

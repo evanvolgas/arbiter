@@ -1,12 +1,44 @@
-"""Storage backends for evaluation results (Phase 4 - Planned).
+"""Storage backends for evaluation results.
 
-This module is currently a stub. Implementations planned for Phase 4 include:
-- Memory storage (in-memory with LRU)
-- File storage (JSON persistence)
-- Redis storage (distributed caching)
-- Plugin system for custom backends
+Available backends:
+- PostgreSQL: Persistent storage with arbiter schema (requires DATABASE_URL)
+- Redis: Fast caching with TTL (requires REDIS_URL)
 
-See PROJECT_PLAN.md for roadmap details.
+Setup:
+    1. Set DATABASE_URL and/or REDIS_URL in .env
+    2. Run migrations: alembic upgrade head
+    3. Use storage backends in evaluate() calls
+
+Example:
+    >>> from arbiter import evaluate
+    >>> from arbiter.storage import PostgresStorage
+    >>>
+    >>> storage = PostgresStorage()
+    >>> async with storage:
+    >>>     result = await evaluate(
+    >>>         output="...",
+    >>>         reference="...",
+    >>>         evaluators=["semantic"],
+    >>>         storage=storage
+    >>>     )
 """
 
-__all__ = []  # Empty until Phase 4 implementation
+from arbiter.storage.base import (
+    ConnectionError,
+    RetrievalError,
+    SaveError,
+    StorageBackend,
+    StorageError,
+)
+from arbiter.storage.postgres import PostgresStorage
+from arbiter.storage.redis import RedisStorage
+
+__all__ = [
+    "StorageBackend",
+    "StorageError",
+    "ConnectionError",
+    "SaveError",
+    "RetrievalError",
+    "PostgresStorage",
+    "RedisStorage",
+]
