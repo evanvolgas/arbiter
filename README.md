@@ -213,6 +213,32 @@ print(f"Criteria met: {result.scores[0].metadata['criteria_met']}")
 print(f"Criteria not met: {result.scores[0].metadata['criteria_not_met']}")
 ```
 
+**Pairwise Comparison** (A/B Testing)
+```python
+from arbiter import compare, PairwiseComparisonEvaluator, LLMManager
+
+# Option 1: High-level API
+comparison = await compare(
+    output_a="GPT-4 response",
+    output_b="Claude response",
+    criteria="accuracy, clarity, completeness",
+    model="gpt-4o-mini"
+)
+print(f"Winner: {comparison.winner}")  # output_a, output_b, or tie
+print(f"Confidence: {comparison.confidence:.2f}")
+
+# Option 2: Direct evaluator (supports evaluate() too)
+client = await LLMManager.get_client(model="gpt-4o-mini")
+evaluator = PairwiseComparisonEvaluator(client)
+
+# Pattern 1: compare() for explicit A/B comparison
+comparison = await evaluator.compare(output_a="...", output_b="...")
+
+# Pattern 2: evaluate() for output vs reference
+score = await evaluator.evaluate(output="...", reference="...")
+print(f"Score: {score.value:.2f}")  # High if output > reference, low if reference > output
+```
+
 **Multiple Evaluators**
 ```python
 # Combine multiple evaluators for comprehensive assessment
@@ -339,10 +365,11 @@ python examples/basic_evaluation.py
 **Evaluators:**
 - [Semantic Similarity](examples/faiss_semantic_example.py) - LLM and FAISS backends
 - [Custom Criteria](examples/custom_criteria_example.py) - Domain-specific evaluation
+- [Pairwise Comparison](examples/pairwise_comparison_example.py) - A/B testing with compare()
+- [Pairwise evaluate()](examples/pairwise_evaluate_example.py) - Output vs reference comparison
 - [Factuality](examples/factuality_example.py) - Hallucination detection
 - [Groundedness](examples/groundedness_example.py) - RAG validation
 - [Relevance](examples/relevance_example.py) - Query alignment
-- [Pairwise Comparison](examples/pairwise_comparison_example.py) - A/B testing
 
 **Advanced Features:**
 - [Batch Evaluation](examples/batch_evaluation_example.py) - Parallel processing with progress tracking

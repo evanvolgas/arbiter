@@ -81,8 +81,9 @@ class PairwiseResponse(BaseModel):
 class PairwiseComparisonEvaluator(BasePydanticEvaluator):
     """Compares two LLM outputs to determine which is better.
 
-    This evaluator is designed for pairwise comparison scenarios where you
-    need to determine which of two outputs is superior, or if they're equivalent.
+    This evaluator supports two usage patterns:
+    1. compare() - Explicit A/B comparison of two outputs
+    2. evaluate() - Compare output against reference (standard evaluator API)
 
     The evaluator:
     - Compares outputs aspect-by-aspect (if criteria provided)
@@ -90,7 +91,7 @@ class PairwiseComparisonEvaluator(BasePydanticEvaluator):
     - Provides detailed reasoning for the decision
     - Returns aspect-level scores for transparency
 
-    Example:
+    Usage Pattern 1 - compare() for A/B testing:
         >>> from arbiter import LLMManager
         >>> client = await LLMManager.get_client(model="gpt-4o")
         >>> evaluator = PairwiseComparisonEvaluator(client)
@@ -110,6 +111,18 @@ class PairwiseComparisonEvaluator(BasePydanticEvaluator):
         >>> for aspect in comparison.aspect_scores:
         ...     print(f"{aspect}: A={comparison.aspect_scores[aspect]['output_a']:.2f}, "
         ...           f"B={comparison.aspect_scores[aspect]['output_b']:.2f}")
+
+    Usage Pattern 2 - evaluate() for standard evaluation API:
+        >>> # Compare output against reference (standard evaluator interface)
+        >>> score = await evaluator.evaluate(
+        ...     output="Paris is the capital of France",
+        ...     reference="The capital of France is Paris",
+        ...     criteria="accuracy, completeness"
+        ... )
+        >>>
+        >>> print(f"Score: {score.value:.2f}")  # High if output better, low if reference better
+        >>> print(f"Winner: {score.metadata['winner']}")  # output_a, output_b, or tie
+        >>> print(f"Confidence: {score.confidence:.2f}")
     """
 
     @property
