@@ -12,6 +12,8 @@ last_updated: 2025-01-22
 **Stack**: Python 3.10+, PydanticAI, provider-agnostic (OpenAI/Anthropic/Google/Groq)
 **Coverage**: 95% test coverage, strict mypy, comprehensive examples
 
+**Design Philosophy**: Simplicity wins, use good defaults, YAML config where needed, no hardcoded assumptions.
+
 ---
 
 ## Quick Start (First Session Commands)
