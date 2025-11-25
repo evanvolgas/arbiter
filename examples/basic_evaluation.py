@@ -22,8 +22,8 @@ from dotenv import load_dotenv
 import asyncio
 import os
 
-from arbiter import evaluate
-from arbiter.core import LLMManager
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager
 
 
 async def main():
@@ -116,7 +116,7 @@ async def main():
     print("\n\n📝 Example 3: Direct Evaluator Usage")
     print("-" * 50)
 
-    from arbiter.evaluators import SemanticEvaluator
+    from arbiter_ai.evaluators import SemanticEvaluator
 
     # Get LLM client
     client = await LLMManager.get_client(model="gpt-4o-mini")

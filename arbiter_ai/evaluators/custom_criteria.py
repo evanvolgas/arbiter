@@ -328,7 +328,7 @@ Example structure:
         # Calculate cost using cost calculator
         cost = None
         try:
-            from arbiter.core.cost_calculator import get_cost_calculator
+            from arbiter_ai.core.cost_calculator import get_cost_calculator
 
             calc = get_cost_calculator()
             await calc.ensure_loaded()

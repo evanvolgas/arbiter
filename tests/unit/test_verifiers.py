@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.evaluators import FactualityEvaluator
-from arbiter.verifiers import (
+from arbiter_ai.evaluators import FactualityEvaluator
+from arbiter_ai.verifiers import (
     CitationVerifier,
     FactualityVerifier,
     KnowledgeBaseVerifier,
@@ -270,7 +270,7 @@ class TestFactualityEvaluatorWithVerifiers:
     @pytest.mark.asyncio
     async def test_factuality_evaluator_stores_context(self):
         """Test that FactualityEvaluator stores output and reference."""
-        from arbiter.core.models import Score
+        from arbiter_ai.core.models import Score
 
         mock_client = MagicMock()
         evaluator = FactualityEvaluator(llm_client=mock_client)

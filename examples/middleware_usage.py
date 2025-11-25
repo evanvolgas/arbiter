@@ -23,9 +23,9 @@ import asyncio
 import logging
 import os
 
-from arbiter import evaluate
-from arbiter.core import LLMManager, MiddlewarePipeline
-from arbiter.core.middleware import (
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager, MiddlewarePipeline
+from arbiter_ai.core.middleware import (
     CachingMiddleware,
     LoggingMiddleware,
     MetricsMiddleware,
@@ -188,8 +188,8 @@ async def main():
 
     from typing import Callable, Dict, Optional
 
-    from arbiter.core.middleware import Middleware
-    from arbiter.core.models import EvaluationResult
+    from arbiter_ai.core.middleware import Middleware
+    from arbiter_ai.core.models import EvaluationResult
 
     class TimingMiddleware(Middleware):
         """Custom middleware to track evaluation timing."""

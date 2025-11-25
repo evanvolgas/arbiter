@@ -117,7 +117,7 @@ class FactualityEvaluator(BasePydanticEvaluator):
         >>> print(f"Made {len(interactions)} LLM calls")
         >>>
         >>> # Use with external verification plugins
-        >>> from arbiter.verifiers import SearchVerifier, CitationVerifier
+        >>> from arbiter_ai.verifiers import SearchVerifier, CitationVerifier
         >>> verifiers = [SearchVerifier(api_key="tavily_key"), CitationVerifier()]
         >>> evaluator = FactualityEvaluator(client, verifiers=verifiers)
         >>> score = await evaluator.evaluate("Paris is the capital of France")
@@ -146,7 +146,7 @@ class FactualityEvaluator(BasePydanticEvaluator):
             >>> evaluator = FactualityEvaluator(model="gpt-4o-mini")
             >>>
             >>> # With verification plugins
-            >>> from arbiter.verifiers import SearchVerifier, KnowledgeBaseVerifier
+            >>> from arbiter_ai.verifiers import SearchVerifier, KnowledgeBaseVerifier
             >>> verifiers = [SearchVerifier(), KnowledgeBaseVerifier()]
             >>> evaluator = FactualityEvaluator(model="gpt-4o-mini", verifiers=verifiers)
         """

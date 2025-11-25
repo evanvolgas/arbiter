@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from arbiter.core.monitoring import (
+from arbiter_ai.core.monitoring import (
     PerformanceMetrics,
     PerformanceMonitor,
     get_global_monitor,

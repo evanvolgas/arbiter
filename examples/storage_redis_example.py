@@ -14,10 +14,10 @@ Prerequisites:
 import asyncio
 import sys
 
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 try:
-    from arbiter.storage import RedisStorage
+    from arbiter_ai.storage import RedisStorage
 except ImportError:
     print("=" * 60)
     print("Redis Storage Example")
@@ -97,7 +97,7 @@ async def main() -> None:
 
         # 5. Batch result caching
         print("\n5. Batch result caching...")
-        from arbiter import batch_evaluate
+        from arbiter_ai import batch_evaluate
 
         items = [
             {"output": "Tokyo is Japan's capital", "reference": "Capital of Japan is Tokyo"},

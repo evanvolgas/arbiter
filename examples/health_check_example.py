@@ -27,9 +27,9 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from arbiter import evaluate
-from arbiter.core import LLMManager
-from arbiter.core.exceptions import ArbiterError, ModelProviderError
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager
+from arbiter_ai.core.exceptions import ArbiterError, ModelProviderError
 
 
 @dataclass

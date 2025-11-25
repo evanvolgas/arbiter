@@ -21,8 +21,8 @@ from dotenv import load_dotenv
 import asyncio
 import os
 
-from arbiter import evaluate, CustomCriteriaEvaluator
-from arbiter.core import LLMManager
+from arbiter_ai import evaluate, CustomCriteriaEvaluator
+from arbiter_ai.core import LLMManager
 
 
 async def main():

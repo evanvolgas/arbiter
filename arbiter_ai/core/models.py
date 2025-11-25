@@ -48,7 +48,7 @@ def _get_interaction_cost(interaction: "LLMInteraction") -> float:
         return interaction.cost
 
     # Calculate on-the-fly using cost calculator
-    from arbiter.core.cost_calculator import get_cost_calculator
+    from arbiter_ai.core.cost_calculator import get_cost_calculator
 
     calc = get_cost_calculator()
     return calc.calculate_cost(
@@ -337,7 +337,7 @@ class EvaluationResult(BaseModel):
             return (total_tokens / 1000) * 0.02
 
         # Use cost calculator for accurate pricing
-        from arbiter.core.cost_calculator import get_cost_calculator
+        from arbiter_ai.core.cost_calculator import get_cost_calculator
 
         calc = get_cost_calculator()
         await calc.ensure_loaded()
@@ -377,7 +377,7 @@ class EvaluationResult(BaseModel):
                 }
             }
         """
-        from arbiter.core.cost_calculator import get_cost_calculator
+        from arbiter_ai.core.cost_calculator import get_cost_calculator
 
         calc = get_cost_calculator()
         await calc.ensure_loaded()
@@ -536,7 +536,7 @@ class ComparisonResult(BaseModel):
             return (total_tokens / 1000) * 0.02
 
         # Use cost calculator for accurate pricing
-        from arbiter.core.cost_calculator import get_cost_calculator
+        from arbiter_ai.core.cost_calculator import get_cost_calculator
 
         calc = get_cost_calculator()
         await calc.ensure_loaded()

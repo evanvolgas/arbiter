@@ -5,18 +5,18 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from arbiter.core.models import (
+from arbiter_ai.core.models import (
     BatchEvaluationResult,
     EvaluationResult,
     LLMInteraction,
     Score,
 )
-from arbiter.storage.base import ConnectionError, RetrievalError, SaveError
+from arbiter_ai.storage.base import ConnectionError, RetrievalError, SaveError
 
 # Skip all tests if redis is not installed
 pytest.importorskip("redis", reason="Redis storage requires redis")
 
-from arbiter.storage.redis import RedisStorage
+from arbiter_ai.storage.redis import RedisStorage
 
 
 @pytest.fixture

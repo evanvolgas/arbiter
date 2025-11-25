@@ -24,10 +24,10 @@ import asyncio
 import os
 from typing import Optional
 
-from arbiter import evaluate
-from arbiter.core import LLMManager, Provider
-from arbiter.core.llm_client import LLMClient
-from arbiter.core.retry import RetryConfig, RETRY_STANDARD, RETRY_PERSISTENT
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager, Provider
+from arbiter_ai.core.llm_client import LLMClient
+from arbiter_ai.core.retry import RetryConfig, RETRY_STANDARD, RETRY_PERSISTENT
 
 
 async def main():

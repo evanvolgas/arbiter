@@ -21,8 +21,8 @@ from dotenv import load_dotenv
 import asyncio
 import os
 
-from arbiter import compare, PairwiseComparisonEvaluator
-from arbiter.core import LLMManager
+from arbiter_ai import compare, PairwiseComparisonEvaluator
+from arbiter_ai.core import LLMManager
 
 
 async def main():

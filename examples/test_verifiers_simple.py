@@ -2,7 +2,7 @@
 
 import asyncio
 
-from arbiter.verifiers import CitationVerifier, KnowledgeBaseVerifier
+from arbiter_ai.verifiers import CitationVerifier, KnowledgeBaseVerifier
 
 
 async def test_citation_verifier():

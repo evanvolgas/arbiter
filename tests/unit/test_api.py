@@ -4,12 +4,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError, ValidationError
-from arbiter.core.llm_client import LLMClient
-from arbiter.core.models import ComparisonResult, EvaluationResult
-from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
-from arbiter.evaluators.pairwise import PairwiseResponse
-from arbiter.evaluators.semantic import SemanticResponse
+from arbiter_ai.core.exceptions import EvaluatorError, ValidationError
+from arbiter_ai.core.llm_client import LLMClient
+from arbiter_ai.core.models import ComparisonResult, EvaluationResult
+from arbiter_ai.evaluators.custom_criteria import CustomCriteriaResponse
+from arbiter_ai.evaluators.pairwise import PairwiseResponse
+from arbiter_ai.evaluators.semantic import SemanticResponse
 from tests.conftest import MockAgentResult
 
 
@@ -19,7 +19,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_basic_semantic(self, mock_llm_client, mock_agent):
         """Test basic semantic evaluation."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -51,7 +51,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_default_evaluators(self, mock_llm_client, mock_agent):
         """Test that default evaluator is semantic."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = SemanticResponse(
             score=0.8,
@@ -75,7 +75,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_custom_criteria(self, mock_llm_client, mock_agent):
         """Test custom criteria evaluation."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = CustomCriteriaResponse(
             score=0.85,
@@ -101,7 +101,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_custom_criteria_without_criteria(self, mock_llm_client):
         """Test that custom_criteria evaluator requires criteria."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError, match="requires criteria"):
             await evaluate(
@@ -113,7 +113,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_multiple_evaluators(self, mock_llm_client, mock_agent):
         """Test evaluation with multiple evaluators."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         semantic_response = SemanticResponse(
             score=0.9,
@@ -151,7 +151,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_validation_empty_output(self, mock_llm_client):
         """Test validation for empty output."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError, match="output cannot be empty"):
             await evaluate(output="", llm_client=mock_llm_client)
@@ -162,7 +162,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_validation_empty_reference(self, mock_llm_client):
         """Test validation for empty reference."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError, match="reference cannot be empty"):
             await evaluate(output="Test", reference="", llm_client=mock_llm_client)
@@ -173,7 +173,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_validation_empty_criteria(self, mock_llm_client):
         """Test validation for empty criteria."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError, match="criteria cannot be empty"):
             await evaluate(output="Test", criteria="", llm_client=mock_llm_client)
@@ -184,7 +184,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_unknown_evaluator(self, mock_llm_client):
         """Test that unknown evaluator raises error."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError, match="Unknown evaluator"):
             await evaluate(
@@ -196,7 +196,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_threshold(self, mock_llm_client, mock_agent):
         """Test threshold-based pass/fail."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = SemanticResponse(
             score=0.8,
@@ -229,7 +229,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_interaction_tracking(self, mock_llm_client, mock_agent):
         """Test that interactions are tracked."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -254,7 +254,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_metrics(self, mock_llm_client, mock_agent):
         """Test that metrics are created."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -280,7 +280,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_partial_failure(self, mock_llm_client, mock_agent):
         """Test partial failure scenario."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         semantic_response = SemanticResponse(
             score=0.9,
@@ -314,7 +314,7 @@ class TestEvaluateFunction:
     @pytest.mark.asyncio
     async def test_evaluate_all_failures(self, mock_llm_client, mock_agent):
         """Test that all failures raise error."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_agent.run = AsyncMock(side_effect=Exception("All failed"))
         mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
@@ -330,7 +330,7 @@ class TestEvaluateFunction:
     @patch("arbiter.api.LLMManager")
     async def test_evaluate_creates_client(self, mock_manager, mock_agent):
         """Test that client is created if not provided."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         mock_client = MagicMock(spec=LLMClient)
         mock_client.model = "gpt-4o"
@@ -364,7 +364,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_basic(self, mock_llm_client, mock_agent):
         """Test basic comparison."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_response = PairwiseResponse(
             winner="output_a",
@@ -392,7 +392,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_with_reference(self, mock_llm_client, mock_agent):
         """Test comparison with reference."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_response = PairwiseResponse(
             winner="output_b",
@@ -418,7 +418,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_with_criteria(self, mock_llm_client, mock_agent):
         """Test comparison with criteria."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_response = PairwiseResponse(
             winner="output_a",
@@ -444,7 +444,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_tie(self, mock_llm_client, mock_agent):
         """Test tie scenario."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_response = PairwiseResponse(
             winner="tie",
@@ -468,8 +468,8 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_aspect_scores(self, mock_llm_client, mock_agent):
         """Test comparison with aspect scores."""
-        from arbiter.api import compare
-        from arbiter.evaluators.pairwise import AspectComparison
+        from arbiter_ai.api import compare
+        from arbiter_ai.evaluators.pairwise import AspectComparison
 
         mock_response = PairwiseResponse(
             winner="output_a",
@@ -510,7 +510,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_error_handling(self, mock_llm_client, mock_agent):
         """Test error handling in comparison."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_agent.run = AsyncMock(side_effect=Exception("Comparison failed"))
         mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
@@ -525,7 +525,7 @@ class TestCompareFunction:
     @pytest.mark.asyncio
     async def test_compare_interaction_tracking(self, mock_llm_client, mock_agent):
         """Test that interactions are tracked."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_response = PairwiseResponse(
             winner="output_a",
@@ -552,7 +552,7 @@ class TestCompareFunction:
     @patch("arbiter.api.LLMManager")
     async def test_compare_creates_client(self, mock_manager, mock_agent):
         """Test that client is created if not provided."""
-        from arbiter.api import compare
+        from arbiter_ai.api import compare
 
         mock_client = MagicMock(spec=LLMClient)
         mock_client.model = "gpt-4o"

@@ -11,7 +11,7 @@ Verification plugins are optional and can be used with FactualityEvaluator
 to improve hallucination detection and fact-checking accuracy.
 
 Example:
-    >>> from arbiter.verifiers import SearchVerifier, CitationVerifier
+    >>> from arbiter_ai.verifiers import SearchVerifier, CitationVerifier
     >>> from arbiter import evaluate
     >>>
     >>> # Setup verification plugins

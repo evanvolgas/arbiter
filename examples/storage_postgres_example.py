@@ -15,10 +15,10 @@ Prerequisites:
 import asyncio
 import sys
 
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 try:
-    from arbiter.storage import PostgresStorage
+    from arbiter_ai.storage import PostgresStorage
 except ImportError:
     print("=" * 60)
     print("PostgreSQL Storage Example")
@@ -81,7 +81,7 @@ async def main() -> None:
 
         # 4. Batch evaluation with storage
         print("\n4. Batch evaluation...")
-        from arbiter import batch_evaluate
+        from arbiter_ai import batch_evaluate
 
         items = [
             {

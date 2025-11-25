@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from pydantic import BaseModel
 
-from arbiter.core.exceptions import EvaluatorError
-from arbiter.core.models import LLMInteraction, Score
-from arbiter.evaluators.base import BasePydanticEvaluator, EvaluatorResponse
+from arbiter_ai.core.exceptions import EvaluatorError
+from arbiter_ai.core.models import LLMInteraction, Score
+from arbiter_ai.evaluators.base import BasePydanticEvaluator, EvaluatorResponse
 from tests.conftest import MockAgentResult
 
 

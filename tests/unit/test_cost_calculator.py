@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.core.cost_calculator import (
+from arbiter_ai.core.cost_calculator import (
     CostCalculator,
     ModelPricing,
     get_cost_calculator,
@@ -431,7 +431,7 @@ class TestIntegrationWithEvaluationResult:
     @pytest.mark.asyncio
     async def test_evaluation_result_cost_calculation(self):
         """Test cost calculation in EvaluationResult."""
-        from arbiter.core.models import EvaluationResult, LLMInteraction, Score
+        from arbiter_ai.core.models import EvaluationResult, LLMInteraction, Score
 
         # Create evaluation result with interactions
         result = EvaluationResult(
@@ -461,7 +461,7 @@ class TestIntegrationWithEvaluationResult:
     @pytest.mark.asyncio
     async def test_evaluation_result_cost_breakdown(self):
         """Test cost breakdown in EvaluationResult."""
-        from arbiter.core.models import EvaluationResult, LLMInteraction, Score
+        from arbiter_ai.core.models import EvaluationResult, LLMInteraction, Score
 
         result = EvaluationResult(
             output="test output",

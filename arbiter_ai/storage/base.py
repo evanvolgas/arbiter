@@ -6,7 +6,7 @@ All storage backends must implement this async interface.
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from arbiter.core.models import BatchEvaluationResult, EvaluationResult
+from arbiter_ai.core.models import BatchEvaluationResult, EvaluationResult
 
 
 class StorageBackend(ABC):

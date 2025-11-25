@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.llm_client import LLMClient
+from arbiter_ai.core.llm_client import LLMClient
 
 
 class MockAgentResult:

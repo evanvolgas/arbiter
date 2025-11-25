@@ -5,7 +5,7 @@ This module provides the primary entry points for evaluating LLM outputs.
 ## Quick Start:
 
     >>> from arbiter import evaluate
-    >>> from arbiter.core import LLMManager
+    >>> from arbiter_ai.core import LLMManager
     >>>
     >>> # Evaluate semantic similarity
     >>> client = await LLMManager.get_client(model="gpt-4o")

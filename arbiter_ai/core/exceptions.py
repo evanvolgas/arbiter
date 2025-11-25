@@ -19,7 +19,7 @@ ArbiterError (base)
 
 ## Usage:
 
-    >>> from arbiter.core.exceptions import ModelProviderError
+    >>> from arbiter_ai.core.exceptions import ModelProviderError
     >>>
     >>> try:
     ...     result = await evaluate(output, reference)

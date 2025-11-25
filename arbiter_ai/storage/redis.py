@@ -11,8 +11,8 @@ from typing import Any, Optional
 
 import redis.asyncio as redis
 
-from arbiter.core.models import BatchEvaluationResult, EvaluationResult
-from arbiter.storage.base import (
+from arbiter_ai.core.models import BatchEvaluationResult, EvaluationResult
+from arbiter_ai.storage.base import (
     ConnectionError,
     RetrievalError,
     SaveError,

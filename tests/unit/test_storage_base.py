@@ -2,7 +2,7 @@
 
 import pytest
 
-from arbiter.storage.base import (
+from arbiter_ai.storage.base import (
     ConnectionError,
     RetrievalError,
     SaveError,

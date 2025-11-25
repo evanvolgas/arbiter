@@ -29,8 +29,8 @@ import asyncio
 import time
 from dotenv import load_dotenv
 
-from arbiter import LLMManager
-from arbiter.evaluators import SemanticEvaluator
+from arbiter_ai import LLMManager
+from arbiter_ai.evaluators import SemanticEvaluator
 
 
 async def main():

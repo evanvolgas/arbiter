@@ -21,11 +21,11 @@ import asyncio
 import os
 from dotenv import load_dotenv
 
-from arbiter import evaluate
-from arbiter.core.circuit_breaker import CircuitBreaker
-from arbiter.core.exceptions import CircuitBreakerOpenError, ModelProviderError
-from arbiter.core.llm_client import LLMClient, LLMManager
-from arbiter.core.types import Provider
+from arbiter_ai import evaluate
+from arbiter_ai.core.circuit_breaker import CircuitBreaker
+from arbiter_ai.core.exceptions import CircuitBreakerOpenError, ModelProviderError
+from arbiter_ai.core.llm_client import LLMClient, LLMManager
+from arbiter_ai.core.types import Provider
 
 
 async def main():

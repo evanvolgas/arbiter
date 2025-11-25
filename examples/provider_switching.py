@@ -22,8 +22,8 @@ from dotenv import load_dotenv
 import asyncio
 import os
 
-from arbiter import evaluate
-from arbiter.core import LLMManager, Provider
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager, Provider
 
 
 async def main():
@@ -152,7 +152,7 @@ async def main():
         print(f"  Temperature: {client.temperature}")
 
         # Use the client with evaluators
-        from arbiter.evaluators import SemanticEvaluator
+        from arbiter_ai.evaluators import SemanticEvaluator
 
         evaluator = SemanticEvaluator(client)
         score = await evaluator.evaluate(

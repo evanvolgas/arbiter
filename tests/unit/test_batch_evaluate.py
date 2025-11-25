@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import ValidationError
-from arbiter.core.models import BatchEvaluationResult, EvaluationResult
-from arbiter.evaluators.custom_criteria import CustomCriteriaResponse
-from arbiter.evaluators.semantic import SemanticResponse
+from arbiter_ai.core.exceptions import ValidationError
+from arbiter_ai.core.models import BatchEvaluationResult, EvaluationResult
+from arbiter_ai.evaluators.custom_criteria import CustomCriteriaResponse
+from arbiter_ai.evaluators.semantic import SemanticResponse
 from tests.conftest import MockAgentResult
 
 
@@ -17,7 +17,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_basic(self, mock_llm_client, mock_agent):
         """Test basic batch evaluation with multiple items."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -68,7 +68,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_progress_callback(self, mock_llm_client, mock_agent):
         """Test that progress callback is invoked correctly."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -114,7 +114,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_partial_failures(self, mock_llm_client, mock_agent):
         """Test that partial failures don't fail entire batch."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -160,7 +160,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_all_failures(self, mock_llm_client, mock_agent):
         """Test batch where all items fail."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_agent.run = AsyncMock(side_effect=Exception("All failed"))
         mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
@@ -185,7 +185,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_empty_items_validation(self, mock_llm_client):
         """Test that empty items list raises validation error."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         with pytest.raises(ValidationError, match="items list cannot be empty"):
             await batch_evaluate(
@@ -197,7 +197,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_missing_output_key_validation(self, mock_llm_client):
         """Test that missing 'output' key raises validation error."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         items = [
             {"reference": "Test reference"},  # Missing 'output'
@@ -217,7 +217,7 @@ class TestBatchEvaluateFunction:
         """Test that concurrency is controlled by max_concurrency parameter."""
         import asyncio
 
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -253,7 +253,7 @@ class TestBatchEvaluateFunction:
         self, mock_llm_client, mock_agent
     ):
         """Test batch evaluation with multiple evaluators per item."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         semantic_response = SemanticResponse(
             score=0.9,
@@ -299,7 +299,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_result_ordering(self, mock_llm_client, mock_agent):
         """Test that results maintain original item ordering."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         # Create different responses to verify ordering
         responses = [
@@ -330,7 +330,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_get_result_helper(self, mock_llm_client, mock_agent):
         """Test get_result() helper method."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -365,7 +365,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_get_error_helper(self, mock_llm_client, mock_agent):
         """Test get_error() helper method."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -403,7 +403,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_total_llm_cost(self, mock_llm_client, mock_agent):
         """Test total_llm_cost() aggregation method."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -435,7 +435,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_cost_breakdown(self, mock_llm_client, mock_agent):
         """Test cost_breakdown() aggregation method."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -471,7 +471,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_with_threshold(self, mock_llm_client, mock_agent):
         """Test batch evaluation with pass/fail threshold."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         # Create responses with different scores
         responses = [
@@ -500,7 +500,7 @@ class TestBatchEvaluateFunction:
     @pytest.mark.asyncio
     async def test_batch_evaluate_without_reference(self, mock_llm_client, mock_agent):
         """Test batch evaluation without reference (e.g., for custom_criteria only)."""
-        from arbiter.api import batch_evaluate
+        from arbiter_ai.api import batch_evaluate
 
         mock_response = CustomCriteriaResponse(
             score=0.85,

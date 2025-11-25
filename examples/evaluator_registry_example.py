@@ -20,14 +20,14 @@ from dotenv import load_dotenv
 
 import asyncio
 
-from arbiter import (
+from arbiter_ai import (
     BasePydanticEvaluator,
     evaluate,
     get_available_evaluators,
     register_evaluator,
 )
-from arbiter.core import LLMManager
-from arbiter.core.models import Score
+from arbiter_ai.core import LLMManager
+from arbiter_ai.core.models import Score
 from pydantic import BaseModel, Field
 
 

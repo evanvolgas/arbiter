@@ -16,8 +16,8 @@ What makes this unique:
 """
 
 import asyncio
-from arbiter import evaluate
-from arbiter.core import Provider
+from arbiter_ai import evaluate
+from arbiter_ai.core import Provider
 
 
 async def example1_basic_cost_tracking():
@@ -193,7 +193,7 @@ async def example5_batch_cost_analysis():
     print("Example 5: Batch Evaluation Cost Analysis")
     print("=" * 80)
 
-    from arbiter import batch_evaluate
+    from arbiter_ai import batch_evaluate
 
     # Create test items
     items = [

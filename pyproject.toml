@@ -9,7 +9,7 @@ description = "Native PydanticAI evaluation with automatic cost tracking"
 authors = [{name = "Evan Volgas", email = "evan.volgas@gmail.com"}]
 license = "MIT"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"
 keywords = ["ai", "llm", "evaluation", "testing", "metrics", "pydantic-ai", "cost-tracking"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Testing",
     "Typing :: Typed",
@@ -97,14 +98,14 @@ all = ["arbiter[anthropic,gemini,mistral,cohere,scale,redis,dev]"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["arbiter*"]
+include = ["arbiter_ai*"]
 
 [tool.setuptools.package-data]
-arbiter = ["py.typed"]
+arbiter_ai = ["py.typed"]
 
 [tool.black]
 line-length = 88
-target-version = ['py311', 'py312', 'py313']
+target-version = ['py311', 'py312', 'py313', 'py314']
 
 [tool.ruff]
 line-length = 88
@@ -126,7 +127,7 @@ fixable = ["ALL"]
 unfixable = []
 
 [tool.ruff.lint.isort]
-known-first-party = ["arbiter"]
+known-first-party = ["arbiter_ai"]
 combine-as-imports = true
 
 [tool.ruff.format]
@@ -137,7 +138,7 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = ["--strict-markers", "--cov=arbiter", "--cov-report=term-missing"]
+addopts = ["--strict-markers", "--cov=arbiter_ai", "--cov-report=term-missing"]
 testpaths = ["tests"]
 markers = [
     "slow: marks tests as slow",
@@ -147,8 +148,8 @@ markers = [
 
 [tool.coverage.run]
 omit = [
-    "arbiter/storage/__init__.py",
-    "arbiter/tools/__init__.py",
+    "arbiter_ai/storage/__init__.py",
+    "arbiter_ai/tools/__init__.py",
 ]
 
 [tool.mypy]

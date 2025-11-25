@@ -23,7 +23,7 @@ import asyncio
 import os
 from typing import List, Optional
 
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 
 async def evaluate_rag_response(

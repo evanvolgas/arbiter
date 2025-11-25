@@ -10,7 +10,7 @@ Verification plugins enable fact-checking against:
 - Knowledge bases like Wikipedia (KnowledgeBaseVerifier)
 
 Example:
-    >>> from arbiter.verifiers import SearchVerifier
+    >>> from arbiter_ai.verifiers import SearchVerifier
     >>> verifier = SearchVerifier(api_key="tavily_key")
     >>> result = await verifier.verify(
     ...     claim="Paris is the capital of France",

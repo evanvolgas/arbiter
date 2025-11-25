@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError
-from arbiter.evaluators.custom_criteria import (
+from arbiter_ai.core.exceptions import EvaluatorError
+from arbiter_ai.evaluators.custom_criteria import (
     CustomCriteriaEvaluator,
     CustomCriteriaResponse,
     MultiCriteriaResponse,
@@ -282,7 +282,7 @@ class TestCustomCriteriaEvaluator:
         """Test clearing interactions."""
         # Add a mock interaction
 
-        from arbiter.core.models import LLMInteraction
+        from arbiter_ai.core.models import LLMInteraction
 
         interaction = LLMInteraction(
             prompt="test",

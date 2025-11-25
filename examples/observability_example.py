@@ -33,8 +33,8 @@ from typing import Dict, List
 
 from dotenv import load_dotenv
 
-from arbiter import evaluate, get_cost_calculator
-from arbiter.core.models import LLMInteraction
+from arbiter_ai import evaluate, get_cost_calculator
+from arbiter_ai.core.models import LLMInteraction
 
 
 def format_timestamp(dt: datetime) -> str:

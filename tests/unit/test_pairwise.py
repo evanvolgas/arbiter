@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError
-from arbiter.core.models import ComparisonResult
-from arbiter.evaluators.pairwise import (
+from arbiter_ai.core.exceptions import EvaluatorError
+from arbiter_ai.core.models import ComparisonResult
+from arbiter_ai.evaluators.pairwise import (
     AspectComparison,
     PairwiseComparisonEvaluator,
     PairwiseResponse,

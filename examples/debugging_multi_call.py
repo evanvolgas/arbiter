@@ -16,8 +16,8 @@ from typing import Dict, List
 
 from dotenv import load_dotenv
 
-from arbiter import evaluate
-from arbiter.core.models import EvaluationResult
+from arbiter_ai import evaluate
+from arbiter_ai.core.models import EvaluationResult
 
 
 async def run_multi_stage_agent(user_query: str) -> Dict:

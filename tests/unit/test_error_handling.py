@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError, ModelProviderError
-from arbiter.core.models import EvaluationResult
-from arbiter.evaluators import SemanticEvaluator
+from arbiter_ai.core.exceptions import EvaluatorError, ModelProviderError
+from arbiter_ai.core.models import EvaluationResult
+from arbiter_ai.evaluators import SemanticEvaluator
 from tests.conftest import MockAgentResult
 
 
@@ -16,10 +16,10 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_all_evaluators_succeed(self, mock_llm_client, mock_agent):
         """Test that all evaluators succeed normally."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         # Mock successful responses
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         mock_response = SemanticResponse(
             score=0.9,
@@ -49,10 +49,10 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_one_evaluator_fails(self, mock_llm_client, mock_agent):
         """Test that one evaluator failure doesn't stop others."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         # Mock one success, one failure
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         mock_response = SemanticResponse(
             score=0.8,
@@ -84,7 +84,7 @@ class TestMultiEvaluatorErrorHandling:
         """Test that partial results include error information."""
 
         # Mock successful semantic response
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         mock_response = SemanticResponse(
             score=0.85,
@@ -133,7 +133,7 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_error_details_extraction(self, mock_llm_client):
         """Test that error details are properly extracted."""
-        from arbiter.core.exceptions import EvaluatorError
+        from arbiter_ai.core.exceptions import EvaluatorError
 
         # Test error with details
         error = EvaluatorError(
@@ -148,7 +148,7 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_evaluation_result_with_errors(self):
         """Test EvaluationResult with errors field."""
-        from arbiter.core.models import Score
+        from arbiter_ai.core.models import Score
 
         result = EvaluationResult(
             output="test",
@@ -169,7 +169,7 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_evaluation_result_without_errors(self):
         """Test EvaluationResult without errors (normal case)."""
-        from arbiter.core.models import Score
+        from arbiter_ai.core.models import Score
 
         result = EvaluationResult(
             output="test",
@@ -187,10 +187,10 @@ class TestMultiEvaluatorErrorHandling:
         self, mock_llm_client, mock_agent
     ):
         """Test the MAIN USE CASE: multiple evaluators where some succeed and some fail."""
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         # Mock successful semantic response
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
             score=0.85,
@@ -270,7 +270,7 @@ class TestMultiEvaluatorErrorHandling:
         # Since we only have semantic and custom_criteria, let's test with those
 
         # Mock successful semantic response
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         mock_response = SemanticResponse(
             score=0.85,
@@ -330,7 +330,7 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_all_evaluators_fail_raises_error(self, mock_llm_client, mock_agent):
         """Test that if all evaluators fail, an error is raised."""
-        from arbiter.api import _evaluate_impl
+        from arbiter_ai.api import _evaluate_impl
 
         # Make agent fail
         mock_agent.run = AsyncMock(side_effect=EvaluatorError("All failed"))
@@ -340,7 +340,7 @@ class TestMultiEvaluatorErrorHandling:
         scores = []
         errors = {}
 
-        from arbiter.evaluators import SemanticEvaluator
+        from arbiter_ai.evaluators import SemanticEvaluator
 
         evaluator = SemanticEvaluator(mock_llm_client)
         try:
@@ -367,8 +367,8 @@ class TestMultiEvaluatorErrorHandling:
         self, mock_llm_client, mock_agent
     ):
         """Test that overall score only includes successful evaluators."""
-        from arbiter.api import evaluate
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.api import evaluate
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
             score=0.9,
@@ -407,8 +407,8 @@ class TestMultiEvaluatorErrorHandling:
     @pytest.mark.asyncio
     async def test_logging_for_evaluator_failures(self, mock_llm_client, mock_agent):
         """Test that evaluator failures are logged."""
-        from arbiter.api import evaluate
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.api import evaluate
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
             score=0.8,
@@ -455,8 +455,8 @@ class TestMultiEvaluatorErrorHandling:
         Note: ValueError raised inside an evaluator's evaluate() method gets wrapped
         in EvaluatorError by the base class, so it will be logged as a warning, not error.
         """
-        from arbiter.api import evaluate
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.api import evaluate
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         semantic_response = SemanticResponse(
             score=0.8,

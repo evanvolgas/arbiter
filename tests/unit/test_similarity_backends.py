@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.evaluators.semantic import SemanticEvaluator
-from arbiter.evaluators.similarity_backends import (
+from arbiter_ai.evaluators.semantic import SemanticEvaluator
+from arbiter_ai.evaluators.similarity_backends import (
     FAISSSimilarityBackend,
     LLMSimilarityBackend,
     SimilarityResult,

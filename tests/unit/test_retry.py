@@ -4,8 +4,8 @@ import asyncio
 
 import pytest
 
-from arbiter.core.exceptions import ModelProviderError, TimeoutError
-from arbiter.core.retry import (
+from arbiter_ai.core.exceptions import ModelProviderError, TimeoutError
+from arbiter_ai.core.retry import (
     RETRY_PERSISTENT,
     RETRY_QUICK,
     RETRY_STANDARD,

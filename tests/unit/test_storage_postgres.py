@@ -6,18 +6,18 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from arbiter.core.models import (
+from arbiter_ai.core.models import (
     BatchEvaluationResult,
     EvaluationResult,
     LLMInteraction,
     Score,
 )
-from arbiter.storage.base import ConnectionError, RetrievalError, SaveError
+from arbiter_ai.storage.base import ConnectionError, RetrievalError, SaveError
 
 # Skip all tests if asyncpg is not installed
 pytest.importorskip("asyncpg", reason="PostgreSQL storage requires asyncpg")
 
-from arbiter.storage.postgres import PostgresStorage
+from arbiter_ai.storage.postgres import PostgresStorage
 
 
 @pytest.fixture

@@ -7,8 +7,8 @@ This module provides a registry system for evaluators, allowing:
 - Type-safe evaluator access
 
 Example:
-    >>> from arbiter.core.registry import register_evaluator, get_evaluator_class
-    >>> from arbiter.evaluators import BasePydanticEvaluator
+    >>> from arbiter_ai.core.registry import register_evaluator, get_evaluator_class
+    >>> from arbiter_ai.evaluators import BasePydanticEvaluator
     >>>
     >>> # Register a custom evaluator
     >>> class MyEvaluator(BasePydanticEvaluator):
@@ -80,8 +80,8 @@ def register_evaluator(name: str, evaluator_class: Type[BaseEvaluator]) -> None:
         ValueError: If name is already registered
 
     Example:
-        >>> from arbiter.core.registry import register_evaluator
-        >>> from arbiter.evaluators import BasePydanticEvaluator
+        >>> from arbiter_ai.core.registry import register_evaluator
+        >>> from arbiter_ai.evaluators import BasePydanticEvaluator
         >>>
         >>> class MyEvaluator(BasePydanticEvaluator):
         ...     @property
@@ -122,7 +122,7 @@ def get_evaluator_class(name: str) -> Optional[Type[BaseEvaluator]]:
         Evaluator class if found, None otherwise
 
     Example:
-        >>> from arbiter.core.registry import get_evaluator_class
+        >>> from arbiter_ai.core.registry import get_evaluator_class
         >>> SemanticEvaluator = get_evaluator_class("semantic")
         >>> assert SemanticEvaluator is not None
     """
@@ -136,7 +136,7 @@ def get_available_evaluators() -> List[str]:
         List of evaluator names, sorted alphabetically
 
     Example:
-        >>> from arbiter.core.registry import get_available_evaluators
+        >>> from arbiter_ai.core.registry import get_available_evaluators
         >>> evaluators = get_available_evaluators()
         >>> print(evaluators)
         ['custom_criteria', 'semantic']
@@ -154,7 +154,7 @@ def validate_evaluator_name(name: str) -> None:
         ValidationError: If evaluator name is not registered
 
     Example:
-        >>> from arbiter.core.registry import validate_evaluator_name
+        >>> from arbiter_ai.core.registry import validate_evaluator_name
         >>> validate_evaluator_name("semantic")  # OK
         >>> validate_evaluator_name("unknown")  # Raises ValidationError
     """

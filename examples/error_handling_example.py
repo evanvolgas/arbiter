@@ -21,9 +21,9 @@ from dotenv import load_dotenv
 import asyncio
 import os
 
-from arbiter import evaluate
-from arbiter.core import LLMManager
-from arbiter.core.exceptions import EvaluatorError
+from arbiter_ai import evaluate
+from arbiter_ai.core import LLMManager
+from arbiter_ai.core.exceptions import EvaluatorError
 
 
 async def main():

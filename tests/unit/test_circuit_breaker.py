@@ -14,8 +14,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from arbiter.core.circuit_breaker import CircuitBreaker, CircuitState
-from arbiter.core.exceptions import CircuitBreakerOpenError
+from arbiter_ai.core.circuit_breaker import CircuitBreaker, CircuitState
+from arbiter_ai.core.exceptions import CircuitBreakerOpenError
 
 
 @pytest.fixture

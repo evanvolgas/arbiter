@@ -11,7 +11,7 @@ Setup:
 
 Example:
     >>> from arbiter import evaluate
-    >>> from arbiter.storage import PostgresStorage
+    >>> from arbiter_ai.storage import PostgresStorage
     >>>
     >>> storage = PostgresStorage()
     >>> async with storage:
@@ -23,7 +23,7 @@ Example:
     >>>     )
 """
 
-from arbiter.storage.base import (
+from arbiter_ai.storage.base import (
     ConnectionError,
     RetrievalError,
     SaveError,
@@ -45,12 +45,12 @@ __all__ = [
 def __getattr__(name: str):
     """Lazy import for optional storage backends.
 
-    This allows importing from arbiter.storage without requiring
+    This allows importing from arbiter_ai.storage without requiring
     optional dependencies (asyncpg, redis) to be installed.
     """
     if name == "PostgresStorage":
         try:
-            from arbiter.storage.postgres import PostgresStorage
+            from arbiter_ai.storage.postgres import PostgresStorage
 
             return PostgresStorage
         except ImportError as e:
@@ -59,7 +59,7 @@ def __getattr__(name: str):
             ) from e
     elif name == "RedisStorage":
         try:
-            from arbiter.storage.redis import RedisStorage
+            from arbiter_ai.storage.redis import RedisStorage
 
             return RedisStorage
         except ImportError as e:

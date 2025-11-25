@@ -34,22 +34,22 @@ from typing import AsyncIterator, Optional
 
 from dotenv import load_dotenv
 
-from arbiter import batch_evaluate, evaluate
-from arbiter.core import LLMManager
-from arbiter.core.circuit_breaker import CircuitBreaker
-from arbiter.core.exceptions import (
+from arbiter_ai import batch_evaluate, evaluate
+from arbiter_ai.core import LLMManager
+from arbiter_ai.core.circuit_breaker import CircuitBreaker
+from arbiter_ai.core.exceptions import (
     ArbiterError,
     CircuitBreakerOpenError,
     ModelProviderError,
 )
-from arbiter.core.middleware import (
+from arbiter_ai.core.middleware import (
     CachingMiddleware,
     LoggingMiddleware,
     MetricsMiddleware,
     MiddlewarePipeline,
     RateLimitingMiddleware,
 )
-from arbiter.core.retry import RetryConfig, with_retry
+from arbiter_ai.core.retry import RetryConfig, with_retry
 
 # Configure logging for production
 logging.basicConfig(
@@ -135,7 +135,7 @@ class ProductionEvaluator:
             # Initialize storage if configured
             if os.getenv("DATABASE_URL"):
                 try:
-                    from arbiter.storage import PostgresStorage
+                    from arbiter_ai.storage import PostgresStorage
 
                     self._postgres = PostgresStorage()
                     await self._postgres.connect()
@@ -148,7 +148,7 @@ class ProductionEvaluator:
 
             if os.getenv("REDIS_URL"):
                 try:
-                    from arbiter.storage import RedisStorage
+                    from arbiter_ai.storage import RedisStorage
 
                     self._redis = RedisStorage(ttl=3600)  # 1 hour TTL
                     await self._redis.connect()

@@ -2,16 +2,16 @@
 
 import pytest
 
-from arbiter.core.exceptions import ValidationError
-from arbiter.core.interfaces import BaseEvaluator
-from arbiter.core.registry import (
+from arbiter_ai.core.exceptions import ValidationError
+from arbiter_ai.core.interfaces import BaseEvaluator
+from arbiter_ai.core.registry import (
     AVAILABLE_EVALUATORS,
     get_available_evaluators,
     get_evaluator_class,
     register_evaluator,
     validate_evaluator_name,
 )
-from arbiter.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
+from arbiter_ai.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
 
 
 class TestRegistryBasics:
@@ -71,7 +71,7 @@ class TestCustomEvaluatorRegistration:
                 return "mock_evaluator"
 
             async def evaluate(self, output: str, reference=None, criteria=None):
-                from arbiter.core.models import Score
+                from arbiter_ai.core.models import Score
 
                 return Score(name="mock", value=0.5)
 
@@ -95,7 +95,7 @@ class TestCustomEvaluatorRegistration:
                 return "duplicate_test"
 
             async def evaluate(self, output: str, reference=None, criteria=None):
-                from arbiter.core.models import Score
+                from arbiter_ai.core.models import Score
 
                 return Score(name="mock", value=0.5)
 
@@ -122,8 +122,8 @@ class TestCustomEvaluatorRegistration:
         """Test that registered evaluator can be used in evaluate()."""
         from unittest.mock import AsyncMock, MagicMock
 
-        from arbiter.core.llm_client import LLMClient
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.core.llm_client import LLMClient
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         # Create a custom evaluator
         class TestEvaluator(BaseEvaluator):
@@ -135,7 +135,7 @@ class TestCustomEvaluatorRegistration:
                 return "test_evaluator"
 
             async def evaluate(self, output: str, reference=None, criteria=None):
-                from arbiter.core.models import Score
+                from arbiter_ai.core.models import Score
 
                 return Score(name="test_evaluator", value=0.75)
 
@@ -175,7 +175,7 @@ class TestCustomEvaluatorRegistration:
             mock_client.create_agent = MagicMock(return_value=mock_agent)
 
             # Use in evaluate()
-            from arbiter.api import evaluate
+            from arbiter_ai.api import evaluate
 
             evaluate(
                 output="Test output",
@@ -201,8 +201,8 @@ class TestRegistryIntegration:
         """Test that evaluate() uses registry for validation."""
         from unittest.mock import AsyncMock, MagicMock
 
-        from arbiter.core.llm_client import LLMClient
-        from arbiter.evaluators.semantic import SemanticResponse
+        from arbiter_ai.core.llm_client import LLMClient
+        from arbiter_ai.evaluators.semantic import SemanticResponse
 
         mock_client = MagicMock(spec=LLMClient)
         mock_client.model = "gpt-4o-mini"
@@ -227,7 +227,7 @@ class TestRegistryIntegration:
         mock_agent.run = AsyncMock(return_value=mock_result)
         mock_client.create_agent = MagicMock(return_value=mock_agent)
 
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         # Valid evaluator - should work
         result = await evaluate(
@@ -252,12 +252,12 @@ class TestRegistryIntegration:
         """Test that error messages include available evaluators."""
         from unittest.mock import MagicMock
 
-        from arbiter.core.llm_client import LLMClient
+        from arbiter_ai.core.llm_client import LLMClient
 
         mock_client = MagicMock(spec=LLMClient)
         mock_client.model = "gpt-4o-mini"
 
-        from arbiter.api import evaluate
+        from arbiter_ai.api import evaluate
 
         with pytest.raises(ValidationError) as exc_info:
             await evaluate(

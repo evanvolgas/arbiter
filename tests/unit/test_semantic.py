@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError
-from arbiter.evaluators.semantic import SemanticEvaluator, SemanticResponse
+from arbiter_ai.core.exceptions import EvaluatorError
+from arbiter_ai.evaluators.semantic import SemanticEvaluator, SemanticResponse
 from tests.conftest import MockAgentResult
 
 
@@ -234,7 +234,7 @@ class TestSemanticEvaluator:
     def test_get_interactions(self, evaluator):
         """Test getting interactions returns a copy."""
         # Add a mock interaction
-        from arbiter.core.models import LLMInteraction
+        from arbiter_ai.core.models import LLMInteraction
 
         interaction = LLMInteraction(
             prompt="test",
@@ -256,7 +256,7 @@ class TestSemanticEvaluator:
 
     def test_clear_interactions(self, evaluator):
         """Test clearing interactions."""
-        from arbiter.core.models import LLMInteraction
+        from arbiter_ai.core.models import LLMInteraction
 
         interaction = LLMInteraction(
             prompt="test",

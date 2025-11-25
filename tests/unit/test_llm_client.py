@@ -18,10 +18,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 from pydantic import BaseModel
 
-from arbiter.core.circuit_breaker import CircuitBreaker
-from arbiter.core.exceptions import ModelProviderError
-from arbiter.core.llm_client import LLMClient, LLMManager, LLMResponse
-from arbiter.core.types import Provider
+from arbiter_ai.core.circuit_breaker import CircuitBreaker
+from arbiter_ai.core.exceptions import ModelProviderError
+from arbiter_ai.core.llm_client import LLMClient, LLMManager, LLMResponse
+from arbiter_ai.core.types import Provider
 
 
 class MockEvaluationResponse(BaseModel):
@@ -309,7 +309,7 @@ class TestLLMManager:
     @pytest.mark.asyncio
     async def test_set_pool(self):
         """Test setting custom pool."""
-        from arbiter.core.llm_client_pool import LLMClientPool
+        from arbiter_ai.core.llm_client_pool import LLMClientPool
 
         custom_pool = LLMClientPool()
         LLMManager.set_pool(custom_pool)
@@ -403,7 +403,7 @@ class TestLLMManager:
     @pytest.mark.asyncio
     async def test_get_metrics(self):
         """Test getting pool metrics."""
-        from arbiter.core.llm_client_pool import ConnectionMetrics
+        from arbiter_ai.core.llm_client_pool import ConnectionMetrics
 
         with patch.object(LLMManager, "get_pool") as mock_get_pool:
             mock_pool = MagicMock()

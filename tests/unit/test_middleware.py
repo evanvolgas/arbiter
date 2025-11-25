@@ -5,7 +5,7 @@ from typing import Optional
 
 import pytest
 
-from arbiter.core.middleware import (
+from arbiter_ai.core.middleware import (
     CachingMiddleware,
     LoggingMiddleware,
     MetricsMiddleware,
@@ -13,8 +13,8 @@ from arbiter.core.middleware import (
     RateLimitingMiddleware,
     monitor,
 )
-from arbiter.core.models import ComparisonResult, EvaluationResult, Score
-from arbiter.core.type_defs import MiddlewareContext
+from arbiter_ai.core.models import ComparisonResult, EvaluationResult, Score
+from arbiter_ai.core.type_defs import MiddlewareContext
 
 
 @pytest.fixture

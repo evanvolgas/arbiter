@@ -12,7 +12,7 @@ flexibility in implementation.
 
 ## Usage:
 
-    >>> from arbiter.core.interfaces import BaseEvaluator
+    >>> from arbiter_ai.core.interfaces import BaseEvaluator
     >>>
     >>> class CustomEvaluator(BaseEvaluator):
     ...     @property

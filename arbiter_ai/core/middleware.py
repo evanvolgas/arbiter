@@ -22,7 +22,7 @@ Middleware components form a chain where each component can:
 ## Usage:
 
     >>> from arbiter import evaluate, MiddlewarePipeline
-    >>> from arbiter.core.middleware import LoggingMiddleware, MetricsMiddleware
+    >>> from arbiter_ai.core.middleware import LoggingMiddleware, MetricsMiddleware
     >>>
     >>> # Create middleware pipeline
     >>> pipeline = MiddlewarePipeline([

@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.exceptions import EvaluatorError
-from arbiter.evaluators.relevance import RelevanceEvaluator, RelevanceResponse
+from arbiter_ai.core.exceptions import EvaluatorError
+from arbiter_ai.evaluators.relevance import RelevanceEvaluator, RelevanceResponse
 from tests.conftest import MockAgentResult
 
 
@@ -351,7 +351,7 @@ class TestRelevanceEvaluator:
 
     def test_get_interactions(self, evaluator):
         """Test getting interactions returns a copy."""
-        from arbiter.core.models import LLMInteraction
+        from arbiter_ai.core.models import LLMInteraction
 
         interaction = LLMInteraction(
             prompt="test",
@@ -373,7 +373,7 @@ class TestRelevanceEvaluator:
 
     def test_clear_interactions(self, evaluator):
         """Test clearing interactions."""
-        from arbiter.core.models import LLMInteraction
+        from arbiter_ai.core.models import LLMInteraction
 
         interaction = LLMInteraction(
             prompt="test",

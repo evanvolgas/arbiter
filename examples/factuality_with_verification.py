@@ -12,8 +12,8 @@ The final score is a weighted average: LLM (50%) + External verification (50%)
 import asyncio
 import os
 
-from arbiter import FactualityEvaluator, LLMManager
-from arbiter.verifiers import (
+from arbiter_ai import FactualityEvaluator, LLMManager
+from arbiter_ai.verifiers import (
     CitationVerifier,
     KnowledgeBaseVerifier,
     SearchVerifier,

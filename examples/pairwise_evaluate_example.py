@@ -22,8 +22,8 @@ import os
 
 from dotenv import load_dotenv
 
-from arbiter import PairwiseComparisonEvaluator
-from arbiter.core import LLMManager
+from arbiter_ai import PairwiseComparisonEvaluator
+from arbiter_ai.core import LLMManager
 
 
 async def main():
@@ -122,7 +122,7 @@ async def main():
     print("-" * 60)
     print("Demonstrating evaluate() compatibility with other evaluators:")
 
-    from arbiter import SemanticEvaluator
+    from arbiter_ai import SemanticEvaluator
 
     semantic = SemanticEvaluator(client)
 

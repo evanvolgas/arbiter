@@ -5,16 +5,16 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter import compare
-from arbiter.core.middleware import (
+from arbiter_ai import compare
+from arbiter_ai.core.middleware import (
     LoggingMiddleware,
     MetricsMiddleware,
     Middleware,
     MiddlewarePipeline,
 )
-from arbiter.core.models import ComparisonResult
-from arbiter.core.type_defs import MiddlewareContext
-from arbiter.evaluators.pairwise import AspectComparison, PairwiseResponse
+from arbiter_ai.core.models import ComparisonResult
+from arbiter_ai.core.type_defs import MiddlewareContext
+from arbiter_ai.evaluators.pairwise import AspectComparison, PairwiseResponse
 from tests.conftest import MockAgentResult
 
 

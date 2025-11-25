@@ -18,7 +18,7 @@
 Most evaluation frameworks tell you if your outputs are good. **Arbiter tells you that AND exactly what it cost.** Every evaluation automatically tracks tokens, latency, and real dollar costs across any provider - no manual instrumentation required.
 
 ```python
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 result = await evaluate(
     output="Paris is the capital of France",
@@ -113,7 +113,7 @@ The `.env.example` file includes placeholders for all supported providers:
 ## Quick Start
 
 ```python
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 result = await evaluate(
     output="Paris is the capital of France",
@@ -185,7 +185,7 @@ Evaluators assess LLM outputs against criteria:
 
 **Semantic Similarity**
 ```python
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 # LLM backend (default) - Rich explanations
 result = await evaluate(
@@ -197,7 +197,7 @@ result = await evaluate(
 
 # FAISS backend (optional) - significantly faster, zero cost for embeddings
 # Requires: pip install arbiter-ai[scale]
-from arbiter import SemanticEvaluator, LLMManager
+from arbiter_ai import SemanticEvaluator, LLMManager
 
 client = await LLMManager.get_client(model="gpt-4o-mini")
 evaluator = SemanticEvaluator(client, backend="faiss")
@@ -225,7 +225,7 @@ print(f"Criteria not met: {result.scores[0].metadata['criteria_not_met']}")
 
 **Pairwise Comparison** (A/B Testing)
 ```python
-from arbiter import compare, PairwiseComparisonEvaluator, LLMManager
+from arbiter_ai import compare, PairwiseComparisonEvaluator, LLMManager
 
 # Option 1: High-level API
 comparison = await compare(
@@ -271,7 +271,7 @@ for score in result.scores:
 Evaluate multiple outputs in parallel with built-in progress tracking and concurrency control:
 
 ```python
-from arbiter import batch_evaluate
+from arbiter_ai import batch_evaluate
 
 # Efficient batch processing
 items = [
@@ -320,8 +320,8 @@ pip install arbiter[postgres]
 ```
 
 ```python
-from arbiter import evaluate
-from arbiter.storage import PostgresStorage
+from arbiter_ai import evaluate
+from arbiter_ai.storage import PostgresStorage
 
 storage = PostgresStorage()  # Uses DATABASE_URL from environment
 
@@ -346,7 +346,7 @@ pip install arbiter[redis]
 ```
 
 ```python
-from arbiter.storage import RedisStorage
+from arbiter_ai.storage import RedisStorage
 
 storage = RedisStorage(ttl=3600)  # 1 hour cache
 
@@ -370,7 +370,7 @@ See [examples/storage_postgres_example.py](examples/storage_postgres_example.py)
 Evaluate Retrieval-Augmented Generation systems comprehensively:
 
 ```python
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 # Evaluate RAG response with multiple aspects
 result = await evaluate(

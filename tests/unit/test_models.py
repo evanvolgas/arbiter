@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from arbiter.core.models import (
+from arbiter_ai.core.models import (
     ComparisonResult,
     EvaluationResult,
     LLMInteraction,

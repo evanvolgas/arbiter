@@ -18,8 +18,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from arbiter.core.registry import AVAILABLE_EVALUATORS, get_evaluator_class
-from arbiter.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
+from arbiter_ai.core.registry import AVAILABLE_EVALUATORS, get_evaluator_class
+from arbiter_ai.evaluators import CustomCriteriaEvaluator, SemanticEvaluator
 
 
 @pytest.fixture

@@ -17,15 +17,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 import pytest_asyncio
 
-from arbiter.core.exceptions import ModelProviderError
-from arbiter.core.llm_client_pool import (
+from arbiter_ai.core.exceptions import ModelProviderError
+from arbiter_ai.core.llm_client_pool import (
     ConnectionMetrics,
     LLMClientPool,
     PoolConfig,
     PooledConnection,
     get_global_pool,
 )
-from arbiter.core.types import Provider
+from arbiter_ai.core.types import Provider
 
 
 @pytest.fixture

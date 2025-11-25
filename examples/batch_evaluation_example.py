@@ -24,7 +24,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from arbiter import EvaluationResult, batch_evaluate
+from arbiter_ai import EvaluationResult, batch_evaluate
 
 
 async def main():

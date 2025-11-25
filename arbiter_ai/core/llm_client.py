@@ -27,7 +27,7 @@ Model names are passed directly to the provider - use any model the provider off
 
 ## Usage:
 
-    >>> from arbiter.core.llm_client import LLMManager
+    >>> from arbiter_ai.core.llm_client import LLMManager
     >>>
     >>> # Automatic provider detection
     >>> client = await LLMManager.get_client(model="gpt-4")

@@ -20,7 +20,7 @@ Run with:
 import asyncio
 import os
 
-from arbiter import evaluate
+from arbiter_ai import evaluate
 
 
 async def example_1_basic_query_relevance():
