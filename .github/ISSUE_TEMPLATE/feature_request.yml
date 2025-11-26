@@ -1,0 +1,80 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please provide details about your use case and proposed solution.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What use case does it enable?
+      placeholder: "Example: I need to evaluate outputs against multiple criteria with different weights, but current evaluators only support single criteria."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        Add a WeightedEvaluator that accepts multiple criteria with weights:
+        
+        result = await evaluate(
+            output=text,
+            criteria={
+                "accuracy": (0.5, "Must be factually correct"),
+                "clarity": (0.3, "Must be easy to understand"),
+                "brevity": (0.2, "Must be concise")
+            },
+            evaluators=["weighted_criteria"]
+        )
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - New evaluator
+        - Enhancement to existing evaluator
+        - Cost tracking improvement
+        - Observability improvement
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What alternatives have you considered or tried?
+      placeholder: "Example: Tried running multiple evaluators separately but need combined weighted score"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or examples
+      placeholder: "Example: Similar to how Ragas handles multi-aspect evaluation"
+
+  - type: checkboxes
+    id: compatibility
+    attributes:
+      label: Compatibility
+      description: Please confirm this aligns with Arbiter's design
+      options:
+        - label: This feature fits Arbiter's "pure library" philosophy (no platform/UI)
+          required: false
+        - label: This feature works with any LLM provider (provider-agnostic)
+          required: false
+        - label: I'm willing to contribute a PR for this feature
+          required: false

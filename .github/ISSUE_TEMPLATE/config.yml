@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/ashita-ai/arbiter#readme
+    about: Check the README for usage examples and API documentation
+  - name: Examples
+    url: https://github.com/ashita-ai/arbiter/tree/main/examples
+    about: Browse 15+ comprehensive examples showing all features

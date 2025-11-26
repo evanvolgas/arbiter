@@ -1,8 +1,30 @@
 # Contributing to Arbiter
 
-Thank you for your interest in contributing to Arbiter!
+Thank you for your interest in contributing to Arbiter! This document provides guidelines for contributing to the project.
 
-## Development Setup
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+- [Development Setup](#development-setup)
+- [Making Changes](#making-changes)
+- [Testing](#testing)
+- [Code Quality](#code-quality)
+- [Pull Request Process](#pull-request-process)
+- [Issue Guidelines](#issue-guidelines)
+
+## Code of Conduct
+
+Be respectful and professional. We're building production-grade software together.
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+
+- At least one LLM provider API key (OpenAI, Anthropic, Google, or Groq)
+
+### Development Setup
 
 ```bash
 # Clone the repository
@@ -12,191 +34,198 @@ cd arbiter
 # Install with development dependencies
 uv sync --all-extras
 
-# Or with pip
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# Verify installation
+uv run pytest tests/unit/test_semantic.py -v
 ```
 
-## Development Workflow
+## Making Changes
 
-### Before Starting
+### Before You Start
 
-1. Create a feature branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
+1. **Check existing issues** - Look for related issues or discussions
+2. **Create an issue first** - For significant changes, open an issue to discuss your approach
+3. **Create a feature branch** - Never work directly on `main`
 
-2. Make your changes following the project conventions
+```bash
+git checkout -b feature/your-feature-name
+```
 
-3. Run quality checks:
-   ```bash
-   make all  # Runs format, lint, type-check, and tests
-   ```
+### Code Standards
+
+- **Type hints required** - All functions must have complete type annotations
+- **Docstrings required** - Use Google-style docstrings with Args, Returns, Raises, Example
+- **No placeholders** - No TODO comments or NotImplementedError in production code
+- **Complete features** - Finish what you start (implementation + tests + docs + examples)
+
+### Template Method Pattern
+
+All evaluators must follow the template method pattern:
+
+```python
+class MyEvaluator(BasePydanticEvaluator):
+    @property
+    def name(self) -> str:
+        return "my_evaluator"
+
+    def _get_system_prompt(self) -> str:
+        return "System prompt..."
+
+    def _get_user_prompt(self, output: str, reference: Optional[str], criteria: Optional[str]) -> str:
+        return f"Evaluate: {output}"
+
+    def _get_response_type(self) -> Type[BaseModel]:
+        return MyEvaluatorResponse
+
+    async def _compute_score(self, response: BaseModel) -> Score:
+        resp = cast(MyEvaluatorResponse, response)
+        return Score(name=self.name, value=resp.score, ...)
+```
+
+## Testing
 
 ### Running Tests
 
 ```bash
-make test          # Run all tests with coverage
-make test-cov      # Generate detailed coverage report
-pytest tests/unit/ # Run unit tests only
-pytest -v          # Run all tests with verbose output
+# All tests with coverage (requires >80%)
+uv run pytest
+
+# Specific test file
+uv run pytest tests/unit/test_semantic.py -v
+
+# With coverage report
+uv run pytest --cov=arbiter --cov-report=term-missing
 ```
 
-### Code Quality
+### Test Requirements
+
+- **Coverage** - Maintain >80% coverage for all new code
+- **Unit tests** - Test individual functions with mocked dependencies
+- **Integration tests** - Test end-to-end evaluation flows
+- **Mock external APIs** - Don't hit real LLM APIs in unit tests
+
+## Code Quality
+
+### Pre-Commit Checklist
+
+Run these commands before every commit:
 
 ```bash
-make format        # Format code with black
-make lint          # Check code with ruff
-make type-check    # Type check with mypy
+# 1. Format code
+make format
+
+# 2. Lint code (must pass)
+make lint
+
+# 3. Type check (must pass)
+make type-check
+
+# 4. Run tests (must pass with >80% coverage)
+make test
+
+# Or run all checks at once
+make all
 ```
 
-## Release Process
+### Required Tools
 
-Arbiter uses semantic versioning (MAJOR.MINOR.PATCH) with alpha/beta pre-releases.
+- **black** - Code formatting (line length 88)
+- **ruff** - Fast linting
+- **mypy** - Strict type checking
+- **pytest** - Testing framework
 
-### Version Strategy
+## Pull Request Process
 
-- `0.1.0a0` - Alpha releases (current)
-- `0.1.0b0` - Beta releases
-- `0.1.0` - Stable releases
-- `0.1.1` - Patch releases (bug fixes)
-- `0.2.0` - Minor releases (new features, backward compatible)
-- `1.0.0` - Major releases (breaking changes)
+### Before Submitting
 
-### Publishing a Release
+1. **Update tests** - Add tests for new features or bug fixes
+2. **Update documentation** - Update README.md if API changed
+3. **Add examples** - Create example file in `examples/` for new evaluators
+4. **Update exports** - Add new classes to `__init__.py` files
+5. **Run all checks** - Ensure `make all` passes
 
-**Prerequisites:**
-1. Maintainer access to the GitHub repository
-2. PyPI account configured with trusted publishing (see Setup below)
+### PR Requirements
 
-**Steps:**
+- **Clear description** - Explain what and why (not just what)
+- **Reference issues** - Link to related issues
+- **One feature per PR** - Keep PRs focused and reviewable
+- **Passing CI** - All checks must pass
+- **No merge conflicts** - Rebase on main if needed
 
-1. **Update version** in `pyproject.toml`:
-   ```toml
-   version = "0.1.0"  # Remove 'a0' for stable release
-   ```
+### PR Template
 
-2. **Run quality checks**:
-   ```bash
-   make all  # Ensure all tests pass
-   ```
+```markdown
+## Description
+Brief description of changes
 
-3. **Commit and push**:
-   ```bash
-   git add pyproject.toml
-   git commit -m "Bump version to 0.1.0"
-   git push origin main
-   ```
+## Type of Change
+- [ ] Bug fix
+- [ ] New evaluator
+- [ ] Enhancement
+- [ ] Documentation
 
-4. **Create and push tag**:
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
+## Testing
+- [ ] Added unit tests
+- [ ] Added integration tests
+- [ ] All tests pass
+- [ ] Coverage >80%
 
-5. **Create GitHub release**:
-   - Go to https://github.com/ashita-ai/arbiter/releases/new
-   - Select tag: `v0.1.0`
-   - Release title: `v0.1.0`
-   - Add release notes describing changes
-   - Click "Publish release"
-
-6. **Automated publishing**:
-   - GitHub Actions will automatically build and publish to PyPI
-   - Monitor progress at https://github.com/ashita-ai/arbiter/actions
-   - Package will be available at https://pypi.org/project/arbiter-ai/
-
-### Setting Up Trusted Publishing (Maintainers Only)
-
-PyPI trusted publishing eliminates the need for API tokens:
-
-1. Go to https://pypi.org/manage/account/publishing/
-2. Add a new publisher:
-   - **Owner**: `evanvolgas`
-   - **Repository**: `arbiter`
-   - **Workflow**: `publish-to-pypi.yml`
-   - **Environment**: Leave blank
-3. Save the configuration
-
-### Manual Publishing (Emergency Only)
-
-If automated publishing fails:
-
-```bash
-# Build package
-python -m build
-
-# Check package
-twine check dist/*
-
-# Upload to PyPI
-twine upload dist/*
+## Checklist
+- [ ] Code follows style guidelines (black, ruff, mypy pass)
+- [ ] Added/updated docstrings
+- [ ] Updated README.md if needed
+- [ ] Added example in examples/ if needed
+- [ ] Updated __init__.py exports
 ```
 
-## Testing a Release
+## Issue Guidelines
 
-### Test on TestPyPI (Recommended Before Production)
+### Bug Reports
 
-1. **Build package**:
-   ```bash
-   python -m build
-   ```
+Use the bug report template. Include:
+- **Model and evaluator used**
+- **Expected vs actual behavior**
+- **Minimal reproduction code**
+- **Error messages and stack traces**
+- **Cost observed** (if relevant)
 
-2. **Upload to TestPyPI**:
-   ```bash
-   twine upload --repository testpypi dist/*
-   ```
+### Feature Requests
 
-3. **Test installation**:
-   ```bash
-   pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ arbiter
-   ```
+Use the feature request template. Include:
+- **Use case** - Why is this needed?
+- **Proposed solution** - What should it do?
+- **Alternatives considered** - What else did you consider?
 
-### Verify Installation
+### Questions
 
-```bash
-# Create clean environment
-python -m venv test-env
-source test-env/bin/activate
+For questions about usage:
+- Check README.md and examples/ first
+- Search existing issues
+- Provide context about what you're trying to achieve
 
-# Install from PyPI
-pip install arbiter-ai
+## What We Won't Build
 
-# Test import
-python -c "from arbiter import evaluate; print('Success!')"
+To set clear expectations:
 
-# Run example
-python examples/basic_evaluation.py
-```
+- **Hosted platform or UI** - Arbiter is a pure Python library
+- **Support for Python <3.10** - Modern type hints required
+- **Built-in dashboard** - Use external tools for visualization
+- **Non-LLM evaluators** - Focus is LLM-as-judge evaluation
 
-## Pull Request Guidelines
+## Additional Resources
 
-1. **One feature per PR** - Keep changes focused and reviewable
-2. **Tests required** - Add tests for new features (maintain >80% coverage)
-3. **Documentation** - Update docstrings and examples
-4. **Quality checks** - Run `make all` before submitting
-5. **Descriptive commits** - Use clear commit messages
-
-## Project Structure
-
-```
-arbiter/
-├── arbiter/            # Main package
-│   ├── api.py         # Public API (evaluate, compare)
-│   ├── core/          # Infrastructure
-│   ├── evaluators/    # Evaluator implementations
-│   ├── storage/       # Storage backends
-│   └── tools/         # Utilities
-├── tests/             # Test suite
-│   ├── unit/          # Unit tests
-│   └── integration/   # Integration tests
-├── examples/          # Usage examples
-├── pyproject.toml     # Project metadata
-└── README.md          # User documentation
-```
+- **README.md** - User documentation and examples
+- **AGENTS.md** - Detailed development guide (AI-focused)
+- **examples/** - Comprehensive usage examples
+- **docs/** - API documentation
 
 ## Questions?
 
-- Open an issue: https://github.com/ashita-ai/arbiter/issues
-- Discussion: https://github.com/ashita-ai/arbiter/discussions
+- Open an issue for bugs or features
+- Check existing issues and examples first
+- Be specific and provide context
+
+Thank you for contributing to Arbiter!

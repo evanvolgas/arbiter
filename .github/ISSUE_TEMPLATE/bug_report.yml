@@ -1,0 +1,119 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please provide the following information to help us reproduce and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is
+      placeholder: "Example: SemanticEvaluator raises TypeError when reference is None"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal Reproduction Code
+      description: Provide the smallest code example that reproduces the issue
+      placeholder: |
+        from arbiter import evaluate
+        
+        result = await evaluate(
+            output="Paris",
+            reference=None,  # Bug occurs here
+            evaluators=["semantic"]
+        )
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "Example: Should handle None reference gracefully"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include full error messages and stack traces
+      placeholder: |
+        TypeError: unsupported operand type(s) for +: 'NoneType' and 'str'
+        
+        File "arbiter/evaluators/semantic.py", line 45, in evaluate
+          combined = reference + output
+      render: shell
+    validations:
+      required: true
+
+  - type: dropdown
+    id: evaluator
+    attributes:
+      label: Evaluator Type
+      description: Which evaluator are you using?
+      options:
+        - semantic
+        - custom_criteria
+        - pairwise
+        - factuality
+        - groundedness
+        - relevance
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: LLM Model
+      description: Which model were you using?
+      placeholder: "Example: gpt-4o-mini, claude-3-5-sonnet, gemini-1.5-flash"
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: LLM Provider
+      description: Which provider were you using?
+      placeholder: "Example: openai, anthropic, google, groq"
+    validations:
+      required: true
+
+  - type: input
+    id: cost
+    attributes:
+      label: Cost Observed (if relevant)
+      description: If this is about cost tracking, what cost did you observe?
+      placeholder: "Example: Expected $0.001 but saw $0.05"
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your environment details
+      value: |
+        - Arbiter version: 
+        - Python version: 
+        - OS: 
+        - Installation method (pip/uv/poetry): 
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: "Example: Only happens with large outputs (>1000 tokens)"
