@@ -70,6 +70,7 @@ claudedocs/
 
 # Session context (Layer 3 of 4-layer context framework)
 PROJECT_TODO.md
+project_todo.md
 
 # Logs
 *.log

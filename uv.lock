@@ -223,7 +223,7 @@ wheels = [
 
 [[package]]
 name = "arbiter-ai"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
