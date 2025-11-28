@@ -1,5 +1,6 @@
 """Unit tests for factuality verification plugins."""
 
+import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -69,15 +70,131 @@ class TestVerificationResult:
 class TestSearchVerifier:
     """Test SearchVerifier with Tavily API.
 
-    Note: These tests require tavily-python package. If not installed,
-    we only test that ImportError is raised correctly.
+    Note: These tests mock the Tavily client to avoid requiring the package.
     """
 
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", False)
     def test_search_verifier_requires_tavily_package(self):
         """Test that SearchVerifier raises ImportError without tavily package."""
         # SearchVerifier will raise ImportError if tavily is not installed
         with pytest.raises(ImportError, match="Tavily package not installed"):
             SearchVerifier(api_key="test_key")
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    @pytest.mark.asyncio
+    async def test_search_verifier_with_many_results(self, mock_tavily_client):
+        """Test search verification with many supporting results."""
+        # Mock search results with multiple results
+        mock_client_instance = MagicMock()
+        mock_client_instance.search.return_value = {
+            "results": [
+                {"content": "Paris is indeed the capital of France"},
+                {"content": "The capital city of France is Paris"},
+                {"content": "Paris, France's capital, is known for..."},
+            ]
+        }
+        mock_tavily_client.return_value = mock_client_instance
+
+        verifier = SearchVerifier(api_key="test_key")
+        result = await verifier.verify("Paris is the capital of France")
+
+        assert result.is_verified is True
+        assert result.confidence == 0.85
+        assert len(result.evidence) == 3
+        assert result.source == "tavily_search"
+        assert "3 search results" in result.explanation
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    @pytest.mark.asyncio
+    async def test_search_verifier_with_few_results(self, mock_tavily_client):
+        """Test search verification with few supporting results."""
+        mock_client_instance = MagicMock()
+        mock_client_instance.search.return_value = {
+            "results": [
+                {"content": "Paris is the capital of France"},
+            ]
+        }
+        mock_tavily_client.return_value = mock_client_instance
+
+        verifier = SearchVerifier(api_key="test_key", max_results=5)
+        result = await verifier.verify("Paris is the capital")
+
+        assert result.is_verified is True
+        assert result.confidence == 0.6
+        assert len(result.evidence) == 1
+        assert result.source == "tavily_search"
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    @pytest.mark.asyncio
+    async def test_search_verifier_with_no_results(self, mock_tavily_client):
+        """Test search verification with no results found."""
+        mock_client_instance = MagicMock()
+        mock_client_instance.search.return_value = {"results": []}
+        mock_tavily_client.return_value = mock_client_instance
+
+        verifier = SearchVerifier(api_key="test_key")
+        result = await verifier.verify("Fake claim that doesn't exist")
+
+        assert result.is_verified is False
+        assert result.confidence == 0.3
+        assert len(result.evidence) == 0
+        assert "No supporting evidence" in result.explanation
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    @pytest.mark.asyncio
+    async def test_search_verifier_with_context(self, mock_tavily_client):
+        """Test search verification with additional context."""
+        mock_client_instance = MagicMock()
+        mock_client_instance.search.return_value = {
+            "results": [{"content": "Context helps refine search"}]
+        }
+        mock_tavily_client.return_value = mock_client_instance
+
+        verifier = SearchVerifier(api_key="test_key")
+        result = await verifier.verify("Capital", context="France geography")
+
+        # Verify query includes context
+        mock_client_instance.search.assert_called_once()
+        call_args = mock_client_instance.search.call_args
+        assert "Capital France geography" in call_args[1]["query"]
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    @pytest.mark.asyncio
+    async def test_search_verifier_search_failure(self, mock_tavily_client):
+        """Test search verification handles search API failures."""
+        mock_client_instance = MagicMock()
+        mock_client_instance.search.side_effect = Exception("API rate limit exceeded")
+        mock_tavily_client.return_value = mock_client_instance
+
+        verifier = SearchVerifier(api_key="test_key")
+        result = await verifier.verify("Some claim")
+
+        assert result.is_verified is False
+        assert result.confidence == 0.0
+        assert len(result.evidence) == 0
+        assert "Search verification failed" in result.explanation
+        assert "API rate limit" in result.explanation
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    def test_search_verifier_requires_api_key(self, mock_tavily_client):
+        """Test that SearchVerifier requires API key."""
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValueError, match="Tavily API key required"):
+                SearchVerifier()
+
+    @patch("arbiter_ai.verifiers.search_verifier.TAVILY_AVAILABLE", True)
+    @patch("arbiter_ai.verifiers.search_verifier.TavilyClient")
+    def test_search_verifier_uses_env_var(self, mock_tavily_client):
+        """Test that SearchVerifier can use API key from environment."""
+        with patch.dict(os.environ, {"TAVILY_API_KEY": "env_test_key"}):
+            verifier = SearchVerifier()
+            assert verifier.api_key == "env_test_key"
 
 
 class TestCitationVerifier:
