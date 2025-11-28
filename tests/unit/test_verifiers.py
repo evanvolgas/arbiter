@@ -336,6 +336,161 @@ class TestKnowledgeBaseVerifier:
         )
         assert similarity < 0.5
 
+        # Empty claim words (all words too short)
+        similarity = verifier._compute_similarity(claim="a is the", content="Paris")
+        assert similarity == 0.0
+
+    @pytest.mark.asyncio
+    async def test_knowledge_base_high_similarity(self):
+        """Test verification with high similarity (>= 0.7)."""
+        verifier = KnowledgeBaseVerifier(max_results=2)
+
+        with patch.object(verifier, "_search_wikipedia", return_value=["Paris"]):
+            with patch.object(
+                verifier,
+                "_get_wikipedia_content",
+                return_value="Paris is the capital of France and the largest city",
+            ):
+                result = await verifier.verify("Paris is the capital of France")
+
+                assert result.is_verified is True
+                assert result.confidence == 0.9
+                assert "strongly supported" in result.explanation
+                assert result.source == "wikipedia"
+
+    @pytest.mark.asyncio
+    async def test_knowledge_base_medium_similarity(self):
+        """Test verification with medium similarity (>= 0.5, < 0.7)."""
+        verifier = KnowledgeBaseVerifier(max_results=1)
+
+        with patch.object(verifier, "_search_wikipedia", return_value=["Paris"]):
+            with patch.object(
+                verifier,
+                "_get_wikipedia_content",
+                return_value="Paris located capital France government tourism",
+            ):
+                result = await verifier.verify("Paris capital France major city")
+
+                assert result.is_verified is True
+                assert result.confidence == 0.7
+                assert "partially supported" in result.explanation
+
+    @pytest.mark.asyncio
+    async def test_knowledge_base_low_similarity(self):
+        """Test verification with low similarity (< 0.5)."""
+        verifier = KnowledgeBaseVerifier(max_results=1)
+
+        with patch.object(verifier, "_search_wikipedia", return_value=["Berlin"]):
+            with patch.object(
+                verifier,
+                "_get_wikipedia_content",
+                return_value="Berlin is the capital of Germany",
+            ):
+                result = await verifier.verify("Paris is the capital of France")
+
+                assert result.is_verified is False
+                assert result.confidence == 0.4
+                assert "not well-supported" in result.explanation
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_search_wikipedia(self, mock_urlopen):
+        """Test _search_wikipedia method with API mocking."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock successful API response
+        mock_response = MagicMock()
+        mock_response.read.return_value = b'["paris", ["Paris", "Paris, France"], [], []]'
+        mock_response.__enter__ = MagicMock(return_value=mock_response)
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_response
+
+        results = verifier._search_wikipedia("Paris")
+        assert results == ["Paris", "Paris, France"]
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_search_wikipedia_failure(self, mock_urlopen):
+        """Test _search_wikipedia handles API failures."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock API failure
+        mock_urlopen.side_effect = Exception("Network error")
+
+        results = verifier._search_wikipedia("Paris")
+        assert results == []
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_search_wikipedia_invalid_response(self, mock_urlopen):
+        """Test _search_wikipedia handles invalid API responses."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock invalid response format
+        mock_response = MagicMock()
+        mock_response.read.return_value = b'{"invalid": "format"}'
+        mock_response.__enter__ = MagicMock(return_value=mock_response)
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_response
+
+        results = verifier._search_wikipedia("Paris")
+        assert results == []
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_get_content(self, mock_urlopen):
+        """Test _get_wikipedia_content method with API mocking."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock successful API response
+        mock_response = MagicMock()
+        mock_response.read.return_value = (
+            b'{"query": {"pages": {"123": {"extract": "Paris is the capital of France"}}}}'
+        )
+        mock_response.__enter__ = MagicMock(return_value=mock_response)
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_response
+
+        content = verifier._get_wikipedia_content("Paris")
+        assert content == "Paris is the capital of France"
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_get_content_failure(self, mock_urlopen):
+        """Test _get_wikipedia_content handles API failures."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock API failure
+        mock_urlopen.side_effect = Exception("Network error")
+
+        content = verifier._get_wikipedia_content("Paris")
+        assert content == ""
+
+    @patch("urllib.request.urlopen")
+    def test_knowledge_base_get_content_no_extract(self, mock_urlopen):
+        """Test _get_wikipedia_content when article has no extract."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Mock response without extract
+        mock_response = MagicMock()
+        mock_response.read.return_value = b'{"query": {"pages": {"123": {}}}}'
+        mock_response.__enter__ = MagicMock(return_value=mock_response)
+        mock_response.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_response
+
+        content = verifier._get_wikipedia_content("Paris")
+        assert content == ""
+
+    def test_knowledge_base_extract_snippet(self):
+        """Test _extract_snippet method."""
+        verifier = KnowledgeBaseVerifier()
+
+        # Test snippet extraction with matching sentence
+        content = "Paris is a city. It is the capital of France. The Eiffel Tower is there."
+        snippet = verifier._extract_snippet("capital of France", content, length=100)
+        assert "capital of France" in snippet or "capital" in snippet
+
+        # Test fallback to content truncation when no good match
+        content = "Some unrelated text about Berlin and Germany."
+        snippet = verifier._extract_snippet("Paris capital", content, length=20)
+        assert len(snippet) <= 20
+        assert snippet == content[:20]
+
 
 class TestFactualityEvaluatorWithVerifiers:
     """Integration tests for FactualityEvaluator with verification plugins."""
