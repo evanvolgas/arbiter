@@ -348,6 +348,36 @@ class TestCostCalculator:
         # Total: 0.0015 + 0.00015 + 0.0075 = 0.00915
         assert abs(cost - 0.00915) < 0.000001
 
+    def test_calculate_cost_cached_tokens_no_cached_pricing(self):
+        """Test cost calculation with cached tokens but no cached pricing (line 279)."""
+        calc = CostCalculator()
+        calc._loaded = True
+        calc._pricing_cache = {
+            "gpt-4o": ModelPricing(
+                id="gpt-4o",
+                vendor="openai",
+                name="GPT-4o",
+                input=2.5,  # $2.50 per 1M tokens
+                output=10.0,  # $10 per 1M tokens
+                # Note: input_cached is None (not provided)
+            )
+        }
+
+        # Calculate cost: 1000 input + 500 output + 300 cached
+        cost = calc.calculate_cost(
+            model="gpt-4o",
+            input_tokens=1000,
+            output_tokens=500,
+            cached_tokens=300,
+        )
+
+        # Expected (line 279: cached tokens treated as regular input):
+        # - Non-cached input: ((1000-300) / 1M * 2.5) = 0.00175
+        # - Cached input (no cached pricing, use regular): (300 / 1M * 2.5) = 0.00075
+        # - Output: (500 / 1M * 10.0) = 0.005
+        # Total: 0.00175 + 0.00075 + 0.005 = 0.0075
+        assert abs(cost - 0.0075) < 0.000001
+
     def test_calculate_cost_fallback(self):
         """Test cost calculation fallback when pricing unavailable."""
         calc = CostCalculator()

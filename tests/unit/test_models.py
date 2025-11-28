@@ -533,6 +533,48 @@ class TestEvaluationResult:
         cost = await result.total_llm_cost(use_actual_pricing=False)
         assert cost == 0.0
 
+    @pytest.mark.asyncio
+    async def test_total_llm_cost_with_actual_pricing(self):
+        """Test cost calculation with actual pricing (uses cost calculator)."""
+        interaction1 = LLMInteraction(
+            prompt="test1",
+            response="test1",
+            model="gpt-4o",
+            input_tokens=50,
+            output_tokens=50,
+            tokens_used=100,
+            latency=1.0,
+            purpose="test",
+        )
+        interaction2 = LLMInteraction(
+            prompt="test2",
+            response="test2",
+            model="gpt-4o",
+            input_tokens=100,
+            output_tokens=100,
+            tokens_used=200,
+            latency=1.0,
+            purpose="test",
+        )
+
+        result = EvaluationResult(
+            output="test",
+            overall_score=0.8,
+            passed=True,
+            interactions=[interaction1, interaction2],
+            processing_time=2.0,
+        )
+
+        # Use actual pricing (triggers cost calculator path lines 539-548)
+        cost = await result.total_llm_cost(use_actual_pricing=True)
+
+        # Verify cost is calculated (should be > 0 for gpt-4o with tokens)
+        assert cost > 0.0
+        # Cost should be reasonable for 150 input + 150 output tokens
+        # GPT-4o pricing: ~$2.50/$10.00 per 1M tokens (input/output)
+        # Expected: (150 * 2.50 + 150 * 10.00) / 1_000_000 = ~0.001875
+        assert cost < 0.01  # Sanity check - should be less than 1 cent
+
     def test_evaluation_result_timestamp_default(self):
         """Test that timestamp defaults to current time."""
         result1 = EvaluationResult(
@@ -784,6 +826,50 @@ class TestComparisonResult:
         cost = await result.total_llm_cost(use_actual_pricing=False)
         assert cost == 0.0
 
+    @pytest.mark.asyncio
+    async def test_total_llm_cost_with_actual_pricing(self):
+        """Test ComparisonResult cost calculation with actual pricing (uses cost calculator)."""
+        interaction1 = LLMInteraction(
+            prompt="test1",
+            response="test1",
+            model="gpt-4o",
+            input_tokens=75,
+            output_tokens=75,
+            tokens_used=150,
+            latency=1.0,
+            purpose="comparison",
+        )
+        interaction2 = LLMInteraction(
+            prompt="test2",
+            response="test2",
+            model="gpt-4o",
+            input_tokens=125,
+            output_tokens=125,
+            tokens_used=250,
+            latency=1.0,
+            purpose="comparison",
+        )
+
+        result = ComparisonResult(
+            output_a="Output A",
+            output_b="Output B",
+            winner="output_a",
+            confidence=0.9,
+            reasoning="Test",
+            interactions=[interaction1, interaction2],
+            processing_time=2.0,
+        )
+
+        # Use actual pricing (triggers cost calculator path lines 539-548)
+        cost = await result.total_llm_cost(use_actual_pricing=True)
+
+        # Verify cost is calculated (should be > 0 for gpt-4o with tokens)
+        assert cost > 0.0
+        # Cost should be reasonable for 200 input + 200 output tokens
+        # GPT-4o pricing: ~$2.50/$10.00 per 1M tokens (input/output)
+        # Expected: (200 * 2.50 + 200 * 10.00) / 1_000_000 = ~0.0025
+        assert cost < 0.01  # Sanity check - should be less than 1 cent
+
     def test_comparison_result_timestamp_default(self):
         """Test that timestamp defaults to current time."""
         result1 = ComparisonResult(
@@ -820,3 +906,52 @@ class TestComparisonResult:
 
         assert result.winner == "tie"
         assert result.confidence == 0.7
+
+
+class TestBatchEvaluationResult:
+    """Test suite for BatchEvaluationResult model."""
+
+    @pytest.mark.asyncio
+    async def test_total_llm_cost_no_successful_results(self):
+        """Test total_llm_cost returns 0.0 when no successful results (line 668)."""
+        from arbiter_ai.core.models import BatchEvaluationResult
+
+        # Create batch result with no successful results (all None)
+        result = BatchEvaluationResult(
+            results=[None, None, None],
+            successful_items=0,
+            failed_items=3,
+            total_items=3,
+            processing_time=2.0,
+        )
+
+        # Should return 0.0 when no successful results (triggers line 668)
+        cost = await result.total_llm_cost()
+        assert cost == 0.0
+
+        # Also test with use_actual_pricing=True
+        cost_actual = await result.total_llm_cost(use_actual_pricing=True)
+        assert cost_actual == 0.0
+
+    @pytest.mark.asyncio
+    async def test_cost_breakdown_no_successful_results(self):
+        """Test cost_breakdown returns empty dict when no successful results (line 700)."""
+        from arbiter_ai.core.models import BatchEvaluationResult
+
+        # Create batch result with no successful results (all None)
+        result = BatchEvaluationResult(
+            results=[None, None, None],
+            successful_items=0,
+            failed_items=3,
+            total_items=3,
+            processing_time=2.0,
+        )
+
+        # Should return empty breakdown dict when no successful results (triggers line 700)
+        breakdown = await result.cost_breakdown()
+
+        assert breakdown["total"] == 0.0
+        assert breakdown["per_item_average"] == 0.0
+        assert breakdown["by_evaluator"] == {}
+        assert breakdown["by_model"] == {}
+        assert breakdown["success_rate"] == 0.0

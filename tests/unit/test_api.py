@@ -357,6 +357,111 @@ class TestEvaluateFunction:
         mock_manager.get_client.assert_called_once()
         assert result.overall_score == 0.9
 
+    @pytest.mark.asyncio
+    async def test_evaluate_with_middleware(self, mock_llm_client, mock_agent):
+        """Test evaluation with middleware wrapping."""
+        from arbiter_ai.api import evaluate
+        from arbiter_ai.core.middleware import Middleware, MiddlewarePipeline
+
+        # Create mock middleware
+        class TestMiddleware(Middleware):
+            async def process(self, output, reference, next_handler, context):
+                # Middleware wraps the core evaluation
+                result = await next_handler(output, reference)
+                # Can modify result here
+                return result
+
+        pipeline = MiddlewarePipeline()
+        pipeline.add(TestMiddleware())
+
+        mock_response = SemanticResponse(
+            score=0.85,
+            confidence=0.9,
+            explanation="With middleware",
+        )
+
+        mock_result = MockAgentResult(mock_response)
+        mock_agent.run = AsyncMock(return_value=mock_result)
+        mock_llm_client.create_agent = MagicMock(return_value=mock_agent)
+
+        result = await evaluate(
+            output="Test output",
+            reference="Test reference",
+            middleware=pipeline,
+            llm_client=mock_llm_client,
+        )
+
+        assert result.overall_score == 0.85
+
+    @pytest.mark.asyncio
+    async def test_evaluate_defensive_evaluator_lookup_failure(
+        self, mock_llm_client, mock_agent
+    ):
+        """Test defensive code path when evaluator lookup returns None."""
+        from unittest.mock import patch
+
+        from arbiter_ai.api import evaluate
+
+        # Mock validate_evaluator_name to pass but get_evaluator_class to return None
+        with patch("arbiter_ai.api.validate_evaluator_name"):
+            with patch("arbiter_ai.api.get_evaluator_class", return_value=None):
+                with pytest.raises(ValidationError, match="not found in registry"):
+                    await evaluate(
+                        output="Test",
+                        evaluators=["nonexistent"],
+                        llm_client=mock_llm_client,
+                    )
+
+    @pytest.mark.asyncio
+    async def test_evaluate_unexpected_exception_handling(
+        self, mock_llm_client, mock_agent
+    ):
+        """Test generic exception handler for unexpected errors during evaluation."""
+        from arbiter_ai.api import evaluate
+        from arbiter_ai.core.models import Score
+
+        # Create one evaluator that succeeds and one that raises unexpected exception
+        mock_failing_evaluator = MagicMock()
+        mock_failing_evaluator.name = "failing_evaluator"
+        mock_failing_evaluator.evaluate = AsyncMock(
+            side_effect=RuntimeError("Unexpected system error")
+        )
+        mock_failing_evaluator.get_interactions = MagicMock(return_value=[])
+
+        mock_success_evaluator = MagicMock()
+        mock_success_evaluator.name = "success_evaluator"
+        mock_success_evaluator.evaluate = AsyncMock(
+            return_value=Score(
+                name="success_evaluator",
+                value=0.8,
+                confidence=0.9,
+                explanation="Success",
+            )
+        )
+        mock_success_evaluator.get_interactions = MagicMock(return_value=[])
+
+        def get_evaluator_side_effect(name):
+            if name == "failing_evaluator":
+                return MagicMock(return_value=mock_failing_evaluator)
+            else:
+                return MagicMock(return_value=mock_success_evaluator)
+
+        with patch(
+            "arbiter_ai.api.get_evaluator_class", side_effect=get_evaluator_side_effect
+        ):
+            with patch("arbiter_ai.api.validate_evaluator_name"):
+                result = await evaluate(
+                    output="Test",
+                    evaluators=["failing_evaluator", "success_evaluator"],
+                    llm_client=mock_llm_client,
+                )
+
+                # Should handle error gracefully - one succeeds, one fails
+                assert result.overall_score == 0.8  # Only successful evaluator
+                assert result.passed is True  # At least one succeeded
+                assert "failing_evaluator" in result.errors
+                assert "Unexpected error" in result.errors["failing_evaluator"]
+
 
 class TestCompareFunction:
     """Test suite for compare() function."""
@@ -579,3 +684,53 @@ class TestCompareFunction:
 
         mock_manager.get_client.assert_called_once()
         assert result.winner == "output_a"
+
+    @pytest.mark.asyncio
+    async def test_compare_empty_output_a_validation(self, mock_llm_client):
+        """Test that empty output_a raises validation error."""
+        from arbiter_ai.api import compare
+
+        with pytest.raises(ValidationError, match="output_a cannot be empty"):
+            await compare(
+                output_a="",
+                output_b="Output B",
+                llm_client=mock_llm_client,
+            )
+
+    @pytest.mark.asyncio
+    async def test_compare_empty_output_b_validation(self, mock_llm_client):
+        """Test that empty output_b raises validation error."""
+        from arbiter_ai.api import compare
+
+        with pytest.raises(ValidationError, match="output_b cannot be empty"):
+            await compare(
+                output_a="Output A",
+                output_b="",
+                llm_client=mock_llm_client,
+            )
+
+    @pytest.mark.asyncio
+    async def test_compare_empty_criteria_validation(self, mock_llm_client):
+        """Test that empty criteria raises validation error."""
+        from arbiter_ai.api import compare
+
+        with pytest.raises(ValidationError, match="criteria cannot be empty"):
+            await compare(
+                output_a="Output A",
+                output_b="Output B",
+                criteria="",
+                llm_client=mock_llm_client,
+            )
+
+    @pytest.mark.asyncio
+    async def test_compare_empty_reference_validation(self, mock_llm_client):
+        """Test that empty reference raises validation error."""
+        from arbiter_ai.api import compare
+
+        with pytest.raises(ValidationError, match="reference cannot be empty"):
+            await compare(
+                output_a="Output A",
+                output_b="Output B",
+                reference="",
+                llm_client=mock_llm_client,
+            )

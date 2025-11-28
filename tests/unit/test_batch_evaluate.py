@@ -1,10 +1,11 @@
 """Unit tests for batch_evaluate() function."""
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from arbiter_ai.core.exceptions import ValidationError
+from arbiter_ai.core.llm_client import LLMClient
 from arbiter_ai.core.models import BatchEvaluationResult, EvaluationResult
 from arbiter_ai.evaluators.custom_criteria import CustomCriteriaResponse
 from arbiter_ai.evaluators.semantic import SemanticResponse
@@ -204,6 +205,38 @@ class TestBatchEvaluateFunction:
         ]
 
         with pytest.raises(ValidationError, match="missing required 'output' key"):
+            await batch_evaluate(
+                items=items,
+                evaluators=["semantic"],
+                llm_client=mock_llm_client,
+            )
+
+    @pytest.mark.asyncio
+    async def test_batch_evaluate_invalid_item_type_validation(self, mock_llm_client):
+        """Test that non-dict items raise validation error."""
+        from arbiter_ai.api import batch_evaluate
+
+        items = [
+            "not a dictionary",  # Invalid type
+        ]
+
+        with pytest.raises(ValidationError, match="must be a dictionary"):
+            await batch_evaluate(
+                items=items,
+                evaluators=["semantic"],
+                llm_client=mock_llm_client,
+            )
+
+    @pytest.mark.asyncio
+    async def test_batch_evaluate_empty_output_validation(self, mock_llm_client):
+        """Test that empty output value raises validation error."""
+        from arbiter_ai.api import batch_evaluate
+
+        items = [
+            {"output": ""},  # Empty output
+        ]
+
+        with pytest.raises(ValidationError, match="output' cannot be empty"):
             await batch_evaluate(
                 items=items,
                 evaluators=["semantic"],
@@ -525,3 +558,39 @@ class TestBatchEvaluateFunction:
 
         assert result.successful_items == 2
         assert all(r is not None for r in result.results)
+
+    @pytest.mark.asyncio
+    @patch("arbiter_ai.api.LLMManager")
+    async def test_batch_evaluate_creates_client(self, mock_manager, mock_agent):
+        """Test that batch_evaluate creates client if not provided."""
+        from arbiter_ai.api import batch_evaluate
+
+        mock_client = MagicMock(spec=LLMClient)
+        mock_client.model = "gpt-4o"
+        mock_client.temperature = 0.0
+        mock_client.create_agent = MagicMock(return_value=mock_agent)
+
+        mock_manager.get_client = AsyncMock(return_value=mock_client)
+
+        mock_response = SemanticResponse(
+            score=0.9,
+            confidence=0.85,
+            explanation="Test",
+        )
+
+        mock_result = MockAgentResult(mock_response)
+        mock_agent.run = AsyncMock(return_value=mock_result)
+
+        items = [
+            {"output": "Test 1", "reference": "Ref 1"},
+        ]
+
+        result = await batch_evaluate(
+            items=items,
+            evaluators=["semantic"],
+            model="gpt-4o",
+        )
+
+        # Verify client was created
+        mock_manager.get_client.assert_called_once()
+        assert result.successful_items == 1

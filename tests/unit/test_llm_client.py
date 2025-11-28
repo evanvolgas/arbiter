@@ -466,3 +466,47 @@ class TestLLMResponse:
         response = LLMResponse(content="Test", model="gpt-4")
 
         assert response.usage == {}
+
+    @pytest.mark.asyncio
+    async def test_cached_tokens_handling(self):
+        """Test handling of cached_tokens in usage response."""
+        client = LLMClient(provider=Provider.OPENAI, model="gpt-4o", api_key="test-key")
+
+        # Mock response with cached tokens (Anthropic-style)
+        mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.content = "Test response"
+        mock_response.usage = MagicMock()
+        mock_response.usage.prompt_tokens = 100
+        mock_response.usage.completion_tokens = 50
+        mock_response.usage.total_tokens = 150
+
+        # Add prompt_tokens_details with cached_tokens
+        mock_response.usage.prompt_tokens_details = MagicMock()
+        mock_response.usage.prompt_tokens_details.cached_tokens = 80
+
+        with patch.object(
+            client.client.chat.completions,
+            "create",
+            new=AsyncMock(return_value=mock_response),
+        ):
+            response = await client.complete(
+                [{"role": "user", "content": "Test prompt"}]
+            )
+
+            assert response.usage["cached_tokens"] == 80
+            assert response.usage["prompt_tokens"] == 100
+
+    @pytest.mark.asyncio
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "fallback-key"}, clear=True)
+    async def test_fallback_client_creation_for_unsupported_provider(self):
+        """Test fallback to OpenAI client for providers not in PROVIDER_URLS."""
+        # ANTHROPIC is not in PROVIDER_URLS, so it should fallback
+        client = LLMClient(
+            provider=Provider.ANTHROPIC,
+            model="claude-3-5-sonnet-20241022",
+            api_key="test-key",
+        )
+
+        # The client should be created (fallback path line 196)
+        assert client.client is not None
