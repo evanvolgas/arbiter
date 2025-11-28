@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arbiter-ai"
-version = "0.1.1"
+version = "0.1.2"
 description = "Native PydanticAI evaluation with automatic cost tracking"
 authors = [{name = "Evan Volgas", email = "evan.volgas@gmail.com"}]
 license = "MIT"
