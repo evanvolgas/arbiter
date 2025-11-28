@@ -8,7 +8,7 @@
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License"></a>
     <a href="https://github.com/ashita-ai/arbiter"><img src="https://img.shields.io/badge/version-0.1.1-blue" alt="Version"></a>
     <a href="https://ai.pydantic.dev"><img src="https://img.shields.io/badge/PydanticAI-native-purple" alt="PydanticAI"></a>
-    <img src="https://img.shields.io/badge/coverage-97%25-brightgreen" alt="Coverage">
+    <a href="https://codecov.io/gh/ashita-ai/arbiter"><img src="https://codecov.io/gh/ashita-ai/arbiter/branch/main/graph/badge.svg" alt="Coverage"></a>
   </p>
 </div>
 
