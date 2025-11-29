@@ -39,7 +39,7 @@ accuracy, legal compliance, brand voice, etc.
 import time
 from typing import Dict, List, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..core.models import LLMInteraction, Score
 from .base import BasePydanticEvaluator
@@ -49,6 +49,12 @@ __all__ = ["CustomCriteriaEvaluator", "CustomCriteriaResponse", "MultiCriteriaRe
 
 class CustomCriteriaResponse(BaseModel):
     """Structured response for custom criteria evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     score: float = Field(
         ...,
@@ -74,9 +80,37 @@ class CustomCriteriaResponse(BaseModel):
         description="List of criteria that the output does not meet or partially meets",
     )
 
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def validate_criteria_analysis(self) -> "CustomCriteriaResponse":
+        """Ensure criteria are identified for non-trivial assessments."""
+        total_criteria = len(self.criteria_met) + len(self.criteria_not_met)
+        if (
+            self.confidence > 0.7
+            and total_criteria == 0
+            and self.score not in (0.0, 1.0)
+        ):
+            raise ValueError(
+                "High confidence scores (>0.9) require at least one criterion to be identified"
+            )
+        return self
+
 
 class MultiCriteriaResponse(BaseModel):
     """Structured response for multi-criteria evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     criteria_scores: Dict[str, float] = Field(
         default_factory=dict,
@@ -99,6 +133,25 @@ class MultiCriteriaResponse(BaseModel):
         default_factory=dict,
         description="Detailed assessment for each criterion with 'met' status and 'reasoning'",
     )
+
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @field_validator("criteria_scores")
+    @classmethod
+    def validate_criteria_scores(cls, v: Dict[str, float]) -> Dict[str, float]:
+        """Ensure all scores are in valid range."""
+        for criterion, score in v.items():
+            if not (0.0 <= score <= 1.0):
+                raise ValueError(
+                    f"Score for '{criterion}' must be between 0.0 and 1.0, got {score}"
+                )
+        return v
 
 
 class CustomCriteriaEvaluator(BasePydanticEvaluator):

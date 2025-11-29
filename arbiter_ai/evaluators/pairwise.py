@@ -27,7 +27,7 @@ import logging
 import time
 from typing import Dict, List, Literal, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ..core.models import ComparisonResult, LLMInteraction, Score
 from .base import BasePydanticEvaluator
@@ -44,6 +44,12 @@ __all__ = [
 class AspectComparison(BaseModel):
     """Comparison result for a single aspect/criterion."""
 
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
+
     aspect: str = Field(..., description="Name of the aspect being compared")
     output_a_score: float = Field(
         ..., ge=0.0, le=1.0, description="Score for output_a on this aspect"
@@ -55,9 +61,23 @@ class AspectComparison(BaseModel):
         ..., description="Explanation of the comparison for this aspect"
     )
 
+    @field_validator("reasoning")
+    @classmethod
+    def validate_reasoning_quality(cls, v: str) -> str:
+        """Ensure reasoning is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Reasoning cannot be empty")
+        return v.strip()
+
 
 class PairwiseResponse(BaseModel):
     """Structured response for pairwise comparison evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     winner: Literal["output_a", "output_b", "tie"] = Field(
         ...,
@@ -76,6 +96,14 @@ class PairwiseResponse(BaseModel):
         default_factory=list,
         description="Detailed comparison for each aspect/criterion",
     )
+
+    @field_validator("reasoning")
+    @classmethod
+    def validate_reasoning_quality(cls, v: str) -> str:
+        """Ensure reasoning is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Reasoning cannot be empty")
+        return v.strip()
 
 
 class PairwiseComparisonEvaluator(BasePydanticEvaluator):

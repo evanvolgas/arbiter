@@ -27,7 +27,7 @@ identifying missing points, and detecting off-topic content.
 
 from typing import List, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..core.models import Score
 from .base import BasePydanticEvaluator
@@ -37,6 +37,12 @@ __all__ = ["RelevanceEvaluator", "RelevanceResponse"]
 
 class RelevanceResponse(BaseModel):
     """Structured response for relevance evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     score: float = Field(
         ...,
@@ -65,6 +71,28 @@ class RelevanceResponse(BaseModel):
         default_factory=list,
         description="Content in the output that is off-topic or not relevant to the query",
     )
+
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def validate_relevance_analysis(self) -> "RelevanceResponse":
+        """Ensure points are identified for non-trivial relevance assessments."""
+        total_points = (
+            len(self.addressed_points)
+            + len(self.missing_points)
+            + len(self.irrelevant_content)
+        )
+        if self.confidence > 0.7 and total_points == 0 and self.score not in (0.0, 1.0):
+            raise ValueError(
+                "High confidence scores (>0.9) require at least one point to be identified"
+            )
+        return self
 
 
 class RelevanceEvaluator(BasePydanticEvaluator):

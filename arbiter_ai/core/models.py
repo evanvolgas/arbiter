@@ -10,7 +10,7 @@ This module defines the primary data structures used throughout Arbiter:
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 __all__ = [
     "Score",
@@ -74,6 +74,12 @@ class Score(BaseModel):
         ... )
     """
 
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
+
     name: str = Field(..., description="Name of the metric (e.g., 'factuality')")
     value: float = Field(..., ge=0.0, le=1.0, description="Score value between 0 and 1")
     confidence: Optional[float] = Field(
@@ -112,6 +118,12 @@ class LLMInteraction(BaseModel):
         ... )
     """
 
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
+
     prompt: str = Field(..., description="The prompt sent to the LLM")
     response: str = Field(..., description="The LLM's response")
     model: str = Field(..., description="Model used for this call")
@@ -147,6 +159,7 @@ class LLMInteraction(BaseModel):
         default_factory=dict, description="Additional context about this call"
     )
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def total_tokens(self) -> int:
         """Total tokens across input and output.
@@ -167,6 +180,12 @@ class Metric(BaseModel):
     Provides information about how a metric was computed, including
     the model used, processing time, and any relevant context.
     """
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     name: str = Field(..., description="Name of the metric")
     evaluator: str = Field(..., description="Name of the evaluator that computed it")
@@ -211,6 +230,11 @@ class EvaluationResult(BaseModel):
         ...     errors={"factuality": "API timeout"}
         ... )
     """
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+    )
 
     # Input data
     output: str = Field(..., description="The LLM output that was evaluated")
@@ -446,6 +470,11 @@ class ComparisonResult(BaseModel):
         >>> print(f"Winner: {comparison.winner}")
     """
 
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+    )
+
     # Input data
     output_a: str = Field(..., description="First output being compared")
     output_b: str = Field(..., description="Second output being compared")
@@ -575,6 +604,11 @@ class BatchEvaluationResult(BaseModel):
         ...         error = next(e for e in batch_result.errors if e['index'] == i)
         ...         print(f"Item {i}: failed - {error['error']}")
     """
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+    )
 
     # Results (None for failed items, preserving order)
     results: List[Optional[EvaluationResult]] = Field(

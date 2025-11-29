@@ -49,11 +49,6 @@ def mock_eval_result():
                 purpose="scoring",
             )
         ],
-        total_input_tokens=15,
-        total_output_tokens=25,
-        total_cached_tokens=0,
-        total_tokens_used=40,
-        total_cost=0.002,
         processing_time=2.0,
     )
 

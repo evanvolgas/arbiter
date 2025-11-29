@@ -27,7 +27,7 @@ essential for catching hallucinations and ensuring trustworthy AI outputs.
 
 from typing import TYPE_CHECKING, List, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..core.models import Score
 from .base import BasePydanticEvaluator
@@ -42,6 +42,12 @@ __all__ = ["FactualityEvaluator", "FactualityResponse"]
 
 class FactualityResponse(BaseModel):
     """Structured response for factuality evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     score: float = Field(
         ...,
@@ -70,6 +76,28 @@ class FactualityResponse(BaseModel):
         default_factory=list,
         description="Claims that cannot be verified as true or false with available information",
     )
+
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def validate_claim_analysis(self) -> "FactualityResponse":
+        """Ensure claims are provided for non-trivial factuality assessments."""
+        total_claims = (
+            len(self.factual_claims)
+            + len(self.non_factual_claims)
+            + len(self.uncertain_claims)
+        )
+        if self.confidence > 0.7 and total_claims == 0 and self.score not in (0.0, 1.0):
+            raise ValueError(
+                "High confidence scores (>0.9) require at least one claim to be identified"
+            )
+        return self
 
 
 class FactualityEvaluator(BasePydanticEvaluator):

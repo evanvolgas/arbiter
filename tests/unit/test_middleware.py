@@ -25,7 +25,6 @@ def eval_result():
         reference="Test reference text",
         overall_score=0.85,
         passed=True,
-        threshold=0.7,
         scores=[Score(name="semantic", value=0.85, confidence=0.9, explanation="Good")],
         metrics=[],
         total_tokens=100,

@@ -28,7 +28,7 @@ and ensure outputs are based on retrieved context.
 
 from typing import Dict, List, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..core.models import Score
 from .base import BasePydanticEvaluator
@@ -38,6 +38,12 @@ __all__ = ["GroundednessEvaluator", "GroundednessResponse"]
 
 class GroundednessResponse(BaseModel):
     """Structured response for groundedness evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     score: float = Field(
         ...,
@@ -66,6 +72,30 @@ class GroundednessResponse(BaseModel):
         default_factory=dict,
         description="Mapping from statements to their supporting source text",
     )
+
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def validate_groundedness_analysis(self) -> "GroundednessResponse":
+        """Ensure statements are identified for non-trivial groundedness assessments."""
+        total_statements = len(self.grounded_statements) + len(
+            self.ungrounded_statements
+        )
+        if (
+            self.confidence > 0.7
+            and total_statements == 0
+            and self.score not in (0.0, 1.0)
+        ):
+            raise ValueError(
+                "High confidence scores (>0.9) require at least one statement to be identified"
+            )
+        return self
 
 
 class GroundednessEvaluator(BasePydanticEvaluator):

@@ -47,7 +47,7 @@ even if they use different wording. Supports two backends:
 
 from typing import Literal, Optional, Type, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from ..core.llm_client import LLMClient
 from ..core.models import Score
@@ -63,6 +63,12 @@ __all__ = ["SemanticEvaluator", "SemanticResponse"]
 
 class SemanticResponse(BaseModel):
     """Structured response for semantic similarity evaluation."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+        validate_assignment=True,
+    )
 
     score: float = Field(
         ...,
@@ -87,6 +93,26 @@ class SemanticResponse(BaseModel):
         default_factory=list,
         description="Key semantic similarities between the texts",
     )
+
+    @field_validator("explanation")
+    @classmethod
+    def validate_explanation_quality(cls, v: str) -> str:
+        """Ensure explanation is meaningful and not empty."""
+        if len(v.strip()) < 1:
+            raise ValueError("Explanation cannot be empty")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def validate_semantic_analysis(self) -> "SemanticResponse":
+        """Ensure high-confidence scores have supporting details."""
+        if self.confidence > 0.9:
+            total_items = len(self.key_differences) + len(self.key_similarities)
+            if total_items == 0 and self.score not in (0.0, 1.0):
+                raise ValueError(
+                    "High confidence scores (>0.9) require at least one "
+                    "key difference or similarity"
+                )
+        return self
 
 
 class SemanticEvaluator(BasePydanticEvaluator):
