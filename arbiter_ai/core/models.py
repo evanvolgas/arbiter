@@ -10,7 +10,7 @@ This module defines the primary data structures used throughout Arbiter:
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 __all__ = [
     "Score",

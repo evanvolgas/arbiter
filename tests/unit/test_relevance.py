@@ -416,7 +416,9 @@ class TestRelevanceResponse:
         response = RelevanceResponse(
             score=0.8,
             explanation="Test explanation for relevance assessment",
-            addressed_points=["Key point was addressed"],  # Need points for non-extreme scores
+            addressed_points=[
+                "Key point was addressed"
+            ],  # Need points for non-extreme scores
         )
 
         assert response.score == 0.8
@@ -431,7 +433,9 @@ class TestRelevanceResponse:
         RelevanceResponse(score=0.0, explanation="All points missing")
         RelevanceResponse(score=1.0, explanation="All points addressed")
         # Non-extreme scores need points
-        RelevanceResponse(score=0.5, explanation="Some points addressed", addressed_points=["Point 1"])
+        RelevanceResponse(
+            score=0.5, explanation="Some points addressed", addressed_points=["Point 1"]
+        )
 
         # Invalid scores
         with pytest.raises(Exception):  # Pydantic validation error
@@ -446,7 +450,12 @@ class TestRelevanceResponse:
         RelevanceResponse(score=0.8, confidence=0.0, explanation="Low confidence")
         # High confidence needs points for non-extreme scores
         RelevanceResponse(score=1.0, confidence=1.0, explanation="Fully relevant")
-        RelevanceResponse(score=0.8, confidence=0.75, explanation="Mostly relevant", addressed_points=["Point 1"])
+        RelevanceResponse(
+            score=0.8,
+            confidence=0.75,
+            explanation="Mostly relevant",
+            addressed_points=["Point 1"],
+        )
 
         # Invalid confidence
         with pytest.raises(Exception):  # Pydantic validation error

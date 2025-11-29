@@ -253,7 +253,9 @@ class TestCustomCriteriaEvaluator:
             score=0.8,
             confidence=0.85,
             explanation="Test explanation",
-            criteria_met=["Accuracy"],  # Need criteria for non-extreme scores with confidence > 0.7
+            criteria_met=[
+                "Accuracy"
+            ],  # Need criteria for non-extreme scores with confidence > 0.7
             criteria_not_met=[],
         )
 
@@ -336,7 +338,9 @@ class TestCustomCriteriaResponse:
         response = CustomCriteriaResponse(score=1.0, explanation="All criteria met")
         assert response.score == 1.0
         # Non-extreme scores need criteria
-        response = CustomCriteriaResponse(score=0.5, explanation="Some criteria met", criteria_met=["Criterion 1"])
+        response = CustomCriteriaResponse(
+            score=0.5, explanation="Some criteria met", criteria_met=["Criterion 1"]
+        )
         assert response.score == 0.5
 
         # Invalid scores should raise validation error

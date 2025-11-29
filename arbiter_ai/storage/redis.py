@@ -113,7 +113,9 @@ class RedisStorage(StorageBackend):
         try:
             # Generate ID from result hash (deterministic)
             # Exclude computed fields when serializing to avoid validation errors on deserialization
-            result_dict = result.model_dump(mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}})
+            result_dict = result.model_dump(
+                mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}}
+            )
             result_id = str(hash(json.dumps(result_dict, sort_keys=True)))
 
             # Store result with metadata
@@ -149,7 +151,14 @@ class RedisStorage(StorageBackend):
         try:
             # Generate ID from result hash
             # Exclude computed fields when serializing to avoid validation errors on deserialization
-            result_dict = result.model_dump(mode="json", exclude={"results": {"__all__": {"interactions": {"__all__": {"total_tokens"}}}}})
+            result_dict = result.model_dump(
+                mode="json",
+                exclude={
+                    "results": {
+                        "__all__": {"interactions": {"__all__": {"total_tokens"}}}
+                    }
+                },
+            )
             batch_id = str(hash(json.dumps(result_dict, sort_keys=True)))
 
             # Store result with metadata

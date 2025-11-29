@@ -389,7 +389,9 @@ class TestFactualityResponse:
         response = FactualityResponse(
             score=0.8,
             explanation="Test explanation of factuality assessment",
-            factual_claims=["Paris is the capital of France"],  # Need claims for non-extreme scores
+            factual_claims=[
+                "Paris is the capital of France"
+            ],  # Need claims for non-extreme scores
         )
 
         assert response.score == 0.8
@@ -404,7 +406,9 @@ class TestFactualityResponse:
         FactualityResponse(score=0.0, explanation="All claims false")
         FactualityResponse(score=1.0, explanation="All claims true")
         # Non-extreme scores need claims
-        FactualityResponse(score=0.5, explanation="Mixed claims", factual_claims=["True claim"])
+        FactualityResponse(
+            score=0.5, explanation="Mixed claims", factual_claims=["True claim"]
+        )
 
         # Invalid scores
         with pytest.raises(Exception):  # Pydantic validation error

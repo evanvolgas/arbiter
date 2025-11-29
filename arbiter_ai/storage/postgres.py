@@ -144,7 +144,9 @@ class PostgresStorage(StorageBackend):
         try:
             # Serialize result to JSON
             # Exclude computed fields when serializing to avoid validation errors on deserialization
-            result_data = result.model_dump(mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}})
+            result_data = result.model_dump(
+                mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}}
+            )
 
             # Extract fields for indexing
             overall_score = result.overall_score
@@ -194,7 +196,14 @@ class PostgresStorage(StorageBackend):
         try:
             # Serialize result to JSON
             # Exclude computed fields when serializing to avoid validation errors on deserialization
-            result_data = result.model_dump(mode="json", exclude={"results": {"__all__": {"interactions": {"__all__": {"total_tokens"}}}}})
+            result_data = result.model_dump(
+                mode="json",
+                exclude={
+                    "results": {
+                        "__all__": {"interactions": {"__all__": {"total_tokens"}}}
+                    }
+                },
+            )
 
             # Calculate statistics
             avg_score = (

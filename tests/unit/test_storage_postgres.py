@@ -326,7 +326,9 @@ class TestPostgresStorageGetResult:
         storage.pool = mock_pool
 
         # Exclude computed fields like storage does
-        result_data = mock_eval_result.model_dump(mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}})
+        result_data = mock_eval_result.model_dump(
+            mode="json", exclude={"interactions": {"__all__": {"total_tokens"}}}
+        )
         # Use mock_pool._conn instead
         mock_pool._conn.fetchrow = AsyncMock(
             return_value={"result_data": json.dumps(result_data)}
@@ -382,7 +384,12 @@ class TestPostgresStorageGetBatchResult:
         storage.pool = mock_pool
 
         # Exclude computed fields like storage does
-        result_data = mock_batch_result.model_dump(mode="json", exclude={"results": {"__all__": {"interactions": {"__all__": {"total_tokens"}}}}})
+        result_data = mock_batch_result.model_dump(
+            mode="json",
+            exclude={
+                "results": {"__all__": {"interactions": {"__all__": {"total_tokens"}}}}
+            },
+        )
         # Use mock_pool._conn instead
         mock_pool._conn.fetchrow = AsyncMock(
             return_value={"result_data": json.dumps(result_data)}
