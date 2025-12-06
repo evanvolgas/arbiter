@@ -49,9 +49,7 @@ class TestLLMClient:
     def test_client_initialization_groq(self):
         """Test client initialization for Groq."""
         with patch.dict(os.environ, {"GROQ_API_KEY": "test-key"}):
-            client = LLMClient(
-                provider=Provider.GROQ, model="gpt-4", temperature=0.5
-            )
+            client = LLMClient(provider=Provider.GROQ, model="gpt-4", temperature=0.5)
 
             assert client.provider == Provider.GROQ
             assert client.model == "gpt-4"
@@ -460,10 +458,10 @@ class TestLLMResponse:
         # All providers now route through PydanticAI
         client = LLMClient(
             provider=Provider.ANTHROPIC,
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-5-20250929",
             api_key="test-key",
         )
 
         # Client should be initialized successfully
         assert client.provider == Provider.ANTHROPIC
-        assert client.model == "claude-3-5-sonnet-20241022"
+        assert client.model == "claude-sonnet-4-5-20250929"

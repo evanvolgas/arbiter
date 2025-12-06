@@ -291,7 +291,9 @@ class LLMClient:
             ModelProviderError: If the API call fails
         """
         # All providers route through PydanticAI for consistency
-        return await self._execute_pydanticai_completion(provider_model, typed_messages, **kwargs)
+        return await self._execute_pydanticai_completion(
+            provider_model, typed_messages, **kwargs
+        )
 
     async def _execute_pydanticai_completion(
         self,
@@ -365,7 +367,11 @@ class LLMClient:
             if "rate limit" in error_msg:
                 details["error_code"] = "rate_limit"
                 raise ModelProviderError("Rate limit exceeded", details=details) from e
-            elif "api key" in error_msg or "unauthorized" in error_msg or "authentication" in error_msg:
+            elif (
+                "api key" in error_msg
+                or "unauthorized" in error_msg
+                or "authentication" in error_msg
+            ):
                 details["error_code"] = "authentication"
                 raise ModelProviderError(
                     "Authentication failed", details=details

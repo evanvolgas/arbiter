@@ -8,9 +8,10 @@ last_updated: 2025-11-29
 
 **Purpose**: Quick reference for working on Arbiter
 
-**Arbiter**: Production-grade LLM evaluation framework (v0.1.1)
-**Stack**: Python 3.10+, PydanticAI, provider-agnostic (OpenAI/Anthropic/Google/Groq)
-**Coverage**: 95% test coverage, strict mypy, comprehensive examples
+**Arbiter**: Production-grade LLM evaluation framework (v0.1.2)
+**Stack**: Python 3.11+, PydanticAI, provider-agnostic (OpenAI/Anthropic/Google/Groq)
+**Coverage**: 96% test coverage, strict mypy, comprehensive examples
+**Pricing**: LiteLLM bundled database (consistent with Conduit)
 
 **Design Philosophy**: Simplicity wins, use good defaults, YAML config where needed, no hardcoded assumptions.
 
@@ -166,16 +167,30 @@ Action Taken: Proposed rule update to user mid-session, updated AGENTS.md
 
 ```
 arbiter/
-├── arbiter/
+├── arbiter_ai/
 │   ├── api.py              # Public API (evaluate, compare)
-│   ├── core/               # Infrastructure (llm_client, middleware, monitoring, registry)
+│   ├── core/               # Infrastructure (llm_client, middleware, monitoring, registry, cost_calculator)
 │   ├── evaluators/         # Semantic, CustomCriteria, Pairwise, Factuality, Groundedness, Relevance
 │   ├── storage/            # Storage backends (PostgreSQL, Redis)
-│   └── tools/              # Utilities
-├── examples/               # 15+ comprehensive examples
-├── tests/                  # Unit + integration tests
+│   └── verifiers/          # Claim verification (Search, Citation, KnowledgeBase)
+├── examples/               # 25+ comprehensive examples
+├── tests/                  # Unit + integration tests (583 tests, 96% coverage)
 └── pyproject.toml          # Dependencies and config
 ```
+
+### Cost Calculator
+
+The cost calculator uses LiteLLM's bundled pricing database (same source as Conduit):
+
+```python
+from arbiter_ai import get_cost_calculator
+
+calc = get_cost_calculator()
+cost = calc.calculate_cost("gpt-4o-mini", input_tokens=1000, output_tokens=500)
+print(f"Cost: ${cost:.6f}")  # Cost: $0.000450
+```
+
+To update pricing: `uv update litellm`
 
 ---
 
@@ -526,6 +541,7 @@ async def evaluate(output: str, reference: Optional[str] = None) -> EvaluationRe
 - **Middleware**: Pre/post processing pipeline
 - **LLM Client**: Provider-agnostic abstraction
 - **Interaction Tracking**: Automatic LLM call logging
+- **Cost Calculator**: LiteLLM bundled pricing (consistent with Conduit)
 
 ### Make Targets
 

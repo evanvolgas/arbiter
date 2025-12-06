@@ -1,21 +1,19 @@
-"""Cost calculation using llm-prices data.
+"""Cost calculation using LiteLLM's bundled pricing database.
 
-This module provides accurate LLM cost calculation by fetching pricing data
-from https://www.llm-prices.com and caching it for the session.
+This module provides accurate LLM cost calculation using LiteLLM's bundled
+model_cost database, which contains up-to-date pricing for all major providers.
 
-## Key Features:
+## Benefits of using LiteLLM pricing:
 
-- **Lazy Loading**: Fetches pricing data once on first use
-- **Accurate Pricing**: Uses real-world pricing for 100+ models
-- **Input/Output Differentiation**: Properly accounts for different token costs
-- **Cache Support**: Handles cached token pricing (e.g., Anthropic prompt caching)
-- **Fuzzy Matching**: Matches model variants (e.g., "gpt-4o-mini-2024-07-18" → "gpt-4o-mini")
-- **Graceful Fallback**: Conservative estimates if pricing data unavailable
+- **No External API Calls**: Pricing bundled with package (no network requests)
+- **Comprehensive Coverage**: All major providers (OpenAI, Anthropic, Google, etc.)
+- **Exact Model Matching**: LiteLLM handles model ID normalization
+- **Cache Pricing Support**: Includes cache read and creation costs
+- **Simple Updates**: Run `uv update litellm` to get latest pricing
 
 ## Usage:
 
     >>> calc = get_cost_calculator()
-    >>> await calc.ensure_loaded()
     >>> cost = calc.calculate_cost(
     ...     model="gpt-4o-mini",
     ...     input_tokens=1000,
@@ -23,18 +21,18 @@ from https://www.llm-prices.com and caching it for the session.
     ... )
     >>> print(f"${cost:.6f}")
 
-## Architecture:
+## Consistency with Conduit:
 
-The cost calculator fetches data once and caches it in memory. If the fetch
-fails, it falls back to conservative estimates based on typical pricing tiers.
+This module uses the same pricing source as Conduit's routing system,
+ensuring consistent cost calculations across both frameworks. Both use
+LiteLLM's bundled model_cost database rather than external pricing APIs.
 """
 
-import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
-import httpx
+import litellm
 from pydantic import BaseModel, Field
 
 __all__ = ["ModelPricing", "CostCalculator", "get_cost_calculator"]
@@ -52,13 +50,14 @@ class ModelPricing(BaseModel):
         input: Cost per 1 million input tokens (USD)
         output: Cost per 1 million output tokens (USD)
         input_cached: Cost per 1 million cached input tokens (USD), if applicable
-        last_updated: When this pricing data was fetched
+        cache_creation: Cost per 1 million cache creation tokens (USD), if applicable
+        last_updated: When this pricing data was loaded
 
     Example:
         >>> pricing = ModelPricing(
-        ...     id="claude-3-5-sonnet",
+        ...     id="claude-sonnet-4-5-20250929",
         ...     vendor="anthropic",
-        ...     name="Claude 3.5 Sonnet",
+        ...     name="Claude Sonnet 4.5",
         ...     input=3.0,
         ...     output=15.0,
         ...     input_cached=0.3,
@@ -74,22 +73,24 @@ class ModelPricing(BaseModel):
     input_cached: Optional[float] = Field(
         None, ge=0, description="Cost per 1M cached input tokens (USD)"
     )
+    cache_creation: Optional[float] = Field(
+        None, ge=0, description="Cost per 1M cache creation tokens (USD)"
+    )
     last_updated: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        description="When pricing was fetched",
+        description="When pricing was loaded",
     )
 
 
 class CostCalculator:
-    """Calculate accurate LLM costs using llm-prices.com data.
+    """Calculate accurate LLM costs using LiteLLM's bundled pricing database.
 
-    This calculator fetches pricing data once on first use and caches it
-    for the session. If the fetch fails, it falls back to conservative
-    estimates.
+    This calculator uses LiteLLM's bundled model_cost dictionary, which contains
+    pricing data for all major LLM providers. No external API calls are needed.
 
     Example:
         >>> calc = CostCalculator()
-        >>> await calc.ensure_loaded()
+        >>> calc.ensure_loaded()  # Optional, loads automatically on first use
         >>> cost = calc.calculate_cost(
         ...     model="gpt-4o-mini",
         ...     input_tokens=1000,
@@ -98,117 +99,80 @@ class CostCalculator:
         >>> print(f"Cost: ${cost:.6f}")
     """
 
-    PRICING_URL = "https://www.llm-prices.com/current-v1.json"
-    TIMEOUT = 10.0  # seconds
-
     def __init__(self) -> None:
         """Initialize calculator with empty cache."""
         self._pricing_cache: Dict[str, ModelPricing] = {}
         self._loaded: bool = False
-        self._load_attempted: bool = False
-        self._load_lock: asyncio.Lock = asyncio.Lock()
 
     async def ensure_loaded(self) -> None:
-        """Ensure pricing data is loaded (lazy loading with thread safety).
+        """Ensure pricing data is loaded from LiteLLM.
 
-        Fetches pricing data on first call, then uses cached data.
-        Uses asyncio.Lock to prevent duplicate fetches in concurrent scenarios.
-        If fetch fails, logs warning and uses fallback estimates.
+        This method loads pricing data from LiteLLM's bundled database.
+        Since the data is bundled with the package, this is synchronous
+        and always succeeds.
+
+        The async signature is maintained for backward compatibility with
+        existing code that awaits this method.
         """
-        # Fast path: Already loaded (no await needed)
-        if self._load_attempted:
+        if self._loaded:
             return
 
-        # Slow path: Need to load (use lock for thread safety)
-        async with self._load_lock:
-            # Double-check after acquiring lock (another coroutine may have loaded)
-            if self._load_attempted:
-                return  # type: ignore[unreachable]
+        self._load_pricing_data()
 
-            self._load_attempted = True
+    def _load_pricing_data(self) -> None:
+        """Load pricing data from LiteLLM's bundled database."""
+        if self._loaded:
+            return
 
-            try:
-                await self._fetch_pricing_data()
-                self._loaded = True
-                logger.info(
-                    f"Loaded pricing data for {len(self._pricing_cache)} models"
-                )
-            except Exception as e:
-                logger.info(
-                    f"Using fallback cost estimates (pricing API unavailable: {e})"
-                )
-                self._loaded = False
+        self._pricing_cache = {}
+        loaded_count = 0
 
-    async def _fetch_pricing_data(self) -> None:
-        """Fetch latest pricing data from llm-prices.com with retry logic.
+        for model_id, model_info in litellm.model_cost.items():
+            # Skip non-chat models and sample spec
+            if model_id == "sample_spec":
+                continue
 
-        Uses exponential backoff to handle transient network failures.
+            mode = model_info.get("mode", "")
+            if mode and mode != "chat":
+                continue
 
-        Raises:
-            httpx.HTTPError: If all retry attempts fail
-            ValueError: If JSON is invalid
-        """
-        max_retries = 3
-        base_delay = 1.0
-        backoff = 2.0
+            # Skip models without input pricing
+            input_cost_per_token = model_info.get("input_cost_per_token")
+            if input_cost_per_token is None:
+                continue
 
-        last_error = None
-        for attempt in range(1, max_retries + 1):
-            try:
-                async with httpx.AsyncClient(timeout=self.TIMEOUT) as client:
-                    response = await client.get(self.PRICING_URL)
-                    response.raise_for_status()
-                    data = response.json()
+            output_cost_per_token = model_info.get("output_cost_per_token", 0.0)
+            cache_read_cost = model_info.get("cache_read_input_token_cost")
+            cache_creation_cost = model_info.get("cache_creation_input_token_cost")
 
-                    # Parse and cache pricing data
-                    # Handle both old format (list) and new format (dict with "prices" key)
-                    self._pricing_cache = {}
-                    prices = (
-                        data.get("prices", data) if isinstance(data, dict) else data
-                    )
-                    for model_data in prices:
-                        pricing = ModelPricing(
-                            id=model_data["id"],
-                            vendor=model_data["vendor"],
-                            name=model_data["name"],
-                            input=model_data["input"],
-                            output=model_data["output"],
-                            input_cached=model_data.get("input_cached"),
-                            last_updated=datetime.now(timezone.utc),
-                        )
-                        self._pricing_cache[pricing.id] = pricing
+            # Extract vendor from litellm_provider or model_id
+            vendor = model_info.get("litellm_provider", "")
+            if not vendor and "/" in model_id:
+                vendor = model_id.split("/")[0]
 
-                    logger.debug(
-                        f"Successfully fetched pricing data on attempt {attempt}"
-                    )
-                    return  # Success!
+            pricing = ModelPricing(
+                id=model_id,
+                vendor=vendor,
+                name=model_id,  # LiteLLM uses model_id as name
+                input=input_cost_per_token * 1_000_000,
+                output=output_cost_per_token * 1_000_000,
+                input_cached=(cache_read_cost * 1_000_000 if cache_read_cost else None),
+                cache_creation=(
+                    cache_creation_cost * 1_000_000 if cache_creation_cost else None
+                ),
+                last_updated=datetime.now(timezone.utc),
+            )
+            self._pricing_cache[model_id] = pricing
+            loaded_count += 1
 
-            except (httpx.HTTPError, httpx.ConnectError, asyncio.TimeoutError) as e:
-                last_error = e
-                if attempt < max_retries:
-                    delay = base_delay * (backoff ** (attempt - 1))
-                    logger.warning(
-                        f"Pricing data fetch failed (attempt {attempt}/{max_retries}): {e}. "
-                        f"Retrying in {delay:.1f}s..."
-                    )
-                    await asyncio.sleep(delay)
-                else:
-                    logger.error(
-                        f"Failed to fetch pricing data after {max_retries} attempts: {e}"
-                    )
-                    raise
-
-        # Should never reach here, but helps type checker
-        if last_error:
-            raise last_error
+        self._loaded = True
+        logger.info(f"Loaded pricing data for {loaded_count} models from LiteLLM")
 
     def get_pricing(self, model: str) -> Optional[ModelPricing]:
         """Get pricing for a specific model.
 
-        Uses fuzzy matching to handle model variants (e.g., date suffixes).
-
         Args:
-            model: Model identifier (e.g., "gpt-4o-mini", "gpt-4o-mini-2024-07-18")
+            model: Model identifier (e.g., "gpt-4o-mini", "claude-sonnet-4-5-20250929")
 
         Returns:
             ModelPricing if found, None otherwise
@@ -218,76 +182,39 @@ class CostCalculator:
             >>> if pricing:
             ...     print(f"Input: ${pricing.input}/M, Output: ${pricing.output}/M")
         """
+        # Ensure data is loaded
         if not self._loaded:
-            return None
+            self._load_pricing_data()
 
-        # Try exact match first
+        # Try exact match first (most common case)
         if model in self._pricing_cache:
             return self._pricing_cache[model]
 
-        # Normalize model ID for matching
-        normalized = self._normalize_model_id(model)
-        if normalized in self._pricing_cache:
-            logger.debug(f"Normalized '{model}' to '{normalized}'")
-            return self._pricing_cache[normalized]
+        # Try LiteLLM's model_cost directly (handles aliases)
+        model_info = litellm.model_cost.get(model)
+        if model_info and model_info.get("input_cost_per_token") is not None:
+            input_cost = model_info.get("input_cost_per_token", 0.0)
+            output_cost = model_info.get("output_cost_per_token", 0.0)
+            cache_read = model_info.get("cache_read_input_token_cost")
+            cache_creation = model_info.get("cache_creation_input_token_cost")
+            vendor = model_info.get("litellm_provider", "")
 
-        # Try fuzzy match (model name might have date/version suffix)
-        # e.g., "gpt-4o-mini-2024-07-18" should match "gpt-4o-mini"
-        # Require separator to avoid false positives (e.g., "gpt-4" shouldn't match "gpt-4o")
-        for cached_id, pricing in self._pricing_cache.items():
-            if model.startswith(cached_id + "-") or model.startswith(cached_id + "_"):
-                logger.debug(f"Fuzzy matched '{model}' to '{cached_id}'")
-                return pricing
-            # Also check normalized version
-            if normalized.startswith(cached_id + "-") or normalized.startswith(cached_id + "_"):
-                logger.debug(f"Fuzzy matched normalized '{normalized}' to '{cached_id}'")
-                return pricing
+            pricing = ModelPricing(
+                id=model,
+                vendor=vendor,
+                name=model,
+                input=input_cost * 1_000_000,
+                output=output_cost * 1_000_000,
+                input_cached=cache_read * 1_000_000 if cache_read else None,
+                cache_creation=cache_creation * 1_000_000 if cache_creation else None,
+                last_updated=datetime.now(timezone.utc),
+            )
+            # Cache for future lookups
+            self._pricing_cache[model] = pricing
+            return pricing
 
+        logger.debug(f"No pricing found for model: {model}")
         return None
-
-    def _normalize_model_id(self, model: str) -> str:
-        """Normalize model ID to match llm-prices.com conventions.
-
-        Handles various naming patterns:
-        - claude-sonnet-4-5-20250929 → claude-sonnet-4.5
-        - claude-haiku-4-5-20251001 → claude-4.5-haiku
-        - claude-opus-4-5-20251101 → claude-opus-4-5 (keeps hyphens)
-        - gpt-5-mini-2025-08-07 → gpt-5-mini
-        - gemini-2.5-pro → gemini-2.5-pro
-
-        Args:
-            model: Raw model identifier
-
-        Returns:
-            Normalized model identifier
-        """
-        import re
-
-        # Strip date suffixes (YYYY-MM-DD or YYYYMMDD patterns at end)
-        normalized = re.sub(r"-\d{4}-\d{2}-\d{2}$", "", model)
-        normalized = re.sub(r"-\d{8}$", "", normalized)
-
-        # Handle Claude naming conventions
-        # llm-prices.com uses:
-        # - claude-sonnet-4.5 (dot separator)
-        # - claude-4.5-haiku (version before model name)
-        # - claude-opus-4-5 (hyphen separator - exception!)
-        if normalized.startswith("claude-"):
-            # Handle sonnet: claude-sonnet-4-5 → claude-sonnet-4.5
-            if "sonnet" in normalized:
-                normalized = re.sub(r"-(\d+)-(\d+)$", r"-\1.\2", normalized)
-
-            # Handle haiku: claude-haiku-4-5 → claude-4.5-haiku
-            elif "haiku" in normalized:
-                normalized = re.sub(r"-(\d+)-(\d+)$", r"-\1.\2", normalized)
-                haiku_match = re.match(r"claude-haiku-(\d+\.\d+)$", normalized)
-                if haiku_match:
-                    version = haiku_match.group(1)
-                    normalized = f"claude-{version}-haiku"
-
-            # opus stays as-is (claude-opus-4-5 matches llm-prices)
-
-        return normalized
 
     def calculate_cost(
         self,
@@ -309,7 +236,7 @@ class CostCalculator:
 
         Example:
             >>> cost = calc.calculate_cost(
-            ...     model="claude-3-5-sonnet",
+            ...     model="claude-sonnet-4-5-20250929",
             ...     input_tokens=1000,
             ...     output_tokens=500
             ... )
@@ -339,6 +266,9 @@ class CostCalculator:
         else:
             # Fallback: Conservative estimate
             # Assume $10/M input, $30/M output (roughly GPT-4 tier pricing)
+            logger.warning(
+                f"No pricing for {model}, using conservative fallback estimate"
+            )
             return self._fallback_estimate(input_tokens, output_tokens, cached_tokens)
 
     def _fallback_estimate(
@@ -386,6 +316,8 @@ class CostCalculator:
     @property
     def model_count(self) -> int:
         """Number of models with pricing data."""
+        if not self._loaded:
+            self._load_pricing_data()
         return len(self._pricing_cache)
 
 
@@ -401,7 +333,6 @@ def get_cost_calculator() -> CostCalculator:
 
     Example:
         >>> calc = get_cost_calculator()
-        >>> await calc.ensure_loaded()
         >>> cost = calc.calculate_cost("gpt-4o-mini", 1000, 500)
     """
     global _cost_calculator

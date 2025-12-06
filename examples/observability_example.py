@@ -5,7 +5,7 @@ complete transparency into LLM evaluation operations.
 
 Key Features:
 - Automatic interaction tracking (no instrumentation needed)
-- Real-time cost calculation with llm-prices.com data
+- Real-time cost calculation with LiteLLM's bundled pricing database
 - Detailed token usage breakdown (input/output/cached)
 - Performance monitoring and latency tracking
 - Complete audit trail for compliance

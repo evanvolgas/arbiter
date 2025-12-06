@@ -36,9 +36,10 @@ print(f"Calls: {len(result.interactions)}")           # Every LLM interaction
 ### What Makes Arbiter Different?
 
 **1. Automatic Cost Transparency** (Unique)
-- Real-time cost calculation using live pricing data
+- Accurate cost calculation using LiteLLM's bundled pricing database
 - Cost breakdown by evaluator and model
 - No guessing - see exactly what each evaluation costs
+- Consistent pricing with Conduit routing (same LiteLLM source)
 
 **2. PydanticAI Native**
 - Built on PydanticAI - same patterns you already know
@@ -435,7 +436,7 @@ Built on proven patterns with type-safe foundations:
                               │
 ┌─────────────────────────────▼───────────────────────────────────┐
 │                      Infrastructure                             │
-│  Cost Calculator | Circuit Breaker | Retry | Monitoring         │
+│  Cost Calculator (LiteLLM) | Circuit Breaker | Retry | Monitor  │
 │  Storage: PostgreSQL | Redis                                    │
 └─────────────────────────────────────────────────────────────────┘
 ```

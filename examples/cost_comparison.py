@@ -11,7 +11,7 @@ Key demonstrations:
 
 What makes this unique:
 - No other evaluation framework shows costs this prominently
-- Real pricing data from llm-prices.com (same source as Langfuse)
+- Accurate pricing data from LiteLLM's bundled database (consistent with Conduit)
 - Automatic tracking - no manual calculation needed
 """
 
@@ -146,7 +146,7 @@ async def example4_provider_cost_comparison():
 
     providers_to_test = [
         (Provider.OPENAI, "gpt-4o-mini"),
-        (Provider.ANTHROPIC, "claude-3-5-sonnet-20241022"),
+        (Provider.ANTHROPIC, "claude-sonnet-4-5-20250929"),
         (Provider.GOOGLE, "gemini-1.5-flash"),
     ]
 
@@ -268,7 +268,7 @@ async def main():
     print("=" * 80)
     print("""
 1. Cost tracking is automatic - just call result.total_llm_cost()
-2. Real pricing data from llm-prices.com (not estimates)
+2. Accurate pricing data from LiteLLM (consistent with Conduit routing)
 3. Detailed breakdowns help optimize evaluation strategies
 4. GPT-4o-mini often gives 80%+ cost savings with similar quality
 5. Batch operations make large-scale evaluation affordable

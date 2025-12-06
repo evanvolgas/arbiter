@@ -34,6 +34,7 @@ dependencies = [
     "logfire>=4.0.0",
     "numpy>=2.0.0",  # For vector operations
     "typing-extensions>=4.0.0",
+    "litellm>=1.50.0",  # Bundled pricing database - consistent with Conduit
 ]
 
 [project.urls]
@@ -147,6 +148,7 @@ line-ending = "auto"
 minversion = "8.0"
 addopts = ["--strict-markers", "--cov=arbiter_ai", "--cov-report=term-missing"]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 markers = [
     "slow: marks tests as slow",
     "integration: marks tests as integration tests",
@@ -189,3 +191,9 @@ disallow_untyped_defs = false
 [[tool.mypy.overrides]]
 module = ["pymilvus", "pymilvus.*", "logfire", "faiss", "sentence_transformers", "sentence_transformers.*", "asyncpg", "asyncpg.*"]
 ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+]

@@ -1,6 +1,10 @@
-"""Unit tests for cost calculator functionality."""
+"""Unit tests for cost calculator functionality.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+Tests the LiteLLM-based cost calculator which provides pricing data
+from LiteLLM's bundled model_cost database.
+"""
+
+from unittest.mock import patch
 
 import pytest
 
@@ -36,11 +40,10 @@ class TestModelPricing:
 
     def test_model_pricing_with_cached(self):
         """Test ModelPricing with cached token pricing."""
-
         pricing = ModelPricing(
-            id="claude-3-5-sonnet",
+            id="claude-sonnet-4-5-20250929",
             vendor="anthropic",
-            name="Claude 3.5 Sonnet",
+            name="Claude Sonnet 4.5",
             input=3.0,
             output=15.0,
             input_cached=0.3,
@@ -48,178 +51,100 @@ class TestModelPricing:
 
         assert pricing.input_cached == 0.3
 
+    def test_model_pricing_with_cache_creation(self):
+        """Test ModelPricing with cache creation pricing."""
+        pricing = ModelPricing(
+            id="claude-sonnet-4-5-20250929",
+            vendor="anthropic",
+            name="Claude Sonnet 4.5",
+            input=3.0,
+            output=15.0,
+            input_cached=0.3,
+            cache_creation=3.75,
+        )
+
+        assert pricing.cache_creation == 3.75
+
 
 class TestCostCalculator:
     """Tests for CostCalculator functionality."""
 
     @pytest.fixture
-    def mock_pricing_data(self):
-        """Mock pricing data from llm-prices.com."""
-        return [
-            {
-                "id": "gpt-4o-mini",
-                "vendor": "openai",
-                "name": "GPT-4o Mini",
-                "input": 0.150,
-                "output": 0.600,
-                "input_cached": None,
+    def mock_litellm_model_cost(self):
+        """Mock LiteLLM model_cost data."""
+        return {
+            "gpt-4o-mini": {
+                "input_cost_per_token": 0.150 / 1_000_000,
+                "output_cost_per_token": 0.600 / 1_000_000,
+                "litellm_provider": "openai",
+                "mode": "chat",
             },
-            {
-                "id": "claude-3-5-sonnet",
-                "vendor": "anthropic",
-                "name": "Claude 3.5 Sonnet",
-                "input": 3.0,
-                "output": 15.0,
-                "input_cached": 0.3,
+            "claude-sonnet-4-5-20250929": {
+                "input_cost_per_token": 3.0 / 1_000_000,
+                "output_cost_per_token": 15.0 / 1_000_000,
+                "cache_read_input_token_cost": 0.3 / 1_000_000,
+                "litellm_provider": "anthropic",
+                "mode": "chat",
             },
-            {
-                "id": "gpt-4o",
-                "vendor": "openai",
-                "name": "GPT-4o",
-                "input": 2.50,
-                "output": 10.0,
-                "input_cached": None,
+            "gpt-4o": {
+                "input_cost_per_token": 2.50 / 1_000_000,
+                "output_cost_per_token": 10.0 / 1_000_000,
+                "litellm_provider": "openai",
+                "mode": "chat",
             },
-        ]
+            "sample_spec": {
+                "input_cost_per_token": 0.0,
+                "output_cost_per_token": 0.0,
+            },
+            "text-embedding-3-small": {
+                "input_cost_per_token": 0.02 / 1_000_000,
+                "output_cost_per_token": 0.0,
+                "mode": "embedding",
+            },
+        }
 
     @pytest.mark.asyncio
-    async def test_ensure_loaded_success(self, mock_pricing_data):
-        """Test successfully loading pricing data."""
+    async def test_ensure_loaded_success(self, mock_litellm_model_cost):
+        """Test successfully loading pricing data from LiteLLM."""
         calc = CostCalculator()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response = MagicMock()
-            mock_response.json.return_value = mock_pricing_data
-            mock_response.raise_for_status.return_value = None
-
-            mock_context = AsyncMock()
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                return_value=mock_response
-            )
-            mock_client.return_value = mock_context
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
 
             await calc.ensure_loaded()
 
             assert calc.is_loaded
+            # Should load chat models only (excludes sample_spec and embedding)
             assert calc.model_count == 3
             assert calc.get_pricing("gpt-4o-mini") is not None
-            assert calc.get_pricing("claude-3-5-sonnet") is not None
+            assert calc.get_pricing("claude-sonnet-4-5-20250929") is not None
 
     @pytest.mark.asyncio
-    async def test_ensure_loaded_failure(self):
-        """Test handling failure to load pricing data."""
-        calc = CostCalculator()
-
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_context = AsyncMock()
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                side_effect=Exception("Network error")
-            )
-            mock_client.return_value = mock_context
-
-            await calc.ensure_loaded()
-
-            assert not calc.is_loaded
-            assert calc.model_count == 0
-
-    @pytest.mark.asyncio
-    async def test_ensure_loaded_only_once(self, mock_pricing_data):
+    async def test_ensure_loaded_only_once(self, mock_litellm_model_cost):
         """Test that pricing data is only loaded once."""
         calc = CostCalculator()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response = MagicMock()
-            mock_response.json.return_value = mock_pricing_data
-            mock_response.raise_for_status.return_value = None
-
-            mock_context = AsyncMock()
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                return_value=mock_response
-            )
-            mock_client.return_value = mock_context
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
 
             # Call ensure_loaded multiple times
             await calc.ensure_loaded()
             await calc.ensure_loaded()
             await calc.ensure_loaded()
 
-            # Should only fetch once
-            assert mock_context.__aenter__.return_value.get.call_count == 1
-
-    @pytest.mark.asyncio
-    async def test_fetch_with_retry_success_on_second_attempt(self, mock_pricing_data):
-        """Test retry logic succeeds after initial failure."""
-        import httpx
-
-        calc = CostCalculator()
-
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response = MagicMock()
-            mock_response.json.return_value = mock_pricing_data
-            mock_response.raise_for_status.return_value = None
-
-            mock_context = AsyncMock()
-            # First call fails with httpx.ConnectError (retryable), second call succeeds
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                side_effect=[
-                    httpx.ConnectError("Network error"),  # First attempt fails
-                    mock_response,  # Second attempt succeeds
-                ]
-            )
-            mock_client.return_value = mock_context
-
-            # Mock asyncio.sleep to avoid actual delays
-            with patch("asyncio.sleep", new_callable=AsyncMock):
-                await calc.ensure_loaded()
-
-            # Should succeed after retry
+            # Should still be loaded with same count
             assert calc.is_loaded
             assert calc.model_count == 3
-            # Should have been called twice (first fail, then success)
-            assert mock_context.__aenter__.return_value.get.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_fetch_with_all_retries_exhausted(self):
-        """Test that all retry attempts are exhausted on persistent failure."""
-        import httpx
-
-        calc = CostCalculator()
-
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_context = AsyncMock()
-            # All 3 attempts will fail with httpx.ConnectError (retryable)
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                side_effect=httpx.ConnectError("Persistent network error")
-            )
-            mock_client.return_value = mock_context
-
-            # Mock asyncio.sleep to avoid actual delays
-            with patch("asyncio.sleep", new_callable=AsyncMock):
-                await calc.ensure_loaded()
-
-            # Should fail after all retries
-            assert not calc.is_loaded
-            assert calc.model_count == 0
-            # Should have attempted 3 times (max_retries)
-            assert mock_context.__aenter__.return_value.get.call_count == 3
-
-    @pytest.mark.asyncio
-    async def test_ensure_loaded_concurrent_calls(self, mock_pricing_data):
-        """Test that concurrent calls only fetch pricing data once (lock test)."""
+    async def test_ensure_loaded_concurrent_calls(self, mock_litellm_model_cost):
+        """Test that concurrent calls handle loading correctly."""
         import asyncio
 
         calc = CostCalculator()
 
-        with patch("httpx.AsyncClient") as mock_client:
-            mock_response = MagicMock()
-            mock_response.json.return_value = mock_pricing_data
-            mock_response.raise_for_status.return_value = None
-
-            mock_context = AsyncMock()
-            mock_context.__aenter__.return_value.get = AsyncMock(
-                return_value=mock_response
-            )
-            mock_client.return_value = mock_context
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
 
             # Call ensure_loaded concurrently 5 times
             results = await asyncio.gather(
@@ -233,181 +158,175 @@ class TestCostCalculator:
             # All should complete without error
             assert len(results) == 5
 
-            # Should only have fetched once due to lock
+            # Should be loaded correctly
             assert calc.is_loaded
-            # The get method might be called once or slightly more due to race conditions,
-            # but should be much less than 5
-            assert mock_context.__aenter__.return_value.get.call_count <= 2
+            assert calc.model_count == 3
 
-    def test_get_pricing_exact_match(self):
+    def test_get_pricing_exact_match(self, mock_litellm_model_cost):
         """Test getting pricing with exact model match."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "gpt-4o-mini": ModelPricing(
-                id="gpt-4o-mini",
-                vendor="openai",
-                name="GPT-4o Mini",
-                input=0.150,
-                output=0.600,
-            )
-        }
 
-        pricing = calc.get_pricing("gpt-4o-mini")
-        assert pricing is not None
-        assert pricing.id == "gpt-4o-mini"
-        assert pricing.input == 0.150
-        assert pricing.output == 0.600
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
 
-    def test_get_pricing_fuzzy_match(self):
-        """Test fuzzy matching for model variants."""
+            pricing = calc.get_pricing("gpt-4o-mini")
+            assert pricing is not None
+            assert pricing.id == "gpt-4o-mini"
+            assert abs(pricing.input - 0.150) < 0.001
+            assert abs(pricing.output - 0.600) < 0.001
+
+    def test_get_pricing_with_cached(self, mock_litellm_model_cost):
+        """Test getting pricing with cached token pricing."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "gpt-4o-mini": ModelPricing(
-                id="gpt-4o-mini",
-                vendor="openai",
-                name="GPT-4o Mini",
-                input=0.150,
-                output=0.600,
-            )
-        }
 
-        # Should match "gpt-4o-mini-2024-07-18" to "gpt-4o-mini"
-        pricing = calc.get_pricing("gpt-4o-mini-2024-07-18")
-        assert pricing is not None
-        assert pricing.id == "gpt-4o-mini"
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
 
-    def test_get_pricing_not_found(self):
+            pricing = calc.get_pricing("claude-sonnet-4-5-20250929")
+            assert pricing is not None
+            assert pricing.input_cached is not None
+            assert abs(pricing.input_cached - 0.3) < 0.001
+
+    def test_get_pricing_not_found(self, mock_litellm_model_cost):
         """Test getting pricing for unknown model."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {}
 
-        pricing = calc.get_pricing("unknown-model")
-        assert pricing is None
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
 
-    def test_get_pricing_not_loaded(self):
-        """Test getting pricing when data not loaded."""
+            pricing = calc.get_pricing("unknown-model")
+            assert pricing is None
+
+    def test_get_pricing_lazy_load(self, mock_litellm_model_cost):
+        """Test that get_pricing triggers lazy loading."""
         calc = CostCalculator()
         assert not calc.is_loaded
 
-        pricing = calc.get_pricing("gpt-4o-mini")
-        assert pricing is None
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
 
-    def test_calculate_cost_with_pricing(self):
+            # Should trigger loading
+            pricing = calc.get_pricing("gpt-4o-mini")
+            assert calc.is_loaded
+            assert pricing is not None
+
+    def test_get_pricing_dynamic_lookup(self, mock_litellm_model_cost):
+        """Test that get_pricing can look up models not in initial cache."""
+        calc = CostCalculator()
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # Add a new model to litellm.model_cost after loading
+            mock_litellm.model_cost["gpt-4-turbo"] = {
+                "input_cost_per_token": 10.0 / 1_000_000,
+                "output_cost_per_token": 30.0 / 1_000_000,
+                "litellm_provider": "openai",
+                "mode": "chat",
+            }
+
+            # Should find the new model via dynamic lookup
+            pricing = calc.get_pricing("gpt-4-turbo")
+            assert pricing is not None
+            assert abs(pricing.input - 10.0) < 0.001
+
+    def test_calculate_cost_with_pricing(self, mock_litellm_model_cost):
         """Test cost calculation with pricing data available."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "gpt-4o-mini": ModelPricing(
-                id="gpt-4o-mini",
-                vendor="openai",
-                name="GPT-4o Mini",
-                input=0.150,  # $0.15 per 1M tokens
-                output=0.600,  # $0.60 per 1M tokens
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # Calculate cost for 1000 input + 500 output tokens
+            cost = calc.calculate_cost(
+                model="gpt-4o-mini", input_tokens=1000, output_tokens=500
             )
-        }
 
-        # Calculate cost for 1000 input + 500 output tokens
-        cost = calc.calculate_cost(
-            model="gpt-4o-mini", input_tokens=1000, output_tokens=500
-        )
+            # Expected: (1000 / 1M * 0.15) + (500 / 1M * 0.60)
+            # = 0.00015 + 0.0003 = 0.00045
+            assert abs(cost - 0.00045) < 0.000001
 
-        # Expected: (1000 / 1M * 0.15) + (500 / 1M * 0.60)
-        # = 0.00015 + 0.0003 = 0.00045
-        assert abs(cost - 0.00045) < 0.000001
-
-    def test_calculate_cost_with_cached_tokens(self):
+    def test_calculate_cost_with_cached_tokens(self, mock_litellm_model_cost):
         """Test cost calculation with cached tokens."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "claude-3-5-sonnet": ModelPricing(
-                id="claude-3-5-sonnet",
-                vendor="anthropic",
-                name="Claude 3.5 Sonnet",
-                input=3.0,  # $3 per 1M tokens
-                output=15.0,  # $15 per 1M tokens
-                input_cached=0.3,  # $0.30 per 1M cached tokens
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # Calculate cost: 1000 input (500 cached) + 500 output
+            cost = calc.calculate_cost(
+                model="claude-sonnet-4-5-20250929",
+                input_tokens=1000,
+                output_tokens=500,
+                cached_tokens=500,
             )
-        }
 
-        # Calculate cost: 1000 input (500 cached) + 500 output
-        cost = calc.calculate_cost(
-            model="claude-3-5-sonnet",
-            input_tokens=1000,
-            output_tokens=500,
-            cached_tokens=500,
-        )
+            # Expected:
+            # - Non-cached input: (500 / 1M * 3.0) = 0.0015
+            # - Cached input: (500 / 1M * 0.3) = 0.00015
+            # - Output: (500 / 1M * 15.0) = 0.0075
+            # Total: 0.0015 + 0.00015 + 0.0075 = 0.00915
+            assert abs(cost - 0.00915) < 0.000001
 
-        # Expected:
-        # - Non-cached input: (500 / 1M * 3.0) = 0.0015
-        # - Cached input: (500 / 1M * 0.3) = 0.00015
-        # - Output: (500 / 1M * 15.0) = 0.0075
-        # Total: 0.0015 + 0.00015 + 0.0075 = 0.00915
-        assert abs(cost - 0.00915) < 0.000001
-
-    def test_calculate_cost_cached_tokens_no_cached_pricing(self):
-        """Test cost calculation with cached tokens but no cached pricing (line 279)."""
+    def test_calculate_cost_cached_tokens_no_cached_pricing(
+        self, mock_litellm_model_cost
+    ):
+        """Test cost calculation with cached tokens but no cached pricing."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "gpt-4o": ModelPricing(
-                id="gpt-4o",
-                vendor="openai",
-                name="GPT-4o",
-                input=2.5,  # $2.50 per 1M tokens
-                output=10.0,  # $10 per 1M tokens
-                # Note: input_cached is None (not provided)
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # gpt-4o doesn't have cached pricing in mock data
+            cost = calc.calculate_cost(
+                model="gpt-4o",
+                input_tokens=1000,
+                output_tokens=500,
+                cached_tokens=300,
             )
-        }
 
-        # Calculate cost: 1000 input + 500 output + 300 cached
-        cost = calc.calculate_cost(
-            model="gpt-4o",
-            input_tokens=1000,
-            output_tokens=500,
-            cached_tokens=300,
-        )
-
-        # Expected (line 279: cached tokens treated as regular input):
-        # - Non-cached input: ((1000-300) / 1M * 2.5) = 0.00175
-        # - Cached input (no cached pricing, use regular): (300 / 1M * 2.5) = 0.00075
-        # - Output: (500 / 1M * 10.0) = 0.005
-        # Total: 0.00175 + 0.00075 + 0.005 = 0.0075
-        assert abs(cost - 0.0075) < 0.000001
+            # Expected (cached tokens treated as regular input):
+            # - Non-cached input: ((1000-300) / 1M * 2.5) = 0.00175
+            # - Cached input (no cached pricing, use regular): (300 / 1M * 2.5) = 0.00075
+            # - Output: (500 / 1M * 10.0) = 0.005
+            # Total: 0.00175 + 0.00075 + 0.005 = 0.0075
+            assert abs(cost - 0.0075) < 0.000001
 
     def test_calculate_cost_fallback(self):
         """Test cost calculation fallback when pricing unavailable."""
         calc = CostCalculator()
-        calc._loaded = False  # No pricing data
 
-        cost = calc.calculate_cost(
-            model="unknown-model", input_tokens=1000, output_tokens=500
-        )
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = {}  # Empty - no pricing data
 
-        # Fallback uses conservative estimates:
-        # Input: $10/M, Output: $30/M
-        # Expected: (1000/1M * 10) + (500/1M * 30) = 0.01 + 0.015 = 0.025
-        assert abs(cost - 0.025) < 0.000001
+            cost = calc.calculate_cost(
+                model="unknown-model", input_tokens=1000, output_tokens=500
+            )
 
-    def test_calculate_cost_zero_tokens(self):
+            # Fallback uses conservative estimates:
+            # Input: $10/M, Output: $30/M
+            # Expected: (1000/1M * 10) + (500/1M * 30) = 0.01 + 0.015 = 0.025
+            assert abs(cost - 0.025) < 0.000001
+
+    def test_calculate_cost_zero_tokens(self, mock_litellm_model_cost):
         """Test cost calculation with zero tokens."""
         calc = CostCalculator()
-        calc._loaded = True
-        calc._pricing_cache = {
-            "gpt-4o-mini": ModelPricing(
-                id="gpt-4o-mini",
-                vendor="openai",
-                name="GPT-4o Mini",
-                input=0.150,
-                output=0.600,
-            )
-        }
 
-        cost = calc.calculate_cost(model="gpt-4o-mini", input_tokens=0, output_tokens=0)
-        assert cost == 0.0
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            cost = calc.calculate_cost(
+                model="gpt-4o-mini", input_tokens=0, output_tokens=0
+            )
+            assert cost == 0.0
 
     def test_fallback_estimate(self):
         """Test fallback cost estimation."""
@@ -437,12 +356,39 @@ class TestCostCalculator:
         # Total: $0.0205
         assert abs(cost - 0.0205) < 0.000001
 
+    def test_skips_sample_spec(self, mock_litellm_model_cost):
+        """Test that sample_spec is skipped during loading."""
+        calc = CostCalculator()
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # sample_spec should not be in cache
+            assert "sample_spec" not in calc._pricing_cache
+
+    def test_skips_non_chat_models(self, mock_litellm_model_cost):
+        """Test that non-chat models (embeddings) are skipped during loading."""
+        calc = CostCalculator()
+
+        with patch("arbiter_ai.core.cost_calculator.litellm") as mock_litellm:
+            mock_litellm.model_cost = mock_litellm_model_cost
+            calc._load_pricing_data()
+
+            # Embedding model should not be in cache
+            assert "text-embedding-3-small" not in calc._pricing_cache
+
 
 class TestGlobalCostCalculator:
     """Tests for global cost calculator singleton."""
 
     def test_get_cost_calculator_singleton(self):
         """Test that get_cost_calculator returns singleton."""
+        # Reset global state for this test
+        import arbiter_ai.core.cost_calculator as cc
+
+        cc._cost_calculator = None
+
         calc1 = get_cost_calculator()
         calc2 = get_cost_calculator()
 
@@ -513,7 +459,7 @@ class TestIntegrationWithEvaluationResult:
                 LLMInteraction(
                     prompt="prompt2",
                     response="response2",
-                    model="claude-3-5-sonnet",
+                    model="claude-sonnet-4-5-20250929",
                     input_tokens=1500,
                     output_tokens=750,
                     latency=1.2,
@@ -539,9 +485,50 @@ class TestIntegrationWithEvaluationResult:
 
         # Check by model
         assert "gpt-4o-mini" in breakdown["by_model"]
-        assert "claude-3-5-sonnet" in breakdown["by_model"]
+        assert "claude-sonnet-4-5-20250929" in breakdown["by_model"]
 
         # Check token breakdown
         assert breakdown["token_breakdown"]["input_tokens"] == 2500
         assert breakdown["token_breakdown"]["output_tokens"] == 1250
         assert breakdown["token_breakdown"]["total_tokens"] == 3750
+
+
+class TestLiteLLMIntegration:
+    """Tests for LiteLLM integration (uses real LiteLLM data)."""
+
+    def test_real_litellm_has_common_models(self):
+        """Test that real LiteLLM has pricing for common models."""
+        import litellm
+
+        # These models should exist in LiteLLM's bundled database
+        common_models = ["gpt-4o-mini", "gpt-4o", "claude-sonnet-4-5-20250929"]
+
+        for model in common_models:
+            assert (
+                model in litellm.model_cost
+            ), f"Expected {model} in litellm.model_cost"
+            assert litellm.model_cost[model].get("input_cost_per_token") is not None
+
+    def test_real_calculator_loads_many_models(self):
+        """Test that real calculator loads many models from LiteLLM."""
+        calc = CostCalculator()
+        calc._load_pricing_data()
+
+        # Should load hundreds of models
+        assert calc.model_count > 100, f"Expected >100 models, got {calc.model_count}"
+
+    def test_real_calculator_cost_calculation(self):
+        """Test cost calculation with real LiteLLM pricing."""
+        calc = CostCalculator()
+        calc._load_pricing_data()
+
+        # Calculate cost for a known model
+        cost = calc.calculate_cost(
+            model="gpt-4o-mini",
+            input_tokens=1000,
+            output_tokens=500,
+        )
+
+        # Should return a reasonable cost (not zero, not huge)
+        assert cost > 0, "Cost should be positive"
+        assert cost < 1.0, "Cost should be less than $1 for this small usage"

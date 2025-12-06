@@ -144,7 +144,7 @@ class LLMInteraction(BaseModel):
 
     # Cost tracking
     cost: Optional[float] = Field(
-        None, ge=0, description="Actual cost in USD (calculated using llm-prices data)"
+        None, ge=0, description="Actual cost in USD (calculated using LiteLLM pricing)"
     )
 
     latency: float = Field(..., ge=0, description="Time taken for this call (seconds)")
@@ -341,11 +341,11 @@ class EvaluationResult(BaseModel):
     async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
         """Calculate total LLM cost with accurate pricing.
 
-        Uses llm-prices.com data for accurate cost calculation. Falls back
-        to conservative estimates if pricing data unavailable.
+        Uses LiteLLM's bundled pricing database for accurate cost calculation.
+        Falls back to conservative estimates if pricing data unavailable.
 
         Args:
-            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
+            use_actual_pricing: If True, use LiteLLM pricing; if False, use simple estimation
 
         Returns:
             Total cost in USD
@@ -545,11 +545,11 @@ class ComparisonResult(BaseModel):
     async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
         """Calculate total LLM cost with accurate pricing.
 
-        Uses llm-prices.com data for accurate cost calculation. Falls back
-        to conservative estimates if pricing data unavailable.
+        Uses LiteLLM's bundled pricing database for accurate cost calculation.
+        Falls back to conservative estimates if pricing data unavailable.
 
         Args:
-            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
+            use_actual_pricing: If True, use LiteLLM pricing; if False, use simple estimation
 
         Returns:
             Total cost in USD
@@ -682,10 +682,10 @@ class BatchEvaluationResult(BaseModel):
     async def total_llm_cost(self, use_actual_pricing: bool = True) -> float:
         """Calculate total LLM cost across all successful evaluations.
 
-        Uses llm-prices.com data for accurate cost calculation.
+        Uses LiteLLM's bundled pricing database for accurate cost calculation.
 
         Args:
-            use_actual_pricing: If True, use llm-prices data; if False, use simple estimation
+            use_actual_pricing: If True, use LiteLLM pricing; if False, use simple estimation
 
         Returns:
             Total cost in USD across all evaluations

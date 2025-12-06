@@ -128,7 +128,7 @@ result2 = await evaluate(
     reference=reference,
     evaluators=["semantic"],
     provider=Provider.ANTHROPIC,
-    model="claude-3-5-sonnet-20241022"
+    model="claude-sonnet-4-5-20250929"
 )
 
 # Google - SAME CODE
@@ -480,8 +480,8 @@ Inherit from BasePydanticEvaluator, you get automatic tracking for free."
 
 **Q: "What about cost accuracy?"**
 ```
-A: "We pull real pricing from llm-prices.com - same source Langfuse uses.
-Updated pricing data, not hardcoded estimates. Works across all providers."
+A: "We use LiteLLM's bundled pricing database - same source as Conduit.
+Updated pricing via 'uv update litellm', not hardcoded estimates. Works across all providers."
 
 [Show cost_calculator.py if needed]
 ```
